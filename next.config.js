@@ -1,22 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // বিল্ডের সময় ESLint এরর ইগনোর করবে
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // টাইপস্ক্রিপ্ট বা ডাটা টাইপ এরর ইগনোর করবে
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  // ইমেজের জন্য কনফিগারেশন (যদি লাগে)
+  // ১. সব জায়গা থেকে ইমেজ লোড করার পারমিশন
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**', // সব জায়গা থেকে ইমেজ লোড করার পারমিশন
+        hostname: '**',
       },
     ],
   },
+  
+  // ২. টাইপস্ক্রিপ্ট এরর থাকলেও বিল্ড আটকাবে না
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
-export default nextConfig; 
+// এই লাইনটি .js ফাইলের জন্য জরুরি
+module.exports = nextConfig;
