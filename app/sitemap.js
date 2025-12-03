@@ -2,7 +2,8 @@ import { db } from './lib/firebase';
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 export default async function sitemap() {
-  const baseUrl = 'https://আপনার-লাইভ-সাইটের-লিংক.vercel.app'; // এখানে আপনার আসল Vercel লিংক দিন
+  // আপডেট: এখানে আপনার আসল ডোমেইনটি বসানো হলো
+  const baseUrl = 'https://bakalia.xyz'; 
 
   // লেটেস্ট ৫০টি খবর ইনডেক্স করা হবে
   const q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(50));
