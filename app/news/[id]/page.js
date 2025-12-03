@@ -1,13 +1,13 @@
 import { db } from '../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-// components ফোল্ডার app এর ভেতরে, তাই ২ ঘর পেছনে (../../)
-import Header from '../../components/Header'; 
-import { ArrowLeft, Share2, Clock } from 'lucide-react';
+import Header from '../../components/Header'; // নিশ্চিত করুন পাথ ঠিক আছে (app ফোল্ডার থেকে ২ ঘর পেছনে)
+import { ArrowLeft, Share2, Clock, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
 // ১. ডাইনামিক মেটাডাটা (ফেসবুক/গুগল এর জন্য)
 export async function generateMetadata({ params }) {
-  // Next.js 15 এ params একটি Promise, তাই await করতে হবে
+  // params এখন প্রমিস হতে পারে, তাই await করা ভালো (Next.js 15)
+  // তবে সার্ভার কম্পোনেন্টে সরাসরি ব্যবহার করা যায়
   const resolvedParams = await params;
   const id = resolvedParams.id;
   
