@@ -1,84 +1,105 @@
-"use client";
-import { useEffect, useState, use } from 'react'; // 'use' ইম্পোর্ট করা হলো
 import { db } from '../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import Header from '../../components/Header';
-import Link from 'next/link';
+// components ফোল্ডার app এর ভেতরে, তাই ২ ঘর পেছনে (../../)
+import Header from '../../components/Header'; 
 import { ArrowLeft, Share2, Clock } from 'lucide-react';
+import Link from 'next/link';
 
-export default function NewsDetails({ params }) {
-  // ১. Next.js 15 এর নিয়ম অনুযায়ী params আনব্রেপ (unwrap) করা হচ্ছে
-  // আগে ছিল: const articleId = params.id;
-  const { id } = use(params); 
+// ১. ডাইনামিক মেটাডাটা (ফেসবুক/গুগল এর জন্য)
+export async function generateMetadata({ params }) {
+  // Next.js 15 এ params একটি Promise, তাই await করতে হবে
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+  
+  const docRef = doc(db, "articles", id);
+  const docSnap = await getDoc(docRef);
+  
+  if (docSnap.exists()) {
+    const article = docSnap.data();
+    return {
+      title: article.title + " | Bangladesh News",
+      description: article.content.substring(0, 160),
+      openGraph: {
+        title: article.title,
+        description: article.content.substring(0, 160),
+        siteName: 'Bangladesh News',
+        type: 'article',
+      },
+    };
+  }
+  return { title: "News Not Found" };
+}
 
-  const [article, setArticle] = useState(null);
-  const [loading, setLoading] = useState(true);
+// ২. মেইন পেজ কম্পোনেন্ট
+export default async function NewsDetails({ params }) {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+  
+  // সার্ভার সাইডেই ডাটা আনা হচ্ছে (SEO এর জন্য এটি সেরা)
+  const docRef = doc(db, "articles", id);
+  const docSnap = await getDoc(docRef);
+  
+  if (!docSnap.exists()) {
+    return <div className="text-center py-20 font-bold text-xl">খবরটি পাওয়া যায়নি!</div>;
+  }
 
-  useEffect(() => {
-    async function fetchSingleNews() {
-      if (!id) return; // 'id' ব্যবহার করছি
-      try {
-        const docRef = doc(db, "articles", id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          setArticle(docSnap.data());
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchSingleNews();
-  }, [id]);
-
-  if (loading) return <div className="text-center py-20">লোড হচ্ছে...</div>;
-  if (!article) return <div className="text-center py-20">খবরটি পাওয়া যায়নি!</div>;
+  const article = docSnap.data();
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header />
-      
-      <main className="max-w-3xl mx-auto px-4 py-8">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-red-600 mb-6 transition">
-          <ArrowLeft size={16} className="mr-2" /> সব খবর
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        
+        {/* ব্রেডকাম্ব / ব্যাক বাটন */}
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-red-600 mb-6 transition font-medium text-sm">
+          <ArrowLeft size={16} className="mr-2" /> প্রচ্ছদ
         </Link>
 
-        <article className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-3 mb-4">
-             <span className="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">
+        <article className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100">
+          
+          {/* ক্যাটাগরি ও তারিখ */}
+          <div className="flex items-center gap-4 mb-6 text-sm">
+             <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
                {article.category || "বাংলাদেশ"}
              </span>
-             <span className="flex items-center text-slate-400 text-xs gap-1">
+             <span className="flex items-center text-slate-400 gap-1">
                <Clock size={14} /> 
-               {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('bn-BD') : ''}
+               {new Date(article.publishedAt).toLocaleString('bn-BD')}
              </span>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
+          {/* শিরোনাম */}
+          <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-8 leading-tight">
             {article.title}
           </h1>
 
-          <div className="w-full h-64 bg-slate-200 rounded-xl mb-8 flex items-center justify-center text-slate-400 overflow-hidden">
-            {/* যদি ইমেজ থাকে দেখাবে, না থাকলে ডিফল্ট */}
-            <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-              <span className="text-slate-400">খবরের ছবি</span>
+          {/* ফিচার ইমেজ (যদি থাকে) */}
+          <div className="w-full h-[300px] md:h-[450px] bg-slate-200 rounded-xl mb-10 flex items-center justify-center text-slate-400 overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-slate-100 to-slate-50" />
+            <span className="relative z-10 font-medium">খবরের ছবি (শীঘ্রই আসছে)</span>
+          </div>
+
+          {/* মূল খবর */}
+          <div className="prose prose-lg prose-slate max-w-none text-slate-700 leading-relaxed">
+            {/* প্যারাগ্রাফ আকারে টেক্সট দেখানোর জন্য */}
+            {article.content.split('\n').map((para, index) => (
+              <p key={index} className="mb-4 text-lg">{para}</p>
+            ))}
+          </div>
+
+          {/* ফুটার এরিয়া */}
+          <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-slate-500 font-medium bg-slate-50 px-4 py-2 rounded-lg">
+              সংবাদ সূত্র: <span className="text-slate-800">{article.source}</span>
+            </p>
+            
+            {/* শেয়ার বাটন (ভবিষ্যতে ফাংশনাল করা হবে) */}
+            <div className="flex gap-2">
+              <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg transition font-medium shadow-md shadow-blue-200">
+                <Share2 size={18} /> ফেসবুকে শেয়ার
+              </button>
             </div>
           </div>
 
-          <div className="prose prose-lg text-slate-700 leading-relaxed whitespace-pre-line">
-            {article.content}
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center">
-            <p className="text-sm text-slate-500">
-              উৎস: <span className="font-semibold">{article.source}</span>
-            </p>
-            <button className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition">
-              <Share2 size={18} /> শেয়ার করুন
-            </button>
-          </div>
         </article>
       </main>
     </div>

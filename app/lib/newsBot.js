@@ -10,13 +10,14 @@ const parser = new Parser({
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// AdSense এর জন্য লিমিট: প্রতিবার মাত্র ৩টি খবর পাবলিশ হবে
+// AdSense এর জন্য লিমিট (প্রতি ক্লিকে ৩টি খবর)
 const MAX_NEWS_LIMIT = 3;
 
+// আপনার অ্যাকাউন্টে সাপোর্টেড মডেলের সঠিক তালিকা (Debug থেকে প্রাপ্ত)
 const MODELS = [
-  "gemini-1.5-flash",        
-  "gemini-1.5-flash-latest", 
-  "gemini-pro"               
+  "gemini-2.0-flash",       // এটি আপনার জন্য সেরা এবং ফাস্ট
+  "gemini-2.0-flash-lite",  // লাইটওয়েট ব্যাকআপ
+  "gemini-1.5-flash"        // ফলব্যাক
 ];
 
 async function generateWithGemini(prompt) {
@@ -24,6 +25,7 @@ async function generateWithGemini(prompt) {
 
   for (const modelName of MODELS) {
     try {
+      // URL এ সঠিক মডেলের নাম বসানো হচ্ছে
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
       
       const response = await fetch(url, {
@@ -32,12 +34,15 @@ async function generateWithGemini(prompt) {
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       });
 
-      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Status ${response.status}`);
+      }
 
       const data = await response.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     } catch (error) {
+      console.warn(`⚠️ [${modelName}] কাজ করেনি, পরেরটি দেখছি...`);
       await sleep(1000); 
     }
   }
@@ -54,55 +59,45 @@ const RSS_FEEDS = [
 ];
 
 export async function fetchAndProcessNews() {
-  console.log(`🤖 নিউজ রোবট কাজ শুরু করেছে (লিমিট: ${MAX_NEWS_LIMIT} টি)...`);
+  console.log(`🤖 নিউজ বট কাজ শুরু করেছে (Correct Models)...`);
   let results = [];
-  let publishedCount = 0; // কয়টি খবর পাবলিশ হলো তার হিসাব
+  let publishedCount = 0;
 
-  // সব ফিড চেক করা শুরু
   for (const feedUrl of RSS_FEEDS) {
-    
-    // যদি লিমিট পূর্ণ হয়ে যায়, তবে লুপ ভেঙে বেরিয়ে যাবে
-    if (publishedCount >= MAX_NEWS_LIMIT) {
-      console.log("🛑 লিমিট শেষ! রোবট এখন বিশ্রাম নিচ্ছে।");
-      break; 
-    }
+    if (publishedCount >= MAX_NEWS_LIMIT) break;
 
     try {
       console.log(`📡 ফিড চেক করা হচ্ছে: ${feedUrl}`);
       const feed = await parser.parseURL(feedUrl);
       
       for (const item of feed.items.slice(0, 5)) {
-        
-        // আবার চেক: লুপের ভেতরেও যদি লিমিট পার হয়ে যায়
         if (publishedCount >= MAX_NEWS_LIMIT) break;
 
         const q = query(collection(db, "articles"), where("originalLink", "==", item.link));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
-          // স্কিপ করলে লগ দেখানোর দরকার নেই, কনসোল ক্লিন রাখছি
           continue;
         }
 
-        console.log(`📝 প্রসেসিং (${publishedCount + 1}/${MAX_NEWS_LIMIT}): ${item.title}`);
+        console.log(`📝 প্রসেসিং: ${item.title}`);
 
         const prompt = `
-          Act as a professional Senior Journalist for a Bangladeshi news portal.
-          Task: Rewrite the provided news summary into high-quality, engaging Bangla.
-          
+          You are a professional Bangladeshi Senior Journalist. 
+          Task: Rewrite the following news summary into standard, engaging Bangla.
           Input Title: "${item.title}"
           Input Content: "${item.contentSnippet || item.content || item.title}"
           
-          Guidelines for AdSense Approval:
-          1. **Unique Content:** Do not just translate. Add value, context, and a professional tone.
-          2. **Structure:** Use a catchy headline and a well-structured 3-paragraph body.
-          3. **Neutrality:** Maintain journalistic integrity.
+          Output MUST be valid JSON only. No markdown.
+          Format: {"headline": "...", "body": "...", "category": "..."}
           
-          Output JSON Format (No Markdown):
-          {"headline": "...", "body": "...", "category": "..."}
+          Requirements:
+          1. 'headline': A catchy, click-worthy Bangla headline.
+          2. 'body': A detailed 3-paragraph article in Bangla.
+          3. 'category': Choose one (Politics, Sports, Technology, Bangladesh, International).
         `;
 
-        await sleep(3000); // ৩ সেকেন্ড বিরতি (ন্যাচারাল আচরণের জন্য)
+        await sleep(3000); 
 
         let aiText = await generateWithGemini(prompt);
         let finalData = {};
@@ -111,11 +106,13 @@ export async function fetchAndProcessNews() {
             try {
                aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
                finalData = JSON.parse(aiText);
+               console.log(`✨ AI সফল: ${finalData.headline}`);
             } catch (e) {
+               console.error("JSON Parse Error, using text");
                finalData = { headline: item.title, body: aiText, category: "General" };
             }
         } else {
-            console.log("🔸 AI স্কিপ, অরিজিনাল খবর ব্যাকআপ হিসেবে ব্যবহার হচ্ছে");
+            console.log("🔸 AI ব্যর্থ, অরিজিনাল খবর সেভ হচ্ছে...");
             finalData = {
                headline: item.title,
                body: item.contentSnippet || item.content || "বিস্তারিত লিংকে...",
@@ -135,14 +132,11 @@ export async function fetchAndProcessNews() {
 
         console.log(`✅ প্রকাশিত: ${finalData.headline}`);
         results.push({ id: docRef.id, title: finalData.headline });
-        
-        // কাউন্টার বাড়ানো হলো
         publishedCount++;
       }
     } catch (error) {
       console.error(`❌ ফিড সমস্যা (${feedUrl})`);
     }
   }
-  
   return results;
 }
