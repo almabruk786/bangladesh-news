@@ -1,28 +1,25 @@
-import { db } from '../../../lib/firebase';
+// আপডেট: সঠিক পাথ (২ ঘর পেছনে)
+import { db } from '../../lib/firebase'; 
 import { collection, getDocs, orderBy, limit, query } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  // আপডেট: আপনার কেনা ডোমেইন ব্যবহার করা হচ্ছে (SEO এর জন্য সেরা)
   const baseUrl = 'https://bakalia.xyz'; 
 
-  // লেটেস্ট ২০টি খবর আনছি
   const q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(20));
   const snapshot = await getDocs(q);
 
-  // XML এর শুরুর অংশ
   let rss = `<?xml version="1.0" encoding="UTF-8" ?>
   <rss version="2.0">
     <channel>
       <title>Bangladesh News</title>
       <link>${baseUrl}</link>
-      <description>Automated AI News Portal</description>
+      <description>Latest News from Bangladesh</description>
       <language>bn</language>
   `;
 
-  // প্রতিটি খবর XML এ ঢোকানো হচ্ছে
   snapshot.forEach((doc) => {
     const data = doc.data();
     const link = `${baseUrl}/news/${doc.id}`;
@@ -38,7 +35,6 @@ export async function GET() {
     `;
   });
 
-  // শেষ অংশ
   rss += `
     </channel>
   </rss>`;
