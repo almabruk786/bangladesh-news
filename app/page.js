@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { db } from './lib/firebase'; 
 import { collection, getDocs, orderBy, query, limit } from 'firebase/firestore';
-// আপডেট: 'Clock' আইকনটি এখানে যোগ করা হয়েছে
 import { Loader2, Calendar, Newspaper, ArrowRight, Share2, Clock } from 'lucide-react';
 import Link from 'next/link';
 
