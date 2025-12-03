@@ -8,18 +8,15 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: "Bangladesh News",
   description: "Automated AI News Portal",
-  // আপডেট: গুগল ভেরিফিকেশন কোড এখানে বসানো হয়েছে
+  // আপডেট: আপনার নতুন গুগল ভেরিফিকেশন কোড
   verification: {
-    google: "google7c1cc9d9a077a42e",
+    google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk",
   },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        {/* মেটাডাটা API অটোমেটিক ভেরিফিকেশন ট্যাগ তৈরি করবে */}
-      </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
         <Header />
         <div className="flex-grow">
