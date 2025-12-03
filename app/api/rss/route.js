@@ -1,4 +1,4 @@
-// আপডেট: সঠিক পাথ (২ ঘর পেছনে)
+// আপডেট: সঠিক পাথ (২ ঘর পেছনে) - এটি নিশ্চিত করুন
 import { db } from '../../lib/firebase'; 
 import { collection, getDocs, orderBy, limit, query } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
