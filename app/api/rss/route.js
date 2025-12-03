@@ -1,5 +1,6 @@
-// আপডেট: সঠিক পাথ (২ ঘর পেছনে)
-import { db } from '../../lib/firebase'; 
+// আপডেট: '@/' ব্যবহার করা হয়েছে, যা সরাসরি রুট ফোল্ডার থেকে ফাইল খুঁজে আনবে
+// এতে ফোল্ডার গোনার কোনো ঝামেলা নেই
+import { db } from '@/app/lib/firebase'; 
 import { collection, getDocs, orderBy, limit, query } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
 
