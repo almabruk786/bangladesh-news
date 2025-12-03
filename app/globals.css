@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* তুমি চাইলে নিজের কাস্টম CSS নিচে লিখতে পারো */
+body {
+  background-color: #f8fafc; /* slate-50 */
+}
