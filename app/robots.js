@@ -3,8 +3,8 @@ export default function robots() {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/admin/', // এডমিন প্যানেল গুগলে দেখাবে না
+      disallow: ['/admin/', '/api/'], // এডমিন এবং এপিআই গুগল থেকে লুকিয়ে রাখা হলো
     },
-    sitemap: 'https://bakalia.xyz/sitemap.xml', // এখানে সাইটম্যাপের লিংক দেখিয়ে দিলাম
+    sitemap: 'https://bakalia.xyz/sitemap.xml', // সাইটম্যাপের লিংক
   }
 }
