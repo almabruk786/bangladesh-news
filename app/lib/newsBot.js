@@ -2,28 +2,21 @@ import Parser from 'rss-parser';
 import { db } from './firebase'; 
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 
-// ১. কাস্টম ফিল্ড যোগ করছি যাতে লুকানো ছবিগুলোও খুঁজে পায়
 const parser = new Parser({
-  customFields: {
-    item: [
-      ['media:content', 'mediaContent'],
-      ['media:thumbnail', 'mediaThumbnail'],
-      ['enclosure', 'enclosure'],
-      ['content:encoded', 'contentEncoded'], // অনেক সাইট এখানে ছবি রাখে
-    ],
-  },
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
   }
 });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const MAX_NEWS_LIMIT = 3; // প্রতি ক্লিকে ৩টি খবর
+const MAX_NEWS_LIMIT = 3; 
 
-// ডিফল্ট ছবি (যদি কোনোভাবেই ছবি না পাওয়া যায়)
-const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=1000&auto=format&fit=crop";
-
-const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"];
+// মডেল তালিকা
+const MODELS = [
+  "gemini-2.0-flash",       
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash"
+];
 
 async function generateWithGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -55,7 +48,7 @@ const RSS_FEEDS = [
 ];
 
 export async function fetchAndProcessNews() {
-  console.log(`🤖 নিউজ রোবট (with Original Images) কাজ শুরু করেছে...`);
+  console.log(`🤖 নিউজ রোবট কাজ শুরু করেছে...`);
   let results = [];
   let publishedCount = 0;
 
@@ -73,42 +66,17 @@ export async function fetchAndProcessNews() {
 
         if (!querySnapshot.empty) continue;
 
-        console.log(`📝 প্রসেসিং: ${item.title}`);
+        // ছবি খোঁজার লজিক
+        let imageUrl = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1000";
+        if (item.enclosure?.url) imageUrl = item.enclosure.url;
+        else if (item.mediaContent?.$?.url) imageUrl = item.mediaContent.$.url;
+        else if (item.content?.match(/src="([^"]+)"/)) imageUrl = item.content.match(/src="([^"]+)"/)[1];
 
-        // 🔥 ছবি খোঁজার লজিক (৪টি স্তরে চেক করা হবে) 🔥
-        let imageUrl = DEFAULT_IMAGE;
-        
-        // ধাপ ১: এনক্লোজার (সবচেয়ে কমন)
-        if (item.enclosure && item.enclosure.url) {
-            imageUrl = item.enclosure.url;
-        } 
-        // ধাপ ২: মিডিয়া কন্টেন্ট (BBC তে থাকে)
-        else if (item.mediaContent && item.mediaContent.$ && item.mediaContent.$.url) {
-            imageUrl = item.mediaContent.$.url;
-        }
-        // ধাপ ৩: থাম্বনেইল
-        else if (item.mediaThumbnail && item.mediaThumbnail.$ && item.mediaThumbnail.$.url) {
-            imageUrl = item.mediaThumbnail.$.url;
-        }
-        // ধাপ ৪: কন্টেন্টের ভেতর থেকে ইমেজ খুঁজে বের করা (Regex দিয়ে)
-        // এটি প্রথম আলো বা জাগো নিউজের জন্য খুবই কার্যকর
-        else {
-            const htmlContent = item['content:encoded'] || item.content || item.description || "";
-            const imgMatch = htmlContent.match(/src="([^"]+)"/);
-            if (imgMatch && imgMatch[1]) {
-                imageUrl = imgMatch[1];
-            }
-        }
-
-        // AI এর জন্য প্রম্পট
         const prompt = `
-          Act as a professional Senior Journalist.
-          Rewrite this news into standard Bangla.
-          Original Title: "${item.title}"
-          Original Content: "${item.contentSnippet || item.content || item.title}"
-          
-          Output Valid JSON Only:
-          {"headline": "...", "body": "...", "category": "..."}
+          Act as a Senior Journalist. Rewrite into Bangla.
+          Title: "${item.title}"
+          Content: "${item.contentSnippet || item.content}"
+          Output JSON: {"headline": "...", "body": "...", "category": "..."}
         `;
 
         await sleep(3000); 
@@ -124,24 +92,25 @@ export async function fetchAndProcessNews() {
                finalData = { headline: item.title, body: aiText, category: "General" };
             }
         } else {
-            console.log("🔸 AI স্কিপ, ব্যাকআপ মোড...");
             finalData = {
                headline: item.title,
-               body: item.contentSnippet || item.content || "বিস্তারিত লিংকে...",
+               body: item.contentSnippet || "বিস্তারিত লিংকে...",
                category: "Auto-Imported"
             };
         }
 
-        // ডাটাবেসে সেভ (ছবির লিংক সহ)
+        // ডাটাবেসে সেভ (আপডেট: লেখকের নাম যোগ করা হলো)
         const docRef = await addDoc(collection(db, "articles"), {
           title: finalData.headline || item.title,
           content: finalData.body || "বিস্তারিত জানা যায়নি।",
           category: finalData.category || "General",
-          imageUrl: imageUrl, // ✅ আসল ছবির লিংক সেভ হলো
+          imageUrl: imageUrl,
           originalLink: item.link,
           source: feed.title || "Unknown Source",
           publishedAt: new Date().toISOString(),
-          status: "published"
+          status: "published",
+          authorName: "Admin", // 🔥 এখানে লেখকের নাম Admin দেওয়া হলো
+          authorRole: "admin"
         });
 
         console.log(`✅ প্রকাশিত: ${finalData.headline}`);
@@ -149,7 +118,7 @@ export async function fetchAndProcessNews() {
         publishedCount++;
       }
     } catch (error) {
-      console.error(`❌ ফিড সমস্যা (${feedUrl}): ${error.message}`);
+      console.error(`❌ ফিড সমস্যা`);
     }
   }
   return results;

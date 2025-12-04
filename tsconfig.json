@@ -30,6 +30,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/layout.js", "next.config.js"  ],
+, "app/layout.js", "next.config.js", "app/sitemap.js"  ],
   "exclude": ["node_modules"]
 }
