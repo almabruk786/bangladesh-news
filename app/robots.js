@@ -1,10 +1,17 @@
 export default function robots() {
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/admin/', '/api/'], // এডমিন এবং এপিআই গুগল থেকে লুকিয়ে রাখা হলো
-    },
-    sitemap: 'https://bakalia.xyz/sitemap.xml', // সাইটম্যাপের লিংক
+    rules: [
+      {
+        userAgent: 'Googlebot', // গুগল রোবটের জন্য স্পেশাল নিয়ম
+        allow: '/',
+        disallow: ['/admin/', '/api/'],
+      },
+      {
+        userAgent: '*', // বাকি সবার জন্য নিয়ম
+        allow: '/',
+        disallow: ['/admin/', '/api/'],
+      },
+    ],
+    sitemap: 'https://bakalia.xyz/sitemap.xml',
   }
 }
