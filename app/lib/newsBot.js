@@ -3,20 +3,14 @@ import { db } from './firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 
 const parser = new Parser({
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-  }
+  headers: { 'User-Agent': 'Mozilla/5.0' }
 });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const MAX_NEWS_LIMIT = 3; 
 
 // মডেল তালিকা
-const MODELS = [
-  "gemini-2.0-flash",       
-  "gemini-2.0-flash-lite",
-  "gemini-1.5-flash"
-];
+const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
 
 async function generateWithGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -31,9 +25,7 @@ async function generateWithGemini(prompt) {
       if (!response.ok) throw new Error(`Status ${response.status}`);
       const data = await response.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text;
-    } catch (error) {
-      await sleep(1000); 
-    }
+    } catch (error) { await sleep(1000); }
   }
   return null; 
 }
@@ -99,18 +91,20 @@ export async function fetchAndProcessNews() {
             };
         }
 
-        // ডাটাবেসে সেভ (আপডেট: লেখকের নাম যোগ করা হলো)
+        // ডাটাবেসে সেভ (আপডেট: লেখকের নাম News Desk)
         const docRef = await addDoc(collection(db, "articles"), {
           title: finalData.headline || item.title,
           content: finalData.body || "বিস্তারিত জানা যায়নি।",
           category: finalData.category || "General",
-          imageUrl: imageUrl,
+          imageUrl: imageUrl, 
+          imageUrls: [imageUrl], // মাল্টিপল ইমেজের জন্য অ্যারে
           originalLink: item.link,
           source: feed.title || "Unknown Source",
           publishedAt: new Date().toISOString(),
           status: "published",
-          authorName: "Admin", // 🔥 এখানে লেখকের নাম Admin দেওয়া হলো
-          authorRole: "admin"
+          authorName: "News Desk", // 🔥 AI = News Desk
+          authorRole: "ai",
+          isPinned: false 
         });
 
         console.log(`✅ প্রকাশিত: ${finalData.headline}`);

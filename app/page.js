@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { db } from './lib/firebase'; 
-import { collection, getDocs, orderBy, query, limit } from 'firebase/firestore';
-import { Loader2, Calendar, Newspaper, ArrowRight, TrendingUp, Clock } from 'lucide-react';
+import { collection, getDocs, orderBy, query, limit, where, doc, getDoc } from 'firebase/firestore';
+import { Loader2, Calendar, TrendingUp, X, Pin } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
@@ -12,12 +12,25 @@ export default function Home() {
   useEffect(() => {
     async function fetchNews() {
       try {
-        const q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(20));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setNews(data);
-      } catch (error) {
-        console.error("Error:", error);
+        const articlesRef = collection(db, "articles");
+
+        // ১. পিন করা খবরগুলো আগে আনছি
+        const pinnedQuery = query(articlesRef, where("status", "==", "published"), where("isPinned", "==", true), limit(5));
+        const pinnedSnap = await getDocs(pinnedQuery);
+        const pinnedNews = pinnedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // ২. সব লেটেস্ট খবর আনছি
+        const latestQuery = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(30));
+        const latestSnap = await getDocs(latestQuery);
+        let latestNews = latestSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // ৩. ডুপ্লিকেট বাদ দিয়ে মার্জ করা (পিন করা খবর সবার উপরে)
+        const pinnedIds = new Set(pinnedNews.map(n => n.id));
+        const finalNews = [...pinnedNews, ...latestNews.filter(n => !pinnedIds.has(n.id))];
+
+        setNews(finalNews);
+      } catch (e) {
+        console.error("Fetch error:", e);
       } finally {
         setLoading(false);
       }
@@ -25,16 +38,18 @@ export default function Home() {
     fetchNews();
   }, []);
 
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-red-600" size={40}/></div>;
-  }
+  if (loading) return <div className="flex h-screen justify-center items-center"><Loader2 className="animate-spin text-red-600"/></div>;
 
-  const heroNews = news[0];
-  const sideNews = news.slice(1, 5);
-  const gridNews = news.slice(5);
+  // লেআউট ভাগ করা
+  const heroNews = news[0]; // ১টি বড় খবর (স্থির)
+  const leftNews = news.slice(1, 6); // বাম পাশের ৫টি
+  const rightNews = news.slice(6, 12); // ডান পাশের ৬টি
+  const bottomGrid = news.slice(12); // নিচের গ্রিড
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-white font-sans text-slate-900 relative">
+      <AdPopup />
+
       <main className="max-w-7xl mx-auto px-4 py-6">
         
         {/* ব্রেকিং নিউজ */}
@@ -45,98 +60,109 @@ export default function Home() {
           </marquee>
         </div>
 
-        {/* হিরো সেকশন */}
-        {heroNews && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <div className="lg:col-span-2 group cursor-pointer">
-              <Link href={`/news/${heroNews.id}`}>
-                <div className="relative h-[400px] w-full rounded-2xl overflow-hidden shadow-md">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"/>
-                  
-                  {/* হিরো ইমেজ */}
-                  <img 
-                    src={heroNews.imageUrl || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1000"} 
-                    alt={heroNews.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  
-                  <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
-                    <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded mb-3 inline-block">
-                      {heroNews.category || "Lead News"}
-                    </span>
-                    <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-2 hover:underline">
-                      {heroNews.title}
-                    </h1>
-                  </div>
-                </div>
+        {/* টপ সেকশন */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 border-b pb-8 mb-8">
+          
+          {/* বাম কলাম */}
+          <div className="lg:col-span-1 space-y-4 border-r pr-4">
+            <h3 className="font-bold text-red-600 uppercase text-sm border-b border-red-600 pb-1 mb-3">সর্বশেষ</h3>
+            {leftNews.map(item => (
+              <Link href={`/news/${item.id}`} key={item.id} className="block group border-b border-slate-100 pb-2 last:border-0">
+                <h4 className="font-semibold text-sm group-hover:text-red-600 leading-snug mb-1">{item.title}</h4>
+                <p className="text-xs text-slate-400">{new Date(item.publishedAt).toLocaleTimeString('bn-BD', {hour:'2-digit', minute:'2-digit'})}</p>
               </Link>
-            </div>
-
-            {/* সাইড নিউজ */}
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-              <h3 className="text-lg font-bold text-slate-800 border-b pb-2 mb-4 flex items-center">
-                <TrendingUp size={20} className="mr-2 text-red-600" /> শীর্ষ সংবাদ
-              </h3>
-              <div className="space-y-5">
-                {sideNews.map((item) => (
-                  <Link href={`/news/${item.id}`} key={item.id} className="flex gap-3 group">
-                    <div className="h-20 w-24 rounded-lg shrink-0 overflow-hidden bg-slate-200">
-                       <img 
-                         src={item.imageUrl || "https://via.placeholder.com/150"} 
-                         alt={item.title}
-                         className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                       />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-slate-800 text-sm leading-snug group-hover:text-red-600 line-clamp-2 transition">
-                        {item.title}
-                      </h4>
-                      <span className="text-xs text-slate-400 mt-1 flex items-center">
-                        <Clock size={10} className="mr-1"/> 
-                        {new Date(item.publishedAt).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit'})}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-        )}
 
-        {/* গ্রিড নিউজ */}
-        <h2 className="text-2xl font-bold text-slate-800 mb-6 border-l-4 border-slate-800 pl-3">সর্বশেষ খবর</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {gridNews.map((item) => (
-            <Link href={`/news/${item.id}`} key={item.id} className="group h-full">
-              <article className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
-                <div className="h-48 bg-slate-200 w-full relative overflow-hidden">
-                   <img 
-                     src={item.imageUrl || "https://via.placeholder.com/400x200"} 
-                     alt={item.title}
-                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                   />
-                   <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-xs font-bold px-2 py-1 rounded text-slate-800">
-                     {item.source ? item.source.split(' ')[0] : 'Desk'}
-                   </div>
+          {/* মাঝখানের কলাম (হট নিউজ - স্থির/Static) */}
+          <div className="lg:col-span-2 px-2">
+            {heroNews ? (
+              <Link href={`/news/${heroNews.id}`} className="group block">
+                <div className="relative overflow-hidden mb-4 rounded-lg shadow-sm border border-slate-200">
+                  <img 
+                    src={heroNews.imageUrl || (heroNews.imageUrls && heroNews.imageUrls[0]) || "https://via.placeholder.com/800x400"} 
+                    alt={heroNews.title} 
+                    className="w-full h-auto object-cover group-hover:scale-105 transition duration-500" 
+                  />
+                  {/* পিন আইকন */}
+                  {heroNews.isPinned && (
+                    <div className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full shadow-md z-20">
+                      <Pin size={16} fill="white" />
+                    </div>
+                  )}
                 </div>
-                
-                <div className="p-5 flex-1 flex flex-col">
-                  <h2 className="text-xl font-bold mb-3 text-slate-900 group-hover:text-red-600 leading-snug line-clamp-2">
-                    {item.title}
-                  </h2>
-                  <div className="flex items-center justify-between text-xs text-slate-400 mt-auto pt-4 border-t border-slate-50">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={12} /> {new Date(item.publishedAt).toLocaleDateString('bn-BD')}
-                    </span>
-                  </div>
-                </div>
-              </article>
+                <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 group-hover:text-red-600">
+                  {heroNews.title}
+                </h1>
+                <p className="text-base text-slate-600 line-clamp-3">
+                  {heroNews.content ? heroNews.content.substring(0, 200) : ""}...
+                </p>
+              </Link>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-slate-400 bg-slate-50 rounded">কোনো খবর নেই</div>
+            )}
+          </div>
+
+          {/* ডান কলাম */}
+          <div className="lg:col-span-1 border-l pl-4 space-y-6">
+             <h3 className="font-bold text-blue-600 uppercase text-sm border-b border-blue-600 pb-1 mb-3">জনপ্রিয়</h3>
+             {rightNews.map(item => (
+               <Link href={`/news/${item.id}`} key={item.id} className="flex gap-3 group">
+                 <div className="w-20 h-16 bg-slate-200 shrink-0 overflow-hidden rounded">
+                   <img src={item.imageUrl || (item.imageUrls && item.imageUrls[0])} className="w-full h-full object-cover group-hover:scale-110 transition"/>
+                 </div>
+                 <h4 className="text-sm font-medium leading-snug group-hover:text-blue-600 line-clamp-3">
+                   {item.title}
+                 </h4>
+               </Link>
+             ))}
+          </div>
+        </div>
+
+        {/* নিচের গ্রিড */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {bottomGrid.map(item => (
+            <Link href={`/news/${item.id}`} key={item.id} className="group h-full flex flex-col">
+              <div className="aspect-video bg-slate-100 overflow-hidden mb-2 rounded">
+                <img src={item.imageUrl || (item.imageUrls && item.imageUrls[0])} className="w-full h-full object-cover group-hover:scale-105 transition"/>
+              </div>
+              <h3 className="font-bold text-base leading-snug group-hover:text-red-600 line-clamp-2">
+                {item.title}
+              </h3>
+              <div className="mt-auto pt-2 text-xs text-slate-400">
+                <Calendar size={12} className="inline mr-1"/>
+                {new Date(item.publishedAt).toLocaleDateString('bn-BD')}
+              </div>
             </Link>
           ))}
         </div>
 
       </main>
+    </div>
+  );
+}
+
+function AdPopup() {
+  const [ad, setAd] = useState(null);
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      getDoc(doc(db, "ads", "popup")).then(snap => {
+        if(snap.exists() && snap.data().isActive) { setAd(snap.data()); setShow(true); }
+      });
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+  if (!show || !ad) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShow(false)}>
+      <div className="relative bg-white p-2 rounded-xl shadow-2xl max-w-lg w-full" onClick={e => e.stopPropagation()}>
+        <button onClick={() => setShow(false)} className="absolute -top-3 -right-3 bg-red-600 text-white rounded-full p-1.5 shadow-md hover:bg-red-700 z-10"><X size={20} /></button>
+        <a href={ad.link} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-lg">
+          <img src={ad.imageUrl} alt="Advertisement" className="w-full h-auto max-h-[80vh] object-contain" />
+        </a>
+        <p className="text-center text-[10px] text-slate-400 mt-2 uppercase tracking-widest">Advertisement</p>
+      </div>
     </div>
   );
 }
