@@ -22,11 +22,28 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
         });
     }, []);
 
+    // Helper to clean malformed AI content
+    const cleanContent = (content) => {
+        if (!content) return "";
+        if (content.includes("JSON ফরম্যাটে") || content.includes("Output JSON")) {
+            try {
+                const firstOpen = content.indexOf('{');
+                const lastClose = content.lastIndexOf('}');
+                if (firstOpen !== -1 && lastClose !== -1) {
+                    const jsonStr = content.substring(firstOpen, lastClose + 1);
+                    const parsed = JSON.parse(jsonStr);
+                    return parsed.body || content;
+                }
+            } catch (e) { }
+        }
+        return content;
+    };
+
     useEffect(() => {
         if (existingData) {
             setForm({
                 title: existingData.title,
-                content: existingData.content,
+                content: cleanContent(existingData.content),
                 imageUrls: existingData.imageUrls || (existingData.imageUrl ? [existingData.imageUrl] : []),
                 category: existingData.category || "National",
                 scheduledAt: existingData.scheduledAt || ""

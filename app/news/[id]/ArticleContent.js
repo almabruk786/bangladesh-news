@@ -50,9 +50,27 @@ export default function ArticleContent({ article, relatedNews }) {
                             <NewsSlider images={imageList} title={article.title} />
 
                             <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed text-justify text-base md:text-lg">
-                                {article.content.split('\n').map((para, index) => (
-                                    <p key={index} className="mb-4">{para}</p>
-                                ))}
+                                {(() => {
+                                    let contentToDisplay = article.content;
+                                    // Attempt to fix malformed AI content on the fly
+                                    if (article.content && (article.content.includes("JSON ফরম্যাটে") || article.content.includes("Output JSON"))) {
+                                        try {
+                                            const firstOpen = article.content.indexOf('{');
+                                            const lastClose = article.content.lastIndexOf('}');
+                                            if (firstOpen !== -1 && lastClose !== -1) {
+                                                const jsonStr = article.content.substring(firstOpen, lastClose + 1);
+                                                const parsed = JSON.parse(jsonStr);
+                                                if (parsed.body) contentToDisplay = parsed.body;
+                                            }
+                                        } catch (e) {
+                                            // Failed to parse, show original
+                                        }
+                                    }
+
+                                    return contentToDisplay.split('\n').map((para, index) => (
+                                        <p key={index} className="mb-4">{para}</p>
+                                    ));
+                                })()}
                             </div>
 
                             <div className="mt-10 pt-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">

@@ -1,5 +1,5 @@
 import Parser from 'rss-parser';
-import { db } from './firebase'; 
+import { db } from './firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 
 const parser = new Parser({
@@ -7,7 +7,7 @@ const parser = new Parser({
 });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const MAX_NEWS_LIMIT = 3; 
+const MAX_NEWS_LIMIT = 3;
 
 // মডেল তালিকা
 const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
@@ -27,16 +27,16 @@ async function generateWithGemini(prompt) {
       return data.candidates?.[0]?.content?.parts?.[0]?.text;
     } catch (error) { await sleep(1000); }
   }
-  return null; 
+  return null;
 }
 
 const RSS_FEEDS = [
-  "https://feeds.bbci.co.uk/bengali/rss.xml",           
-  "https://www.prothomalo.com/feed/",                   
-  "https://www.dhakapost.com/rss/rss.xml",              
-  "https://www.jagonews24.com/rss/rss.xml",             
-  "https://www.jugantor.com/feed/rss.xml",              
-  "https://www.thedailystar.net/frontpage/rss.xml"      
+  "https://feeds.bbci.co.uk/bengali/rss.xml",
+  "https://www.prothomalo.com/feed/",
+  "https://www.dhakapost.com/rss/rss.xml",
+  "https://www.jagonews24.com/rss/rss.xml",
+  "https://www.jugantor.com/feed/rss.xml",
+  "https://www.thedailystar.net/frontpage/rss.xml"
 ];
 
 export async function fetchAndProcessNews() {
@@ -49,7 +49,7 @@ export async function fetchAndProcessNews() {
 
     try {
       const feed = await parser.parseURL(feedUrl);
-      
+
       for (const item of feed.items.slice(0, 5)) {
         if (publishedCount >= MAX_NEWS_LIMIT) break;
 
@@ -68,27 +68,44 @@ export async function fetchAndProcessNews() {
           Act as a Senior Journalist. Rewrite into Bangla.
           Title: "${item.title}"
           Content: "${item.contentSnippet || item.content}"
-          Output JSON: {"headline": "...", "body": "...", "category": "..."}
+          IMPORTANT: Return ONLY valid JSON. No conversational text.
+          Format: {"headline": "...", "body": "...", "category": "..."}
         `;
 
-        await sleep(3000); 
+        await sleep(3000);
 
         let aiText = await generateWithGemini(prompt);
         let finalData = {};
 
         if (aiText) {
             try {
-               aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
-               finalData = JSON.parse(aiText);
+               // Clean up markdown code blocks
+               let cleanText = aiText.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+               
+               // Extract JSON object if there's extra text
+               const firstOpen = cleanText.indexOf('{');
+               const lastClose = cleanText.lastIndexOf('}');
+               
+               if (firstOpen !== -1 && lastClose !== -1) {
+                   cleanText = cleanText.substring(firstOpen, lastClose + 1);
+               }
+
+               finalData = JSON.parse(cleanText);
             } catch (e) {
-               finalData = { headline: item.title, body: aiText, category: "General" };
+               console.error("JSON Parse Error:", e);
+               // Fallback but try to avoid saving raw AI debug text
+               finalData = { 
+                   headline: item.title, 
+                   body: item.contentSnippet || item.content || "বিস্তারিত লিংকে...", 
+                   category: "General" 
+               };
             }
         } else {
-            finalData = {
-               headline: item.title,
-               body: item.contentSnippet || "বিস্তারিত লিংকে...",
-               category: "Auto-Imported"
-            };
+          finalData = {
+            headline: item.title,
+            body: item.contentSnippet || "বিস্তারিত লিংকে...",
+            category: "Auto-Imported"
+          };
         }
 
         // ডাটাবেসে সেভ (আপডেট: লেখকের নাম News Desk)
@@ -96,7 +113,7 @@ export async function fetchAndProcessNews() {
           title: finalData.headline || item.title,
           content: finalData.body || "বিস্তারিত জানা যায়নি।",
           category: finalData.category || "General",
-          imageUrl: imageUrl, 
+          imageUrl: imageUrl,
           imageUrls: [imageUrl], // মাল্টিপল ইমেজের জন্য অ্যারে
           originalLink: item.link,
           source: feed.title || "Unknown Source",
@@ -104,7 +121,7 @@ export async function fetchAndProcessNews() {
           status: "published",
           authorName: "News Desk", // 🔥 AI = News Desk
           authorRole: "ai",
-          isPinned: false 
+          isPinned: false
         });
 
         console.log(`✅ প্রকাশিত: ${finalData.headline}`);
