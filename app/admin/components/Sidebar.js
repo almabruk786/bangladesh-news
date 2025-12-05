@@ -1,5 +1,5 @@
 import {
-    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags
+    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail
 } from "lucide-react";
 
 export default function Sidebar({ user, activeTab, setActiveTab, logout }) {
@@ -10,6 +10,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout }) {
 
         // Admin Only
         { id: "pending", label: "Inbox (Pending)", icon: FileText, role: "admin" },
+        { id: "messages", label: "Messages", icon: Mail, role: "admin" },
         { id: "manage", label: "All News", icon: LayoutDashboard, role: "admin" },
         { id: "category", label: "Categories", icon: Tags, role: "admin" },
         { id: "users", label: "Team", icon: Users, role: "admin" },
@@ -42,8 +43,8 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout }) {
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
                             className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 font-medium text-sm group ${isActive
-                                    ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20 translate-x-1"
-                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1"
+                                ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20 translate-x-1"
+                                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1"
                                 }`}
                         >
                             <item.icon size={20} className={isActive ? "text-red-400" : "text-slate-400 group-hover:text-red-500"} />

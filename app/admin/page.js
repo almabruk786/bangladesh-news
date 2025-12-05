@@ -13,6 +13,7 @@ import CategoryManager from "./components/CategoryManager";
 import AdManager from "./components/AdManager";
 import UserManager from "./components/UserManager";
 import AutoBot from "./components/AutoBot";
+import MessageViewer from "./components/MessageViewer";
 
 const MASTER_PASSWORD = "Arif@42480";
 
@@ -24,6 +25,7 @@ export default function AdminDashboard() {
 
   // Data States
   const [articles, setArticles] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [stats, setStats] = useState({ total: 0, published: 0, pending: 0 });
 
   // Editor State
@@ -59,7 +61,7 @@ export default function AdminDashboard() {
       // Fetch specific table data
       // For Admin "Manage" -> Fetch all
       if (activeTab === "manage" && user.role === "admin") {
-        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(100));
+        q = query(collection(db, "articles"), orderBy("isPinned", "desc"), orderBy("publishedAt", "desc"), limit(100));
       }
       // For Admin "Pending" -> Fetch pending
       else if (activeTab === "pending" && user.role === "admin") {
@@ -68,6 +70,13 @@ export default function AdminDashboard() {
       // For Publisher "My News"
       else if (activeTab === "my_news" && user.role === "publisher") {
         q = query(collection(db, "articles"), where("authorName", "==", user.name), orderBy("publishedAt", "desc"));
+      }
+      // For Admin "Messages"
+      else if (activeTab === "messages" && user.role === "admin") {
+        const msgQ = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+        const msgSnap = await getDocs(msgQ);
+        setMessages(msgSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        return; // Exit early as we handled messages separately
       }
 
       if (q) {
@@ -137,6 +146,8 @@ export default function AdminDashboard() {
         return <UserManager />;
       case "auto":
         return <AutoBot masterKey={MASTER_PASSWORD} />;
+      case "messages":
+        return <MessageViewer messages={messages} refreshData={fetchData} />;
       default:
         return <DashboardStats stats={stats} />;
     }
