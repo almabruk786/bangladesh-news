@@ -2,12 +2,12 @@ export default function robots() {
   return {
     rules: [
       {
-        userAgent: 'Googlebot', // গুগল রোবটের জন্য স্পেশাল নিয়ম
+        userAgent: 'Googlebot',
         allow: '/',
         disallow: ['/admin/', '/api/'],
       },
       {
-        userAgent: '*', // বাকি সবার জন্য নিয়ম
+        userAgent: '*',
         allow: '/',
         disallow: ['/admin/', '/api/'],
       },
