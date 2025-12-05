@@ -41,7 +41,7 @@ export default function Contact() {
               <div>
                 <h3 className="font-bold text-lg text-slate-800">ইমেইল</h3>
                 <p className="text-slate-500 text-sm mb-1">যেকোনো তথ্যের জন্য মেইল করুন</p>
-                <a href="mailto:contact@bangladeshnews.com" className="text-blue-600 font-semibold hover:underline">contact@bangladeshnews.com</a>
+                <a href="mailto:contact@bangladeshnews.com" className="text-blue-600 font-semibold hover:underline">admin@bakalia.xyz</a>
               </div>
             </div>
 
@@ -52,7 +52,7 @@ export default function Contact() {
               <div>
                 <h3 className="font-bold text-lg text-slate-800">ফোন</h3>
                 <p className="text-slate-500 text-sm mb-1">সকাল ১০টা থেকে সন্ধ্যা ৬টা</p>
-                <p className="text-slate-800 font-semibold">+880 1234 567890</p>
+                <p className="text-slate-800 font-semibold">+880 1622331199</p>
               </div>
             </div>
 
