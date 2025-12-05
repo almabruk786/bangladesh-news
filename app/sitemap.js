@@ -1,15 +1,30 @@
-export default function sitemap() {
-  const baseUrl = 'https://bakalia.xyz';
+import { db } from './lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
-  return [
-    // ১. হোমপেজ
+export default async function sitemap() {
+  const baseUrl = 'https://bakalia.xyz'; // আপনার ডোমেইন
+
+  // ফায়ারবেজ থেকে সব আর্টিকেল আনা
+  let newsUrls = [];
+  try {
+    const querySnapshot = await getDocs(collection(db, "articles"));
+    newsUrls = querySnapshot.docs.map(doc => ({
+      url: `${baseUrl}/news/${doc.id}`,
+      lastModified: new Date(doc.data().publishedAt || new Date()),
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    }));
+  } catch (error) {
+    console.error("Sitemap generation error:", error);
+  }
+
+  const staticUrls = [
     {
       url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'always',
       priority: 1,
     },
-    // ২. লিগ্যাল পেজ
     {
       url: `${baseUrl}/about`,
       lastModified: new Date(),
@@ -28,7 +43,7 @@ export default function sitemap() {
       changeFrequency: 'yearly',
       priority: 0.5,
     },
-    // ৩. ক্যাটাগরি পেজ (উদাহরণ)
+    // ক্যাটাগরি পেজগুলো (স্ট্যাটিক রাখা ভালো বা ডায়নামিক করা যেতে পারে)
     {
       url: `${baseUrl}/?category=politics`,
       lastModified: new Date(),
@@ -47,24 +62,7 @@ export default function sitemap() {
       changeFrequency: 'daily',
       priority: 0.7,
     },
-    // ৪. স্যাম্পল নিউজ (গুগলকে বোঝানোর জন্য যে স্ট্রাকচার ঠিক আছে)
-    {
-      url: `${baseUrl}/news/sample-news-1`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/news/sample-news-2`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/news/sample-news-3`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
   ];
+
+  return [...staticUrls, ...newsUrls];
 }

@@ -1,142 +1,141 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { db } from './lib/firebase'; 
+import { db } from './lib/firebase';
 import { collection, getDocs, orderBy, query, limit, where, doc, getDoc } from 'firebase/firestore';
-import { Loader2, Calendar, TrendingUp, X, Pin } from 'lucide-react';
-import Link from 'next/link';
+import { Loader2, X } from 'lucide-react';
+
+// Modern Components
+import BreakingTicker from './components/home/BreakingTicker';
+import HeroSection from './components/home/HeroSection';
+import CategoryBlock from './components/home/CategoryBlock';
+import LatestSidebar from './components/home/LatestSidebar';
 
 export default function Home() {
-  const [news, setNews] = useState([]);
+  const [data, setData] = useState({
+    heroNews: null,
+    latestNews: [],
+    politicsNews: [],
+    sportsNews: [],
+    allNews: [],
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchNews() {
       try {
         const articlesRef = collection(db, "articles");
-        const pinnedQuery = query(articlesRef, where("status", "==", "published"), where("isPinned", "==", true), limit(5));
-        const pinnedSnap = await getDocs(pinnedQuery);
-        const pinnedNews = pinnedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        const latestQuery = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(30));
-        const latestSnap = await getDocs(latestQuery);
-        let latestNews = latestSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // 1. Fetch Latest & Pinned for Hero
+        const qLatest = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(40));
+        const snapLatest = await getDocs(qLatest);
+        const allDocs = snapLatest.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        const pinnedIds = new Set(pinnedNews.map(n => n.id));
-        const finalNews = [...pinnedNews, ...latestNews.filter(n => !pinnedIds.has(n.id))];
-        setNews(finalNews);
+        // Categorize Data
+        const pinned = allDocs.filter(n => n.isPinned);
+        const hero = pinned.length > 0 ? pinned[0] : allDocs[0];
+        const others = allDocs.filter(n => n.id !== hero?.id);
+
+        setData({
+          heroNews: hero,
+          latestNews: others.slice(0, 10), // Sidebar
+          politicsNews: others.filter(n => n.category === "Politics" || n.category === "রাজনীতি").slice(0, 5),
+          sportsNews: others.filter(n => n.category === "Sports" || n.category === "খেলাধুলা").slice(0, 5),
+          allNews: others,
+        });
+
       } catch (e) { console.error(e); } finally { setLoading(false); }
     }
     fetchNews();
   }, []);
 
-  if (loading) return <div className="flex h-screen justify-center items-center"><Loader2 className="animate-spin text-red-600"/></div>;
-
-  const heroNews = news[0]; 
-  const leftNews = news.slice(1, 6); 
-  const rightNews = news.slice(6, 12); 
-  const bottomGrid = news.slice(12); 
+  if (loading) return (
+    <div className="flex flex-col h-screen justify-center items-center bg-white">
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-slate-200 border-t-red-600 rounded-full animate-spin"></div>
+        <div className="absolute inset-0 flex items-center justify-center font-bold text-xs text-slate-400">NEWS</div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 relative">
+    <div className="min-h-screen bg-white">
       <AdPopup />
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        
-        <div className="mb-8 flex items-center bg-white border-l-4 border-red-600 shadow-sm rounded-r-lg overflow-hidden">
-          <div className="bg-red-600 text-white px-4 py-2 text-sm font-bold animate-pulse">ব্রেকিং</div>
-          <marquee className="text-slate-700 text-sm font-medium py-2" behavior="scroll" direction="left">
-            {news.map(n => `🔴 ${n.title}   `).join("   ")}
-          </marquee>
-        </div>
+      {/* 1. Breaking Ticker */}
+      <BreakingTicker news={data.latestNews.slice(0, 5)} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 border-b pb-8 mb-8">
-          
-          <div className="lg:col-span-1 space-y-4 border-r pr-4">
-            <h3 className="font-bold text-red-600 uppercase text-sm border-b border-red-600 pb-1 mb-3">সর্বশেষ</h3>
-            {leftNews.map(item => (
-              <Link href={`/news/${item.id}`} key={item.id} className="block group border-b border-slate-100 pb-2 last:border-0">
-                <h4 className="font-semibold text-sm group-hover:text-red-600 leading-snug mb-1">{item.title}</h4>
-                <p className="text-xs text-slate-400">{new Date(item.publishedAt).toLocaleTimeString('bn-BD', {hour:'2-digit', minute:'2-digit'})}</p>
-              </Link>
-            ))}
-          </div>
+      <main className="container-custom py-8">
+        {/* 2. Hero Section */}
+        <HeroSection heroNews={data.heroNews} sideNews={data.latestNews.slice(0, 4)} />
 
-          <div className="lg:col-span-2 px-2">
-            {heroNews ? (
-              <Link href={`/news/${heroNews.id}`} className="group block">
-                <div className="relative overflow-hidden mb-4 rounded-lg shadow-sm border border-slate-200">
-                  <img 
-                    src={heroNews.imageUrl || (heroNews.imageUrls && heroNews.imageUrls[0]) || "https://via.placeholder.com/800x400"} 
-                    alt={heroNews.title} 
-                    className="w-full h-auto object-cover group-hover:scale-105 transition duration-500" 
-                    priority="true" // হিরো ইমেজ জলদি লোড হবে
-                  />
-                  {heroNews.isPinned && <div className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full shadow-md z-20"><Pin size={16} fill="white" /></div>}
-                </div>
-                <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 group-hover:text-red-600">{heroNews.title}</h1>
-                <p className="text-base text-slate-600 line-clamp-3">{heroNews.content ? heroNews.content.substring(0, 200) : ""}...</p>
-              </Link>
-            ) : <div className="h-64 flex items-center justify-center text-slate-400 bg-slate-50 rounded">কোনো খবর নেই</div>}
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Main Content Area */}
+          <div className="lg:col-span-9">
+            {/* 3. Category Blocks */}
+            <CategoryBlock title="Politics" news={data.politicsNews} color="border-red-600" />
+            <CategoryBlock title="Sports" news={data.sportsNews} color="border-green-600" />
 
-          <div className="lg:col-span-1 border-l pl-4 space-y-6">
-             <h3 className="font-bold text-blue-600 uppercase text-sm border-b border-blue-600 pb-1 mb-3">জনপ্রিয়</h3>
-             {rightNews.map(item => (
-               <Link href={`/news/${item.id}`} key={item.id} className="flex gap-3 group">
-                 <div className="w-20 h-16 bg-slate-200 shrink-0 overflow-hidden rounded">
-                   <img 
-                     src={item.imageUrl || (item.imageUrls && item.imageUrls[0])} 
-                     alt={item.title} // এসইও ফিক্স: অল্ট টেক্সট
-                     className="w-full h-full object-cover group-hover:scale-110 transition"
-                   />
-                 </div>
-                 <h4 className="text-sm font-medium leading-snug group-hover:text-blue-600 line-clamp-3">{item.title}</h4>
-               </Link>
-             ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {bottomGrid.map(item => (
-            <Link href={`/news/${item.id}`} key={item.id} className="group h-full flex flex-col">
-              <div className="aspect-video bg-slate-100 overflow-hidden mb-2 rounded">
-                <img 
-                   src={item.imageUrl || (item.imageUrls && item.imageUrls[0])} 
-                   alt={item.title} 
-                   loading="lazy" // এসইও ফিক্স: লেজি লোডিং
-                   className="w-full h-full object-cover group-hover:scale-105 transition"
-                />
+            {/* 4. More News Grid */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-6 border-l-4 border-slate-900 pl-4">
+                More Top Stories
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {data.allNews.slice(10, 19).map(item => (
+                  <div key={item.id} className="group">
+                    <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden mb-3">
+                      <img
+                        src={item.imageUrl || item.imageUrls?.[0]}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      />
+                    </div>
+                    <h3 className="font-bold leading-tight group-hover:text-red-600 transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1">{new Date(item.publishedAt).toLocaleDateString()}</p>
+                  </div>
+                ))}
               </div>
-              <h3 className="font-bold text-base leading-snug group-hover:text-red-600 line-clamp-2">{item.title}</h3>
-              <div className="mt-auto pt-2 text-xs text-slate-400"><Calendar size={12} className="inline mr-1"/>{new Date(item.publishedAt).toLocaleDateString('bn-BD')}</div>
-            </Link>
-          ))}
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="lg:col-span-3">
+            <LatestSidebar news={data.latestNews} />
+            {/* Sticky Ad Placeholder */}
+            <div className="sticky top-24 mt-8 bg-slate-50 h-[600px] flex items-center justify-center text-slate-300 font-bold border border-dashed border-slate-200 rounded-xl">
+              AD SPACE
+            </div>
+          </div>
         </div>
       </main>
     </div>
   );
 }
 
+// Optimized AdPopup (Moved here for co-location, or could be separate)
 function AdPopup() {
   const [ad, setAd] = useState(null);
   const [show, setShow] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => {
       getDoc(doc(db, "ads", "popup")).then(snap => {
-        if(snap.exists() && snap.data().isActive) { setAd(snap.data()); setShow(true); }
+        if (snap.exists() && snap.data().isActive) { setAd(snap.data()); setShow(true); }
       });
-    }, 3000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
+
   if (!show || !ad) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShow(false)}>
-      <div className="relative bg-white p-2 rounded-xl shadow-2xl max-w-lg w-full" onClick={e => e.stopPropagation()}>
-        <button onClick={() => setShow(false)} className="absolute -top-3 -right-3 bg-red-600 text-white rounded-full p-1.5 shadow-md hover:bg-red-700 z-10"><X size={20} /></button>
-        <a href={ad.link} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-lg">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300" onClick={() => setShow(false)}>
+      <div className="relative bg-white p-2 rounded-2xl shadow-2xl max-w-lg w-full scale-100 transition-transform" onClick={e => e.stopPropagation()}>
+        <button onClick={() => setShow(false)} className="absolute -top-4 -right-4 bg-white text-slate-900 rounded-full p-2 shadow-lg hover:bg-slate-100 z-10">
+          <X size={24} />
+        </button>
+        <a href={ad.link} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl">
           <img src={ad.imageUrl} alt="Advertisement" className="w-full h-auto max-h-[80vh] object-contain" />
         </a>
-        <p className="text-center text-[10px] text-slate-400 mt-2 uppercase tracking-widest">Advertisement</p>
       </div>
     </div>
   );

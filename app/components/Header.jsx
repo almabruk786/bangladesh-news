@@ -1,81 +1,123 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Menu, Moon, Sun, Globe } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext'; 
+import { Menu, Moon, Sun, Globe, Calendar, Clock, ChevronDown } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
-  const { darkMode, toggleTheme, lang, toggleLang, t } = useTheme();
+  const { darkMode, toggleTheme, lang, toggleLang } = useTheme();
+  const pathname = usePathname();
+  const [currentDate, setCurrentDate] = useState("");
+  const [currentTime, setCurrentTime] = useState("");
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // ব্রাউজারের এড্রেস বার কালার চেঞ্জ করার লজিক
+  // Hide Header on Admin Dashboard
+  if (pathname?.startsWith("/admin")) return null;
+
   useEffect(() => {
-    const metaThemeColor = document.querySelector("meta[name=theme-color]");
-    const color = darkMode ? "#0f172a" : "#ffffff"; // স্লেট-৯০০ অথবা সাদা
-    
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute("content", color);
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = "theme-color";
-      meta.content = color;
-      document.head.appendChild(meta);
-    }
-  }, [darkMode]);
+    // Clock Logic
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentDate(now.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+      setCurrentTime(now.toLocaleTimeString(lang === 'bn' ? 'bn-BD' : 'en-US', { hour: '2-digit', minute: '2-digit' }));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lang]);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const categories = [
+    { name: "National", bn: "জাতীয়", link: "/category/National" },
+    { name: "Politics", bn: "রাজনীতি", link: "/category/Politics" },
+    { name: "Global", bn: "আন্তর্জাতিক", link: "/category/International" },
+    { name: "Sports", bn: "খেলাধুলা", link: "/category/Sports" },
+    { name: "Tech", bn: "প্রযুক্তি", link: "/category/Technology" },
+    { name: "Entertainment", bn: "বিনোদন", link: "/category/Entertainment" },
+  ];
 
   return (
-    <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm/50 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-        
-        {/* 🔥 প্রফেশনাল মডার্ন লোগো ডিজাইন 🔥 */}
-        <Link href="/" className="flex items-center gap-3 group">
-          {/* আইকন */}
-          <div className="relative w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center shadow-lg shadow-red-600/30 transform group-hover:rotate-3 transition duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-6 h-6">
-              <path d="M11.25 4.53l-6.72 3.84a3 3 0 00-1.53 2.6v5.06a3 3 0 001.53 2.59l6.72 3.85a3 3 0 002.96 0l6.72-3.85a3 3 0 001.53-2.6V8.37a3 3 0 00-1.53-2.59L14.21 4.53a3 3 0 00-2.96 0zM12 17.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z" />
-            </svg>
-            {/* ছোট ডট (স্টাইল) */}
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-slate-900 dark:bg-white rounded-full border-2 border-white dark:border-slate-900"></div>
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
+
+      {/* Top Bar (Date & Time) */}
+      <div className="bg-slate-900 text-slate-300 text-xs py-2 border-b border-slate-800 hidden md:block">
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1"><Calendar size={12} className="text-red-500" /> {currentDate}</span>
+            <span className="flex items-center gap-1"><Clock size={12} className="text-red-500" /> {currentTime}</span>
           </div>
-          
-          {/* টেক্সট */}
-          <div className="flex flex-col leading-none">
-            <span className="text-[10px] font-bold tracking-[0.3em] text-slate-500 dark:text-slate-400 uppercase">The</span>
-            <span className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              BANGLADESH<span className="text-red-600">NEWS</span>
-            </span>
+          <div className="flex gap-4">
+            <Link href="/contact" className="hover:text-white transition">Contact</Link>
           </div>
-        </Link>
-
-        {/* নেভিগেশন + বাটন */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-bold text-slate-600 dark:text-slate-300">
-          <Link href="/" className="relative px-2 py-1 hover:text-red-600 dark:hover:text-red-400 transition-colors group">
-            {t?.home || 'Home'}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 transition-all group-hover:w-full"></span>
-          </Link>
-          <Link href="/about" className="relative px-2 py-1 hover:text-red-600 dark:hover:text-red-400 transition-colors group">
-            {t?.about || 'About'}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 transition-all group-hover:w-full"></span>
-          </Link>
-          
-          {/* ডিভাইডার */}
-          <div className="h-6 w-px bg-slate-300 dark:bg-slate-700 mx-2"></div>
-
-          {/* ভাষা বাটন */}
-          <button onClick={toggleLang} className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 hover:border-red-500 dark:hover:border-red-500 transition text-xs font-bold uppercase tracking-wider">
-            <Globe size={14}/> {lang === 'bn' ? 'EN' : 'BN'}
-          </button>
-
-          {/* ডার্ক মোড বাটন */}
-          <button onClick={toggleTheme} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition shadow-sm">
-            {darkMode ? <Sun size={18} className="text-yellow-400"/> : <Moon size={18} className="text-slate-600"/>}
-          </button>
-        </nav>
-
-        {/* মোবাইল মেনু */}
-        <button className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition">
-          <Menu size={24} />
-        </button>
+        </div>
       </div>
+
+      {/* Main Header */}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 relative z-50">
+        <div className="max-w-7xl mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
+
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className={`relative bg-red-600 rounded-lg flex items-center justify-center shadow-lg shadow-red-600/30 transform group-hover:rotate-3 transition duration-300 ${isScrolled ? 'w-8 h-8' : 'w-10 h-10'}`}>
+              <span className="text-white font-black text-lg">B</span>
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                BANGLA<span className="text-red-600">DESH</span>
+              </span>
+            </div>
+          </Link>
+
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex items-center gap-1">
+            <NavLink href="/" active>{lang === 'bn' ? 'হোম' : 'Home'}</NavLink>
+            {categories.map(cat => (
+              <NavLink key={cat.name} href={cat.link}>{lang === 'bn' ? cat.bn : cat.name}</NavLink>
+            ))}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <button onClick={toggleLang} className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 hover:border-red-500 transition text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              <Globe size={12} /> {lang === 'bn' ? 'EN' : 'BN'}
+            </button>
+            <button onClick={toggleTheme} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+              {darkMode ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} className="text-slate-600" />}
+            </button>
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="lg:hidden p-2 text-slate-900 dark:text-white">
+              <Menu size={24} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-full left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-xl p-4 flex flex-col gap-2 lg:hidden">
+          <Link href="/" className="p-3 font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded">Home</Link>
+          {categories.map(cat => (
+            <Link key={cat.name} href={cat.link} className="p-3 font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded">
+              {cat.name}
+            </Link>
+          ))}
+        </div>
+      )}
     </header>
+  );
+}
+
+function NavLink({ href, children, active }) {
+  return (
+    <Link href={href} className={`px-4 py-2 text-sm font-bold transition-colors uppercase tracking-tight
+      ${active ? 'text-red-600' : 'text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400'}
+    `}>
+      {children}
+    </Link>
   );
 }
