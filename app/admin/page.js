@@ -10,7 +10,9 @@ import NewsList from "./components/NewsList";
 import NewsEditor from "./components/NewsEditor";
 import LoginScreen from "./components/LoginScreen";
 import CategoryManager from "./components/CategoryManager";
+import AnalyticsViewer from "./components/AnalyticsViewer";
 import AdManager from "./components/AdManager";
+import EpaperManager from "./components/EpaperManager";
 import UserManager from "./components/UserManager";
 import AutoBot from "./components/AutoBot";
 import MessageViewer from "./components/MessageViewer";
@@ -142,6 +144,10 @@ export default function AdminDashboard() {
         return <CategoryManager />;
       case "ads":
         return <AdManager />;
+      case "epaper":
+        return <EpaperManager />;
+      case "analytics":
+        return <AnalyticsViewer />;
       case "users":
         return <UserManager />;
       case "auto":
@@ -164,7 +170,7 @@ export default function AdminDashboard() {
           <button onClick={logout} className="text-red-500 text-sm font-bold">Sign Out</button>
         </div>
 
-        {activeTab !== "manual" && !editingArticle && activeTab !== "category" && user.role === "admin" && <DashboardStats stats={stats} />}
+        {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && user.role === "admin" && <DashboardStats stats={stats} />}
 
         {renderContent()}
 

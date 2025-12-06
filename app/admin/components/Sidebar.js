@@ -1,5 +1,5 @@
 import {
-    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail
+    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail, BarChart3
 } from "lucide-react";
 
 export default function Sidebar({ user, activeTab, setActiveTab, logout }) {
@@ -15,6 +15,8 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout }) {
         { id: "category", label: "Categories", icon: Tags, role: "admin" },
         { id: "users", label: "Team", icon: Users, role: "admin" },
         { id: "ads", label: "Monetization", icon: Megaphone, role: "admin" },
+        { id: "analytics", label: "Visitor Analytics", icon: BarChart3, role: "admin" },
+        { id: "epaper", label: "E-Paper Manager", icon: FileText, role: "admin" },
         { id: "auto", label: "AI Control", icon: Settings, role: "admin" },
     ];
 

@@ -1,12 +1,13 @@
 // আপডেট: সঠিক পাথ (২ ঘর পেছনে) - এটি নিশ্চিত করুন
-import { db } from '../../lib/firebase'; 
+import { db } from '../../lib/firebase';
 import { collection, getDocs, orderBy, limit, query } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
+import { parseNewsContent } from '../../lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const baseUrl = 'https://bakalia.xyz'; 
+  const baseUrl = 'https://bakalia.xyz';
 
   const q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(20));
   const snapshot = await getDocs(q);
@@ -23,12 +24,14 @@ export async function GET() {
   snapshot.forEach((doc) => {
     const data = doc.data();
     const link = `${baseUrl}/news/${doc.id}`;
-    
+
+    const content = parseNewsContent(data.content);
+
     rss += `
       <item>
         <title><![CDATA[${data.title}]]></title>
         <link>${link}</link>
-        <description><![CDATA[${data.content ? data.content.substring(0, 150) : ""}...]]></description>
+        <description><![CDATA[${content.substring(0, 150)}...]]></description>
         <pubDate>${new Date(data.publishedAt).toUTCString()}</pubDate>
         <guid>${link}</guid>
       </item>

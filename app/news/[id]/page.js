@@ -1,6 +1,8 @@
 import { db } from '../../lib/firebase';
 import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
+import Link from 'next/link';
 import ArticleContent from './ArticleContent';
+import { parseNewsContent } from '../../lib/utils';
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
@@ -10,12 +12,14 @@ export async function generateMetadata({ params }) {
 
   if (docSnap.exists()) {
     const article = docSnap.data();
+    let description = parseNewsContent(article.content) || "Latest news from Bangladesh";
+
     return {
       title: article.title,
-      description: article.content ? article.content.substring(0, 160) : "Latest news from Bangladesh",
+      description: description.substring(0, 160),
       openGraph: {
         title: article.title,
-        description: article.content ? article.content.substring(0, 160) : "Latest news from Bangladesh",
+        description: description.substring(0, 160),
         images: article.imageUrl ? [article.imageUrl] : [],
       },
     };
