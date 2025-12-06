@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Menu, Moon, Sun, Search, User, X, Facebook, Twitter, Youtube, Menu as MenuIcon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { usePathname } from 'next/navigation';
-import NewspaperModal from './NewspaperModal';
+
 
 export default function Header() {
   const { darkMode, toggleTheme, lang, toggleLang } = useTheme();
@@ -13,7 +13,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isEpaperOpen, setIsEpaperOpen] = useState(false);
+
 
   // Hide Header on Admin Dashboard
   if (pathname?.startsWith("/admin")) return null;
@@ -47,39 +47,36 @@ export default function Header() {
     <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-sans">
 
       {/* 1. Main Header Area (Logo + Utilities) */}
-      <div className="max-w-7xl mx-auto px-4 py-3 md:py-5 flex justify-between items-center relative">
+      <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 flex justify-between items-center relative">
 
-        {/* Left: Hamburger (Mobile) + Date */}
-        <div className="flex items-center gap-4 flex-1">
-          <button className="lg:hidden p-1 text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            <MenuIcon size={26} />
-          </button>
-          <div className="hidden lg:flex flex-col text-xs text-slate-500 font-medium">
-            <span>{currentDate}</span>
-            <span className="text-slate-400">Dhaka, Bangladesh</span>
+        {/* LOGO (LEFT ALIGNED) */}
+        <Link href="/" className="flex-none flex items-center gap-2">
+          <div className="lg:hidden">
+            <button className="p-1 text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <MenuIcon size={24} />
+            </button>
           </div>
-        </div>
-
-        {/* Center: LOGO */}
-        <Link href="/" className="flex-none flex flex-col items-center">
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-none">
             BANGLA<span className="text-red-600">DESH</span>
           </h1>
         </Link>
 
+        {/* Date (Middle - Hidden on mobile) */}
+        <div className="hidden lg:flex flex-col text-xs text-slate-500 font-medium text-center absolute left-1/2 transform -translate-x-1/2">
+          <span>{currentDate}</span>
+          <span className="text-slate-400">Dhaka, Bangladesh</span>
+        </div>
+
         {/* Right: Actions */}
-        <div className="flex items-center justify-end gap-3 flex-1 lg:gap-5">
+        <div className="flex items-center justify-end gap-3 lg:gap-5">
           <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition">
-            <Search size={20} />
+            <Search size={22} />
           </button>
           <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
             <button onClick={toggleTheme} className="p-1.5 hover:text-red-500 transition text-slate-500">
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
           </div>
-          <button onClick={() => setIsEpaperOpen(true)} className="px-3 py-1 border border-red-600 text-red-600 font-bold text-xs rounded hover:bg-red-600 hover:text-white transition uppercase">
-            E-Paper
-          </button>
         </div>
 
         {/* Search Bar Dropdown */}
@@ -97,6 +94,15 @@ export default function Header() {
             <Link href="/" className="py-3 px-1 border-b-2 border-transparent hover:border-red-600 text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0">
               {lang === 'bn' ? 'প্রচ্ছদ' : 'Home'}
             </Link>
+
+            {/* GLOWING E-PAPER BUTTON */}
+            <Link
+              href="/newspapers"
+              className="py-3 px-1 border-b-2 border-transparent text-sm font-black uppercase tracking-tight text-red-600 hover:text-red-700 transition shrink-0 flex items-center gap-1 animate-pulse"
+            >
+              NewsPapers 📰
+            </Link>
+
             {categories.map((cat) => (
               <Link
                 key={cat.name}
@@ -128,9 +134,9 @@ export default function Header() {
                 ))}
               </nav>
               <div className="mt-6 pt-6 border-t border-slate-100 flex flex-col gap-3">
-                <button onClick={() => { setIsEpaperOpen(true); setIsMobileMenuOpen(false); }} className="w-full py-2 bg-red-600 text-white font-bold rounded">
-                  E-Paper
-                </button>
+                <Link href="/newspapers" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-2 bg-red-600 text-white font-bold rounded text-center block">
+                  NewsPapers 📰
+                </Link>
                 <button onClick={toggleTheme} className="flex items-center gap-2 font-bold text-slate-600">
                   {darkMode ? <><Sun size={18} /> Light Mode</> : <><Moon size={18} /> Dark Mode</>}
                 </button>
@@ -140,8 +146,7 @@ export default function Header() {
         </div>
       )}
 
-      {/* Newspaper Modal */}
-      <NewspaperModal isOpen={isEpaperOpen} onClose={() => setIsEpaperOpen(false)} />
+
     </header>
   );
 }

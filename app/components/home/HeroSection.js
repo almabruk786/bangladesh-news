@@ -13,8 +13,8 @@ export default function HeroSection({ heroNews, sideNews }) {
                 <div className="lg:col-span-8 group">
                     <Link href={`/news/${heroNews.id}`} className="block">
                         <div className="flex flex-col">
-                            {/* Image */}
-                            <div className="relative overflow-hidden rounded-xl aspect-[16/9] bg-slate-100 mb-5 shadow-sm">
+                            {/* Image - Compact Aspect Ratio */}
+                            <div className="relative overflow-hidden rounded-xl aspect-[2/1] bg-slate-100 mb-4 shadow-sm">
                                 <img
                                     src={heroNews.imageUrl || heroNews.imageUrls?.[0]}
                                     alt={heroNews.title}
@@ -22,20 +22,20 @@ export default function HeroSection({ heroNews, sideNews }) {
                                 />
                                 {heroNews.isVideo && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition">
-                                        <PlayCircle size={64} className="text-white opacity-80" />
+                                        <PlayCircle size={48} className="text-white opacity-80" />
                                     </div>
                                 )}
                             </div>
 
                             {/* Content */}
                             <div>
-                                <div className="flex items-center gap-3 mb-3">
-                                    <span className="bg-red-600 text-white px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded-sm">Top Story</span>
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className="bg-red-600 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-sm">Top Story</span>
                                     <span className="text-slate-400 text-xs font-semibold flex items-center gap-1">
-                                        <Clock size={14} /> {new Date(heroNews.publishedAt).toLocaleDateString()}
+                                        <Clock size={12} /> {new Date(heroNews.publishedAt).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <h1 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-3 group-hover:text-red-700 transition-colors">
+                                <h1 className="text-2xl md:text-4xl font-black text-slate-900 leading-tight mb-2 group-hover:text-red-700 transition-colors">
                                     {heroNews.title}
                                 </h1>
                                 <p className="text-slate-600 text-lg leading-relaxed line-clamp-3 md:w-5/6">

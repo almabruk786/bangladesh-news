@@ -3,10 +3,11 @@ import { Edit, Trash2, Eye, Search, Filter, CheckCircle, XCircle, Pin, MoreHoriz
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
-export default function NewsList({ data, title, type, onEdit, onView, refreshData }) {
+export default function NewsList({ data, title, type, user, onEdit, onView, refreshData }) {
     const [searchTerm, setSearchTerm] = useState("");
-    const [filter, setFilter] = useState("all"); // all, published, draft, pending
+    const [filter, setFilter] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedItems, setSelectedItems] = useState(new Set());
     const itemsPerPage = 10;
 
     // Filter Logic
@@ -14,19 +15,57 @@ export default function NewsList({ data, title, type, onEdit, onView, refreshDat
         const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (item.authorName && item.authorName.toLowerCase().includes(searchTerm.toLowerCase()));
 
-        // Status Filter (Custom logic based on the 'type' prop or internal status)
         if (filter === "all") return matchesSearch;
         return matchesSearch && item.status === filter;
     });
 
-    // Pagination Logic
+    // Pagination
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    // Actions
+    // Selection Logic
+    const toggleSelect = (id) => {
+        const newSet = new Set(selectedItems);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        setSelectedItems(newSet);
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedItems.size === paginatedData.length) {
+            setSelectedItems(new Set());
+        } else {
+            setSelectedItems(new Set(paginatedData.map(i => i.id)));
+        }
+    };
+
+    // Bulk Actions
+    const handleBulkAction = async (action) => {
+        if (!selectedItems.size) return;
+        if (!window.confirm(`Are you sure you want to ${action} ${selectedItems.size} items?`)) return;
+
+        const promises = Array.from(selectedItems).map(id => {
+            if (action === "delete") return deleteDoc(doc(db, "articles", id));
+            return updateDoc(doc(db, "articles", id), { status: action === "approve" ? "published" : "rejected" });
+        });
+
+        await Promise.all(promises);
+        setSelectedItems(new Set());
+        refreshData();
+    };
+
+
+    // Individual Actions
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this article?")) {
+        if (window.confirm("Are you sure you want to PERMANENTLY delete this article?")) {
             await deleteDoc(doc(db, "articles", id));
+            refreshData();
+        }
+    };
+
+    const handleRequestDelete = async (id) => {
+        if (window.confirm("Request to delete this article?")) {
+            await updateDoc(doc(db, "articles", id), { status: "pending_delete" });
             refreshData();
         }
     };
@@ -44,7 +83,21 @@ export default function NewsList({ data, title, type, onEdit, onView, refreshDat
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden relative">
+
+            {/* Bulk Action Bar */}
+            {selectedItems.size > 0 && type === "admin" && (
+                <div className="absolute top-0 left-0 w-full bg-slate-900 text-white p-4 z-10 flex justify-between items-center animate-in slide-in-from-top-2">
+                    <span className="font-bold">{selectedItems.size} Selected</span>
+                    <div className="flex gap-2">
+                        <button onClick={() => handleBulkAction("approve")} className="px-3 py-1 bg-green-600 rounded hover:bg-green-500 font-bold text-sm">Approve Selected</button>
+                        <button onClick={() => handleBulkAction("reject")} className="px-3 py-1 bg-amber-600 rounded hover:bg-amber-500 font-bold text-sm">Reject Selected</button>
+                        <button onClick={() => handleBulkAction("delete")} className="px-3 py-1 bg-red-600 rounded hover:bg-red-500 font-bold text-sm">Delete Selected</button>
+                        <button onClick={() => setSelectedItems(new Set())} className="ml-2 p-1 hover:bg-white/20 rounded"><XCircle size={20} /></button>
+                    </div>
+                </div>
+            )}
+
             {/* Header & Controls */}
             <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
@@ -71,6 +124,7 @@ export default function NewsList({ data, title, type, onEdit, onView, refreshDat
                         <option value="all">All Status</option>
                         <option value="published">Published</option>
                         <option value="pending">Pending</option>
+                        {type === "admin" && <option value="pending_delete">Deletion Req</option>}
                     </select>
                 </div>
             </div>
@@ -80,6 +134,11 @@ export default function NewsList({ data, title, type, onEdit, onView, refreshDat
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
                         <tr>
+                            {type === "admin" && (
+                                <th className="p-5 w-10">
+                                    <input type="checkbox" onChange={toggleSelectAll} checked={selectedItems.size === paginatedData.length && paginatedData.length > 0} />
+                                </th>
+                            )}
                             <th className="p-5">Title</th>
                             <th className="p-5">Author</th>
                             <th className="p-5">Views</th>
@@ -90,7 +149,12 @@ export default function NewsList({ data, title, type, onEdit, onView, refreshDat
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                         {paginatedData.map((item) => (
-                            <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
+                            <tr key={item.id} className={`transition-colors group ${selectedItems.has(item.id) ? "bg-blue-50" : "hover:bg-slate-50/50"}`}>
+                                {type === "admin" && (
+                                    <td className="p-5">
+                                        <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelect(item.id)} />
+                                    </td>
+                                )}
                                 <td className="p-5">
                                     <p className="font-bold text-slate-800 line-clamp-1">{item.title}</p>
                                     <p className="text-xs text-slate-400 mt-1">{new Date(item.publishedAt).toLocaleDateString()}</p>
@@ -111,8 +175,10 @@ export default function NewsList({ data, title, type, onEdit, onView, refreshDat
                                 <td className="p-5">
                                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide
                     ${item.status === "published" ? "bg-green-100 text-green-700" :
-                                            item.status === "pending" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
-                                        {item.status}
+                                            item.status === "pending" ? "bg-amber-100 text-amber-700" :
+                                                item.status === "pending_delete" ? "bg-red-100 text-red-700" :
+                                                    item.status === "rejected" ? "bg-red-50 text-red-500 line-through" : "bg-slate-100 text-slate-600"}`}>
+                                        {item.status === "pending_delete" ? "Del Req" : item.status}
                                     </span>
                                 </td>
                                 {type === "admin" && (
@@ -128,12 +194,37 @@ export default function NewsList({ data, title, type, onEdit, onView, refreshDat
                                 )}
                                 <td className="p-5 text-right">
                                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {type === "admin" && item.status === "pending" && (
-                                            <button onClick={() => handleStatusUpdate(item.id, "published")} className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100" title="Approve"><CheckCircle size={16} /></button>
+                                        {/* Admin specific Actions */}
+                                        {type === "admin" && (
+                                            <>
+                                                {item.status === "pending" && (
+                                                    <>
+                                                        <button onClick={() => handleStatusUpdate(item.id, "published")} className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100" title="Approve"><CheckCircle size={16} /></button>
+                                                        <button onClick={() => handleStatusUpdate(item.id, "rejected")} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100" title="Reject"><XCircle size={16} /></button>
+                                                    </>
+                                                )}
+                                                {item.status === "pending_delete" && (
+                                                    <>
+                                                        <button onClick={() => handleDelete(item.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100" title="Confirm Delete"><Trash2 size={16} /></button>
+                                                        <button onClick={() => handleStatusUpdate(item.id, "published")} className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200" title="Reject Delete Request"><XCircle size={16} /></button>
+                                                    </>
+                                                )}
+                                            </>
                                         )}
-                                        {onView && <button onClick={() => onView(item)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100" title="View"><Eye size={16} /></button>}
+
+                                        <a href={`/news/${item.id}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100" title="Visit Live"><div className="flex items-center gap-1"><Eye size={16} /></div></a>
+                                        {onView && <button onClick={() => onView(item)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100" title="Quick View"><Eye size={16} /></button>}
                                         <button onClick={() => onEdit(item)} className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200" title="Edit"><Edit size={16} /></button>
-                                        <button onClick={() => handleDelete(item.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100" title="Delete"><Trash2 size={16} /></button>
+
+                                        {/* Delete Logic */}
+                                        {type === "admin" && item.status !== "pending_delete" && (
+                                            <button onClick={() => handleDelete(item.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100" title="Delete"><Trash2 size={16} /></button>
+                                        )}
+                                        {type === "publisher" && (
+                                            <button onClick={() => handleRequestDelete(item.id)} className="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100" title="Request Delete" disabled={item.status === "pending_delete"}>
+                                                <XCircle size={16} />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>

@@ -64,6 +64,19 @@ export default function ArticleContent({ article, relatedNews }) {
                                 })()}
                             </div>
 
+                            {/* Tags Display */}
+                            {article.tags && article.tags.length > 0 && (
+                                <div className="mt-8 pt-4 border-t border-slate-100">
+                                    <div className="flex flex-wrap gap-2">
+                                        {article.tags.map((tag, idx) => (
+                                            <span key={idx} className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-slate-200 cursor-pointer transition-colors">
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="mt-10 pt-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500">

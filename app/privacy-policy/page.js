@@ -1,23 +1,31 @@
+"use client";
+
 export default function PrivacyPolicy() {
   return (
-    <main className="max-w-4xl mx-auto px-4 py-10 prose prose-slate">
-      <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
-      <p>Last updated: December 03, 2025</p>
-      
-      <h3>1. Introduction</h3>
-      <p>Welcome to <strong>Bangladesh News</strong>. We respect your privacy and are committed to protecting your personal data.</p>
+    <div className="max-w-4xl mx-auto px-4 py-12 prose prose-slate dark:prose-invert">
+      <h1>Privacy Policy</h1>
+      <p>Last updated: December 06, 2025</p>
 
-      <h3>2. Information We Collect</h3>
-      <p>We do not collect any personal information (like names or emails) unless you voluntarily contact us. We may use cookies for site analytics and Google AdSense ads.</p>
+      <p>This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.</p>
 
-      <h3>3. How We Use Information</h3>
-      <p>We use the information to analyze website traffic and improve user experience. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website.</p>
+      <h2>Collecting and Using Your Personal Data</h2>
+      <h3>Types of Data Collected</h3>
+      <h4>Personal Data</h4>
+      <p>While using Our Service, We may ask You to provide Us with certain personally identifiable information that can be used to contact or identify You. Personally identifiable information may include, but is not limited to: Usage Data.</p>
 
-      <h3>4. Google AdSense</h3>
-      <p>We use Google AdSense to display ads. Google uses cookies to serve ads based on your visit to this site and other sites on the Internet. Users may opt out of personalized advertising by visiting Ads Settings.</p>
+      <h4>Usage Data</h4>
+      <p>Usage Data is collected automatically when using the Service.</p>
+      <p>Usage Data may include information such as Your Device's Internet Protocol address (e.g. IP address), browser type, browser version, the pages of our Service that You visit, the time and date of Your visit, the time spent on those pages, unique device identifiers and other diagnostic data.</p>
 
-      <h3>5. Contact Us</h3>
-      <p>If you have any questions, please contact us at: info@bangladeshnews.com</p>
-    </main>
+      <h2>Google AdSense & DoubleClick Cookie</h2>
+      <p>Google, as a third party vendor, uses cookies to serve ads on our Service. Google's use of the DoubleClick cookie enables it and its partners to serve ads to our users based on their visit to our Service or other websites on the Internet.</p>
+      <p>You may opt out of the use of the DoubleClick Cookie for interest-based advertising by visiting the <a href="http://www.google.com/ads/preferences/" target="_blank" rel="noopener noreferrer">Google Ads Settings</a> web page.</p>
+
+      <h2>Contact Us</h2>
+      <p>If you have any questions about this Privacy Policy, You can contact us:</p>
+      <ul>
+        <li>By visiting this page on our website: /contact</li>
+      </ul>
+    </div>
   );
 }

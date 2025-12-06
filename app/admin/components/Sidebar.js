@@ -2,10 +2,11 @@ import {
     LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail, BarChart3
 } from "lucide-react";
 
-export default function Sidebar({ user, activeTab, setActiveTab, logout }) {
+export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen, onClose }) {
     const menuItems = [
         { id: "manual", label: "Write News", icon: PlusCircle, role: "all" },
         { id: "my_news", label: "My Stories", icon: FileText, role: "publisher" },
+        { id: "messages", label: "Messages", icon: Mail, role: "publisher" },
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, role: "publisher" },
 
         // Admin Only
@@ -21,9 +22,20 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout }) {
     ];
 
     return (
-        <aside className="w-full md:w-72 bg-white/80 backdrop-blur-md border-r border-slate-200 h-screen sticky top-0 flex flex-col shadow-xl z-10 transition-all duration-300">
-            <div className="p-8 border-b border-slate-100 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+        <aside className={`
+            fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-xl border-r border-slate-200 shadow-2xl 
+            transform transition-transform duration-300 ease-in-out
+            md:translate-x-0 md:static md:shadow-none md:h-screen md:sticky md:top-0 md:flex md:flex-col
+            ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        `}>
+            <div className="p-8 border-b border-slate-100 bg-gradient-to-r from-slate-900 to-slate-800 text-white relative">
                 <h1 className="font-bold text-2xl tracking-tight">Portal<span className="text-red-500">X</span></h1>
+
+                {/* Mobile Close Button */}
+                <button onClick={onClose} className="absolute top-4 right-4 md:hidden text-slate-400 hover:text-white">
+                    <LogOut size={20} className="rotate-180" />
+                </button>
+
                 <div className="flex items-center gap-2 mt-4 opacity-80">
                     <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-sm">
                         {user.name.charAt(0)}
@@ -43,7 +55,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout }) {
                     return (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => { setActiveTab(item.id); onClose(); }}
                             className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 font-medium text-sm group ${isActive
                                 ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20 translate-x-1"
                                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1"

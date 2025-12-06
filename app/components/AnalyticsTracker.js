@@ -45,12 +45,28 @@ export default function AnalyticsTracker() {
                     // console.warn("Geo fetch failed");
                 }
 
-                // 4. Log Raw Visit
+                // 4. Source & Referrer
+                const referrer = document.referrer || '';
+                let source = 'Direct';
+                if (referrer) {
+                    const domain = new URL(referrer).hostname;
+                    if (domain.includes('facebook') || domain.includes('t.co') || domain.includes('twitter') || domain.includes('instagram') || domain.includes('linkedin')) {
+                        source = 'Social';
+                    } else if (domain.includes('google') || domain.includes('bing') || domain.includes('yahoo')) {
+                        source = 'Search';
+                    } else if (!domain.includes(window.location.hostname)) {
+                        source = 'Referral';
+                    }
+                }
+
+                // 5. Log Raw Visit
                 await addDoc(collection(db, "analytics"), {
                     path: pathname,
                     userAgent: userAgent,
                     platform: platform,
                     mobile: /iPhone|iPad|iPod|Android/i.test(userAgent),
+                    referrer: referrer,
+                    source: source,
                     ...locationData,
                     timestamp: timestamp
                 });

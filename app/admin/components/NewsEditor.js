@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
-import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw } from "lucide-react";
+import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2 } from "lucide-react";
 import { addDoc, collection, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
-        title: "", content: "", imageUrls: [], category: "National", scheduledAt: ""
+        title: "", content: "", imageUrls: [], category: "National", scheduledAt: "", tags: []
     });
+    const [tagInput, setTagInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [generatingTags, setGeneratingTags] = useState(false);
     const [categories, setCategories] = useState(["National", "Politics", "Sports", "International", "Entertainment", "Technology"]);
 
     useEffect(() => {
@@ -46,7 +48,8 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 content: cleanContent(existingData.content),
                 imageUrls: existingData.imageUrls || (existingData.imageUrl ? [existingData.imageUrl] : []),
                 category: existingData.category || "National",
-                scheduledAt: existingData.scheduledAt || ""
+                scheduledAt: existingData.scheduledAt || "",
+                tags: existingData.tags || []
             });
         }
     }, [existingData]);
@@ -54,11 +57,50 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     // Handle Input Change
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-    // AI Title Generator (Mock)
+    // Handle Tag Input
+    const handleTagKeyDown = (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const val = tagInput.trim();
+            if (val && !form.tags.includes(val)) {
+                setForm(p => ({ ...p, tags: [...p.tags, val] }));
+                setTagInput("");
+            }
+        }
+    };
+
+    const removeTag = (tag) => {
+        setForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }));
+    };
+
+    // AI Title Generator (Mock) - Replaced with real logic later if needed
     const generateTitle = () => {
         if (!form.content) return alert("Write some content first!");
         const words = form.content.split(" ").slice(0, 5).join(" ");
         alert(`AI Suggestion: Important Update: ${words}...`);
+    };
+
+    // Auto Tags Generator
+    const generateAutoTags = async () => {
+        if (!form.title && !form.content) return alert("Please write a title or content first!");
+        setGeneratingTags(true);
+        try {
+            const res = await fetch('/api/generate-tags', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: form.title, content: form.content })
+            });
+            const data = await res.json();
+            if (data.tags && Array.isArray(data.tags)) {
+                // Merge unique tags
+                const newTags = [...new Set([...form.tags, ...data.tags])];
+                setForm(p => ({ ...p, tags: newTags }));
+            }
+        } catch (error) {
+            console.error("Tag Gen Error:", error);
+            alert("Failed to generate tags. Try again.");
+        }
+        setGeneratingTags(false);
     };
 
     // Image Upload
@@ -67,7 +109,6 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
         if (!files.length) return;
         setUploading(true);
 
-        // Upload logic here (Cloudinary)
         const newUrls = [];
         for (const file of files) {
             const formData = new FormData();
@@ -95,9 +136,10 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 imageUrl: form.imageUrls[0] || "",
                 status,
                 updatedAt: new Date().toISOString(),
-                publishedAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : new Date().toISOString(),
-                authorName: existingData?.authorName || user.name, // Keep original author if editing
-                authorRole: user.role
+                publishedAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : (existingData?.publishedAt || new Date().toISOString()),
+                authorName: existingData?.authorName || user.name,
+                authorRole: user.role,
+                tags: form.tags // Include tags
             };
 
             if (existingData) {
@@ -173,6 +215,41 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                             />
                         </div>
                     </div>
+                </div>
+
+                {/* Tags Section */}
+                <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 flex justify-between items-center">
+                        <span>Tags (SEO)</span>
+                        <button
+                            type="button"
+                            onClick={generateAutoTags}
+                            disabled={generatingTags}
+                            className="text-xs flex items-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1.5 rounded-full hover:shadow-md transition-all disabled:opacity-50"
+                        >
+                            {generatingTags ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                            Auto Tags
+                        </button>
+                    </label>
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 flex flex-wrap gap-2 items-center min-h-[50px]">
+                        {form.tags.map((tag, i) => (
+                            <span key={i} className="bg-white border border-slate-200 text-slate-700 text-sm font-medium px-2 py-1 rounded-lg flex items-center gap-1">
+                                <Hash size={12} className="text-slate-400" />
+                                {tag}
+                                <button type="button" onClick={() => removeTag(tag)} className="text-slate-400 hover:text-red-500">
+                                    <XCircle size={14} />
+                                </button>
+                            </span>
+                        ))}
+                        <input
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={handleTagKeyDown}
+                            placeholder="Add tag..."
+                            className="bg-transparent outline-none text-sm text-slate-700 flex-1 min-w-[80px] p-1"
+                        />
+                    </div>
+                    <p className="text-xs text-slate-400">Press Enter or Comma to add tags manually.</p>
                 </div>
 
                 {/* Media Upload */}
