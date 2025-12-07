@@ -48,3 +48,18 @@ export function parseNewsContent(content) {
 
     return cleanContent;
 }
+
+export function stripHtml(html) {
+    if (!html) return "";
+
+    // 1. Decode entities (basic set)
+    const decoded = html
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&quot;/g, '"');
+
+    // 2. Strip tags
+    return decoded.replace(/<[^>]+>/g, '').trim();
+}

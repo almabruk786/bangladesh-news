@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Clock, PlayCircle } from "lucide-react";
-import { parseNewsContent } from "../../lib/utils";
+import { parseNewsContent, stripHtml } from "../../lib/utils";
 
 export default function HeroSection({ heroNews, sideNews }) {
     if (!heroNews) return null;
@@ -45,8 +45,8 @@ export default function HeroSection({ heroNews, sideNews }) {
                                     <p className="text-slate-600 text-sm leading-relaxed text-justify line-clamp-[8]">
                                         {(() => {
                                             const content = parseNewsContent(heroNews.content);
-                                            // Strip HTML tags for clean summary
-                                            const plainText = content.replace(/<[^>]+>/g, '');
+                                            // Strip HTML tags for clean summary using utility
+                                            const plainText = stripHtml(content);
                                             // Shorter clamp on mobile (150 chars vs 350)
                                             return (
                                                 <>

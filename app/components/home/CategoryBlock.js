@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { parseNewsContent } from "../../lib/utils";
+import { parseNewsContent, stripHtml } from "../../lib/utils";
 
 export default function CategoryBlock({ title, news, color = "border-slate-800" }) {
     if (!news || news.length === 0) return null;
@@ -36,7 +36,8 @@ export default function CategoryBlock({ title, news, color = "border-slate-800" 
                         <p className="text-slate-500 text-sm line-clamp-2">
                             {(() => {
                                 const content = parseNewsContent(mainStory.content);
-                                return content.substring(0, 120) + (content.length > 120 ? "..." : "");
+                                const plainText = stripHtml(content);
+                                return plainText.substring(0, 120) + (plainText.length > 120 ? "..." : "");
                             })()}
                         </p>
                     </Link>
