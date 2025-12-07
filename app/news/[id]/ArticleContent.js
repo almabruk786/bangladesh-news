@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Clock, User, TrendingUp, Copy, Share2 } from 'lucide-react';
 import NewsSlider from '../../components/NewsSlider'; // Corrected path
+import LiveBlogFeed from '../../components/LiveBlogFeed'; // Live Blog Component
 import { parseNewsContent } from '../../lib/utils';
 
 export default function ArticleContent({ article, relatedNews }) {
@@ -49,6 +50,13 @@ export default function ArticleContent({ article, relatedNews }) {
                             </h1>
 
                             <NewsSlider images={imageList} title={article.title} />
+
+                            {/* Live Blog Feed Integration */}
+                            {article.isLive && (
+                                <div className="my-8">
+                                    <LiveBlogFeed articleId={article.id} />
+                                </div>
+                            )}
 
                             <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed text-justify text-base md:text-lg">
                                 {(() => {

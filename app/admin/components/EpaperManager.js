@@ -97,7 +97,7 @@ export default function EpaperManager() {
             { name: "Jai Jai Din", bn: "যায় যায় দিন", url: "https://www.jjdin.com", logo: "" },
             { name: "Bhorer Kagoj", bn: "ভোরের কাগজ", url: "https://www.bhorerkagoj.net", logo: "/newspapers/bhorerkagoj_net.png" },
             { name: "Arthoniteer Kagoj", bn: "অর্থনীতির কাগজ", url: "https://www.arthoniteerkagoj.com", logo: "/newspapers/arthoniteerkagoj_com.png" },
-            { name: "Inqilab", bn: "ইনকিলাব", url: "https://www.dailyinqilab.com", logo: "" },
+            { name: "Inqilab", bn: "ইনকিলাব", url: "https://www.dailyinqilab.com", logo: "https://m.dailyinqilab.com/includes/themes/inqilabmobile/images/logo.png" },
             { name: "Sangbad", bn: "সংবাদ", url: "https://thesangbad.net", logo: "" },
             { name: "Manobkantha", bn: "মানবকিণ্ঠ", url: "https://www.manobkantha.com", logo: "" },
             { name: "Suprobhat", bn: "সুপ্রভাত", url: "https://suprobhat.com", logo: "" },
@@ -123,7 +123,7 @@ export default function EpaperManager() {
             { name: "Bangladesher Khabor", bn: "বাংলাদেশের খবর", url: "https://www.bangladesherkhabor.net", logo: "/newspapers/bangladesherkhabor_net.png" },
             { name: "TBS News", bn: "টিবিএস", url: "https://tbsnews.net", logo: "" },
             { name: "Business Post", bn: "বিজনেস পোস্ট", url: "https://businesspostbd.com", logo: "" },
-            { name: "Ajker Patrika", bn: "আজকের পত্রিকা", url: "https://www.ajkerpatrika.com", logo: "" },
+            { name: "Ajker Patrika", bn: "আজকের পত্রিকা", url: "https://www.ajkerpatrika.com", logo: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Ajker_Patrika_Logo.png" },
             { name: "Dainik Bangla", bn: "দৈনিক বাংলা", url: "https://www.dainikbangla.com.bd", logo: "" },
         ];
 

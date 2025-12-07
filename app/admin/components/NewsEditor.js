@@ -1,17 +1,24 @@
-import { useState, useEffect } from "react";
-import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2 } from "lucide-react";
-import { addDoc, collection, updateDoc, doc } from "firebase/firestore";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye } from "lucide-react";
+import { addDoc, collection, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import TiptapEditor from "./TiptapEditor";
+import LiveBlogConsole from "./LiveBlogConsole";
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
-        title: "", content: "", imageUrls: [], category: "National", scheduledAt: "", tags: []
+        title: "", content: "", imageUrls: [], category: "National", scheduledAt: "", tags: [], ogImage: "", videoUrl: "", isLive: false
     });
     const [tagInput, setTagInput] = useState("");
     const [loading, setLoading] = useState(false);
+    const [savingDraft, setSavingDraft] = useState(false);
+    const [lastSaved, setLastSaved] = useState(null);
+    const [docId, setDocId] = useState(existingData?.id || null);
     const [uploading, setUploading] = useState(false);
+    const [uploadingEditor, setUploadingEditor] = useState(false);
     const [generatingTags, setGeneratingTags] = useState(false);
     const [categories, setCategories] = useState(["National", "Politics", "Sports", "International", "Entertainment", "Technology"]);
+    const autoSaveTimerRef = useRef(null);
 
     useEffect(() => {
         // Fetch Categories Dynamically
@@ -49,13 +56,119 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 imageUrls: existingData.imageUrls || (existingData.imageUrl ? [existingData.imageUrl] : []),
                 category: existingData.category || "National",
                 scheduledAt: existingData.scheduledAt || "",
-                tags: existingData.tags || []
+                tags: existingData.tags || [],
+                ogImage: existingData.ogImage || "",
+                videoUrl: existingData.videoUrl || "",
+                isLive: existingData.isLive || false
             });
+            setDocId(existingData.id);
         }
     }, [existingData]);
 
     // Handle Input Change
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleEditorChange = (html) => {
+        setForm(prev => ({ ...prev, content: html }));
+    };
+
+    // Reusable Upload Helper (Image/Video/Audio)
+    const uploadToCloudinary = async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+
+        const resourceType = file.type.startsWith("image/") ? "image" : "video"; // Cloudinary uses 'video' for audio too
+        const endpoint = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`;
+
+        const res = await fetch(endpoint, { method: "POST", body: formData });
+        const data = await res.json();
+        return data.secure_url;
+    };
+
+    // Editor Image Upload Handler
+    const handleEditorImageUpload = useCallback(() => {
+        return new Promise((resolve) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setUploadingEditor(true);
+                    try {
+                        const url = await uploadToCloudinary(file);
+                        resolve(url);
+                    } catch (err) {
+                        console.error("Editor upload failed", err);
+                        resolve(null);
+                    }
+                    setUploadingEditor(false);
+                } else {
+                    resolve(null);
+                }
+            };
+            input.click();
+        });
+    }, []);
+
+    // Auto Save Logic
+    useEffect(() => {
+        // Don't auto-save if untitled or empty content (optional)
+        if (!form.title && !form.content) return;
+
+        // Clear previous timer
+        if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+
+        // Set new timer (debounce 3s)
+        autoSaveTimerRef.current = setTimeout(async () => {
+            // Only auto-save if we have a docId (existing draft) or we want to create one
+            // Ideally we create a draft on first auto-save.
+            // Skipping auto-save if published to avoid accidental publish updates? 
+            // " লেখাও সময় অটো-সেভ" implies saving drafts.
+
+            // For now, let's just log or simple save if it's not published ?
+            // Implementing a simpler version: Just save to state/localstorage? 
+            // The requirement says "Auto Save + Draft System".
+            // We should save to Firestore with status 'draft' if no status exists.
+
+            if (loading || uploading) return; // don't interrupt
+
+            setSavingDraft(true);
+            try {
+                const payload = {
+                    ...form,
+                    imageUrl: form.imageUrls[0] || "",
+                    authorName: existingData?.authorName || user.name,
+                    authorRole: user.role,
+                    updatedAt: new Date().toISOString(),
+                    // If it's a new doc, make it draft. If existing, keep status or just update fields.
+                    // We don't want to change "published" to "draft" automatically.
+                    // We only save changes.
+                };
+
+                // If it's a new entry and we have enough data to be worth saving
+                if (!docId && form.title) {
+                    payload.status = 'draft';
+                    payload.createdAt = new Date().toISOString();
+                    const ref = await addDoc(collection(db, "articles"), payload);
+                    setDocId(ref.id);
+                } else if (docId) {
+                    // Update existing
+                    await updateDoc(doc(db, "articles", docId), payload);
+                }
+                setLastSaved(new Date());
+            } catch (err) {
+                console.error("Auto-save failed", err);
+            }
+            setSavingDraft(false);
+
+        }, 3000);
+
+        return () => clearTimeout(autoSaveTimerRef.current);
+    }, [form, docId]); // Depend on form changes
 
     // Handle Tag Input
     const handleTagKeyDown = (e) => {
@@ -111,14 +224,9 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
 
         const newUrls = [];
         for (const file of files) {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
             try {
-                const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: formData });
-                const data = await res.json();
-                if (data.secure_url) newUrls.push(data.secure_url);
+                const url = await uploadToCloudinary(file);
+                if (url) newUrls.push(url);
             } catch (error) { console.error("Upload error", error); }
         }
         setForm(prev => ({ ...prev, imageUrls: [...prev.imageUrls, ...newUrls] }));
@@ -134,18 +242,22 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
             const payload = {
                 ...form,
                 imageUrl: form.imageUrls[0] || "",
-                status,
+                status: existingData?.status === 'published' ? 'published' : status, // Keep published if already published
                 updatedAt: new Date().toISOString(),
                 publishedAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : (existingData?.publishedAt || new Date().toISOString()),
                 authorName: existingData?.authorName || user.name,
                 authorRole: user.role,
-                tags: form.tags // Include tags
+                tags: form.tags,
+                ogImage: form.ogImage, // Include OG Image
+                videoUrl: form.videoUrl, // Include Video URL
+                isLive: form.isLive // Live Blog Status
             };
 
-            if (existingData) {
-                await updateDoc(doc(db, "articles", existingData.id), payload);
+            if (docId) {
+                await updateDoc(doc(db, "articles", docId), payload);
             } else {
-                await addDoc(collection(db, "articles"), payload);
+                const ref = await addDoc(collection(db, "articles"), payload);
+                setDocId(ref.id);
             }
             onSuccess();
         } catch (error) {
@@ -160,7 +272,9 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
             <div className="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <PenTool size={20} className="text-blue-600" />
-                    {existingData ? "Edit Story" : "Write New Story"}
+                    {existingData || docId ? "Edit Story" : "Write New Story"}
+                    {savingDraft && <span className="text-xs font-normal text-slate-500 animate-pulse ml-2">Saving draft...</span>}
+                    {!savingDraft && lastSaved && <span className="text-xs font-normal text-slate-400 ml-2">Saved {lastSaved.toLocaleTimeString()}</span>}
                 </h2>
                 {onCancel && (
                     <button onClick={onCancel} className="text-slate-500 hover:text-slate-800 flex items-center gap-1 text-sm font-medium">
@@ -217,6 +331,36 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     </div>
                 </div>
 
+                {/* Live Blog Toggle */}
+                <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <h3 className="font-bold text-red-700 flex items-center gap-2">
+                            <span className="relative flex h-3 w-3">
+                                {form.isLive && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>}
+                                <span className={`relative inline-flex rounded-full h-3 w-3 ${form.isLive ? 'bg-red-500' : 'bg-slate-400'}`}></span>
+                            </span>
+                            Live Blog Mode
+                        </h3>
+                        <p className="text-xs text-red-600 mt-1">Enable for real-time coverage (Sports, Election, Breaking News).</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={form.isLive}
+                            onChange={(e) => setForm(p => ({ ...p, isLive: e.target.checked }))}
+                        />
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                    </label>
+                </div>
+
+                {/* Live Blog Console (Only if Saved & Live) */}
+                {form.isLive && docId && (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <LiveBlogConsole articleId={docId} user={user} />
+                    </div>
+                )}
+
                 {/* Tags Section */}
                 <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 flex justify-between items-center">
@@ -254,13 +398,13 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
 
                 {/* Media Upload */}
                 <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Cover Image & Gallery</label>
+                    <label className="text-sm font-bold text-slate-700">Cover Image & Gallery (Images/Videos/Audio)</label>
                     <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center transition-colors hover:bg-slate-50">
-                        <input type="file" multiple onChange={handleImageUpload} className="hidden" id="file-upload" accept="image/*" />
+                        <input type="file" multiple onChange={handleImageUpload} className="hidden" id="file-upload" accept="image/*,video/*,audio/*" />
                         <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2">
                             {uploading ? <RefreshCw className="animate-spin text-blue-500" size={32} /> : <Upload className="text-slate-400" size={32} />}
-                            <span className="text-slate-600 font-medium">{uploading ? "Uploading..." : "Click to upload images"}</span>
-                            <span className="text-xs text-slate-400">Supported: JPG, PNG, WEBP</span>
+                            <span className="text-slate-600 font-medium">{uploading ? "Uploading media..." : "Click to upload media"}</span>
+                            <span className="text-xs text-slate-400">Supported: JPG, PNG, MP4, MP3, etc.</span>
                         </label>
                     </div>
 
@@ -283,17 +427,64 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     )}
                 </div>
 
+                {/* Video URL Option */}
+                <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Video URL (YouTube/Vimeo - Optional)</label>
+                    <div className="flex gap-2">
+                        <input
+                            name="videoUrl"
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={form.videoUrl}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <p className="text-xs text-slate-400">If provided, this video might be shown effectively instead of the cover image.</p>
+                </div>
+
+                {/* SEO Image (OG Image) */}
+                <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">SEO / OG Image</label>
+                    <div className="flex gap-2">
+                        <input
+                            name="ogImage"
+                            placeholder="https://... (Leave empty to use cover image)"
+                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={form.ogImage}
+                            onChange={handleChange}
+                        />
+                        <label className="flex items-center justify-center p-3 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer transition-colors" title="Upload OG Image">
+                            {uploading ? <Loader2 className="animate-spin text-slate-600" size={20} /> : <Upload className="text-slate-600" size={20} />}
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                    if (e.target.files[0]) {
+                                        setUploading(true);
+                                        try {
+                                            const url = await uploadToCloudinary(e.target.files[0]);
+                                            if (url) setForm(p => ({ ...p, ogImage: url }));
+                                        } catch (err) { console.error(err); }
+                                        setUploading(false);
+                                    }
+                                }}
+                            />
+                        </label>
+                    </div>
+                </div>
+
                 {/* Content */}
                 <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Story Content</label>
-                    <textarea
-                        name="content"
-                        required
-                        rows="12"
-                        placeholder="Write your story here..."
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
-                        value={form.content}
-                        onChange={handleChange}
+                    <div className="flex justify-between items-end">
+                        <label className="text-sm font-bold text-slate-700">Story Content</label>
+                        {uploadingEditor && <span className="text-xs text-blue-500 animate-pulse">Uploading image...</span>}
+                    </div>
+
+                    <TiptapEditor
+                        content={form.content}
+                        onChange={handleEditorChange}
+                        onImageUpload={handleEditorImageUpload}
                     />
                 </div>
 

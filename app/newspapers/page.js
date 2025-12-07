@@ -54,11 +54,20 @@ export default function NewspapersPage() {
                                             <img
                                                 src={paper.logo}
                                                 alt={paper.name}
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'block';
+                                                }}
                                                 className="max-h-16 max-w-full object-contain filter grayscale group-hover:grayscale-0 transition duration-300"
                                             />
-                                        ) : (
-                                            <span className="text-xl font-bold font-serif text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">{paper.bn}</span>
-                                        )}
+                                        ) : null}
+                                        <span
+                                            style={{ display: paper.logo ? 'none' : 'block' }}
+                                            className="text-xl font-bold font-serif text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
+                                        >
+                                            {paper.bn || paper.name}
+                                        </span>
                                     </div>
 
                                     <div className="w-full border-t border-slate-100 dark:border-slate-800 pt-3">

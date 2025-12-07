@@ -21,7 +21,13 @@ export default function Header() {
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
-      setCurrentDate(now.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+      const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' };
+      const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'Asia/Dhaka' };
+
+      const dateStr = now.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', dateOptions);
+      const timeStr = now.toLocaleTimeString(lang === 'bn' ? 'bn-BD' : 'en-US', timeOptions);
+
+      setCurrentDate(`${dateStr} | ${timeStr}`);
     }, 1000);
     return () => clearInterval(timer);
   }, [lang]);
@@ -62,9 +68,8 @@ export default function Header() {
         </Link>
 
         {/* Date (Middle - Hidden on mobile) */}
-        <div className="hidden lg:flex flex-col text-xs text-slate-500 font-medium text-center absolute left-1/2 transform -translate-x-1/2">
+        <div className="hidden lg:flex flex-col text-sm text-slate-600 font-bold text-center absolute left-1/2 transform -translate-x-1/2 min-w-[250px]">
           <span>{currentDate}</span>
-          <span className="text-slate-400">Dhaka, Bangladesh</span>
         </div>
 
         {/* Right: Actions */}
