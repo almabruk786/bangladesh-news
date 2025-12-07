@@ -14,7 +14,9 @@ export async function GET() {
         // 2. Initialize Client
         credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
         if (credentials.private_key) {
-            credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+            credentials.private_key = credentials.private_key
+                .replace(/\\n/g, '\n') // Replace escaped newlines
+                .replace(/\r/g, '');   // Remove Windows carriage returns
         }
 
         const analyticsDataClient = new BetaAnalyticsDataClient({
@@ -40,16 +42,6 @@ export async function GET() {
     } catch (error) {
         console.error("GA API Error:", error);
         // Fallback to mock on error
-        return NextResponse.json({
-            activeUsers: 42,
-            error: error.message,
-            debug: {
-                keyLength: credentials?.private_key?.length,
-                hasRealNewlines: credentials?.private_key?.includes('\n'),
-                hasEscapedNewlines: credentials?.private_key?.includes('\\n'),
-                heading: credentials?.private_key?.substring(0, 35)
-            },
-            source: 'error_fallback'
-        });
+        return NextResponse.json({ activeUsers: 42, error: error.message, source: 'error_fallback' });
     }
 }
