@@ -27,15 +27,34 @@ async function generateWithGemini(prompt, apiKey) {
 }
 
 // Local Fallback: Extract keywords from Title/Content if AI fails
+// Local Fallback: Extract meaningful keywords
 function generateLocalTags(title, content) {
-    const combined = (title + " " + content.substring(0, 200)).toLowerCase();
-    // Simple logic: split by space, remove common symbols, filter size > 3
-    // This is basic but better than nothing
-    const words = combined.replace(/[।.,?!(){}\[\]]/g, '').split(/\s+/);
-    const unique = [...new Set(words)];
-    // Filter common Bangla stop words (Mock list) or just length
-    const meaningful = unique.filter(w => w.length > 3);
-    return meaningful.slice(0, 5);
+    const combined = (title + " " + title + " " + content.substring(0, 500)).toLowerCase();
+
+    // Common Bangla Stopwords
+    const stopWords = new Set([
+        "এবং", "ও", "কিন্তু", "অথবা", "করতে", "করা", "করে", "বলেন", "শুরু", "হয়", "হল", "হলো", "জন্য",
+        "একটি", "এই", "সেই", "তার", "তিনি", "তারা", "থেকে", "সাথে", "নিয়ে", "দিকে", "মত", "আছে",
+        "ছিল", "হবে", "সব", "কি", "কেন", "যে", "সে", "তা", "এটি", "বলে", "বলেছেন", "করেন", "জানান",
+        "পরে", "আগেই", "মধ্যে", "কাছে", "দ্বারা", "নিজে", "বিনা", "ছাড়া", "উপর", "নিচে", "পর্যন্ত"
+    ]);
+
+    // Extract words (Bangla & English alphanumeric)
+    const words = combined.replace(/[।.,?!(){}\[\]"']/g, ' ').split(/\s+/);
+
+    // Count Frequency
+    const freq = {};
+    words.forEach(w => {
+        if (w.length > 2 && !stopWords.has(w) && !/^\d+$/.test(w)) {
+            freq[w] = (freq[w] || 0) + 1;
+        }
+    });
+
+    // Sort by frequency
+    const sorted = Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
+
+    // Return top 5 unique tags
+    return sorted.slice(0, 6);
 }
 
 export async function POST(request) {

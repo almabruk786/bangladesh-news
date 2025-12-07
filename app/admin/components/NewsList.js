@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Eye, Search, Filter, CheckCircle, XCircle, Pin, MoreHorizontal } from "lucide-react";
+import { Edit, Trash2, Eye, Search, Filter, CheckCircle, XCircle, Pin, MoreHorizontal, Image as ImageIcon } from "lucide-react";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
@@ -139,6 +139,7 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                                     <input type="checkbox" onChange={toggleSelectAll} checked={selectedItems.size === paginatedData.length && paginatedData.length > 0} />
                                 </th>
                             )}
+                            <th className="p-5 w-16">Image</th>
                             <th className="p-5">Title</th>
                             <th className="p-5">Author</th>
                             <th className="p-5">Views</th>
@@ -155,6 +156,21 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                                         <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelect(item.id)} />
                                     </td>
                                 )}
+                                <td className="p-5">
+                                    <div className="w-12 h-12 rounded overflow-hidden bg-slate-100 border border-slate-200">
+                                        {item.imageUrl || item.imageUrls?.[0] ? (
+                                            <img
+                                                src={item.imageUrl || item.imageUrls?.[0]}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                                <ImageIcon size={16} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </td>
                                 <td className="p-5">
                                     <p className="font-bold text-slate-800 line-clamp-1">{item.title}</p>
                                     <p className="text-xs text-slate-400 mt-1">{new Date(item.publishedAt).toLocaleDateString()}</p>
