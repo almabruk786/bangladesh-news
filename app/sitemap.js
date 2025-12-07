@@ -1,33 +1,11 @@
 import { db } from './lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 
+// Force dynamic generation for always-fresh data
+export const dynamic = 'force-dynamic';
+
 export default async function sitemap() {
   const baseUrl = 'https://bakalia.xyz'; // আপনার ডোমেইন
-
-  // ফায়ারবেজ থেকে সব আর্টিকেল আনা
-  let newsUrls = [];
-  try {
-    const querySnapshot = await getDocs(collection(db, "articles"));
-    newsUrls = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      let date = new Date();
-      if (data.publishedAt) {
-        // Handle Firestore Timestamp or String
-        date = typeof data.publishedAt.toDate === 'function'
-          ? data.publishedAt.toDate()
-          : new Date(data.publishedAt);
-      }
-
-      return {
-        url: `${baseUrl}/news/${doc.id}`,
-        lastModified: date,
-        changeFrequency: 'weekly',
-        priority: 0.6,
-      };
-    });
-  } catch (error) {
-    console.error("Sitemap generation error:", error);
-  }
 
   const staticUrls = [
     {
@@ -103,6 +81,37 @@ export default async function sitemap() {
       priority: 0.7,
     },
   ];
+
+  let newsUrls = [];
+  try {
+    // Attempt database fetch
+    const querySnapshot = await getDocs(collection(db, "articles"));
+    newsUrls = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      let date = new Date();
+      if (data.publishedAt) {
+        // Handle Firestore Timestamp or String
+        try {
+          date = typeof data.publishedAt.toDate === 'function'
+            ? data.publishedAt.toDate()
+            : new Date(data.publishedAt);
+        } catch (e) {
+          date = new Date(); // Fallback to now if date parsing fails
+        }
+      }
+
+      return {
+        url: `${baseUrl}/news/${doc.id}`,
+        lastModified: date,
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      };
+    });
+  } catch (error) {
+    console.error("Sitemap generation error:", error);
+    // If DB fails, we still return verified static URLs so sitemap doesn't crash (500)
+    return staticUrls;
+  }
 
   return [...staticUrls, ...newsUrls];
 }
