@@ -8,12 +8,23 @@ export default async function sitemap() {
   let newsUrls = [];
   try {
     const querySnapshot = await getDocs(collection(db, "articles"));
-    newsUrls = querySnapshot.docs.map(doc => ({
-      url: `${baseUrl}/news/${doc.id}`,
-      lastModified: new Date(doc.data().publishedAt || new Date()),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    }));
+    newsUrls = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      let date = new Date();
+      if (data.publishedAt) {
+        // Handle Firestore Timestamp or String
+        date = typeof data.publishedAt.toDate === 'function'
+          ? data.publishedAt.toDate()
+          : new Date(data.publishedAt);
+      }
+
+      return {
+        url: `${baseUrl}/news/${doc.id}`,
+        lastModified: date,
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      };
+    });
   } catch (error) {
     console.error("Sitemap generation error:", error);
   }
