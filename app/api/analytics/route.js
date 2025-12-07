@@ -11,8 +11,13 @@ export async function GET() {
         }
 
         // 2. Initialize Client
+        const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+        if (credentials.private_key) {
+            credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+        }
+
         const analyticsDataClient = new BetaAnalyticsDataClient({
-            credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS),
+            credentials,
         });
 
         // 3. Fetch Real-Time Data (Last 30 mins active users)
