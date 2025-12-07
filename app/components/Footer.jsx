@@ -1,5 +1,6 @@
 "use client";
 import Link from 'next/link';
+import SubscriptionBox from './SubscriptionBox';
 
 import { usePathname } from 'next/navigation';
 
@@ -8,8 +9,8 @@ export default function Footer() {
   if (pathname?.startsWith("/admin")) return null;
   return (
     <footer className="bg-slate-900 text-slate-400 py-12 mt-12 border-t border-slate-800 relative z-40">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-        <div className="col-span-1 md:col-span-1">
+      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
+        <div className="col-span-1 lg:col-span-1">
           <h3 className="text-white font-bold text-lg mb-4 tracking-tight">BANGLADESH NEWS</h3>
           <p className="text-xs leading-relaxed opacity-80">
             Your trusted source for the latest breaking news, sports, and technical updates from Bangladesh and around the world.
@@ -41,8 +42,15 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="/editorial-policy" className="hover:text-white transition-colors">Editorial Policy</Link></li>
+              <li><Link href="/disclaimer" className="hover:text-white transition-colors">Disclaimer</Link></li>
             </ul>
           </div>
+        </div>
+
+        {/* Subscription Column */}
+        <div className="col-span-1 md:col-span-1">
+          <SubscriptionBox />
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Clock, PlayCircle } from "lucide-react";
-import { parseNewsContent, stripHtml } from "../../lib/utils";
+import { parseNewsContent, stripHtml, getSmartExcerpt } from "../../lib/utils";
 
 export default function HeroSection({ heroNews, sideNews }) {
     if (!heroNews) return null;
@@ -43,18 +43,8 @@ export default function HeroSection({ heroNews, sideNews }) {
 
                                 <div className="md:col-span-5 flex flex-col justify-between h-full py-1">
                                     <p className="text-slate-600 text-sm leading-relaxed text-justify line-clamp-[8]">
-                                        {(() => {
-                                            const content = parseNewsContent(heroNews.content);
-                                            // Strip HTML tags for clean summary using utility
-                                            const plainText = stripHtml(content);
-                                            // Shorter clamp on mobile (150 chars vs 350)
-                                            return (
-                                                <>
-                                                    <span className="md:hidden">{plainText.substring(0, 150) + (plainText.length > 150 ? "..." : "")}</span>
-                                                    <span className="hidden md:inline">{plainText.substring(0, 350) + (plainText.length > 350 ? "..." : "")}</span>
-                                                </>
-                                            );
-                                        })()}
+                                        {/* Smart Excerpt: 25 words max */}
+                                        {getSmartExcerpt(heroNews.content, 25)}
                                     </p>
                                     <div className="mt-3">
                                         <span className="inline-block text-xs font-bold text-red-600 border-b-2 border-red-100 hover:border-red-600 transition-all">

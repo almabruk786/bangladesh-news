@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Menu, Moon, Sun, Search, User, X, Facebook, Twitter, Youtube, Menu as MenuIcon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 
 export default function Header() {
@@ -13,6 +13,17 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter') {
+      const q = e.target.value;
+      if (q.trim()) {
+        router.push(`/search?q=${encodeURIComponent(q)}`);
+        setIsSearchOpen(false);
+      }
+    }
+  };
 
 
   // Hide Header on Admin Dashboard
@@ -40,9 +51,9 @@ export default function Header() {
 
   const categories = [
     { name: "Bangladesh", bn: "বাংলাদেশ", link: "/category/Bangladesh" },
+    { name: "Politics", bn: "রাজনীতি", link: "/category/Politics", hot: true },
     { name: "International", bn: "আন্তর্জাতিক", link: "/category/International" },
-    { name: "Politics", bn: "রাজনীতি", link: "/category/Politics" },
-    { name: "Sports", bn: "খেলা", link: "/category/Sports" },
+    { name: "Sports", bn: "খেলা", link: "/category/Sports", hot: true },
     { name: "Opinion", bn: "মতামত", link: "/category/Opinion" },
     { name: "Business", bn: "বাণিজ্য", link: "/category/Business" },
     { name: "Entertainment", bn: "বিনোদন", link: "/category/Entertainment" },
@@ -99,7 +110,13 @@ export default function Header() {
         {/* Search Bar Dropdown */}
         {isSearchOpen && (
           <div className="absolute top-full right-4 w-64 md:w-80 bg-white shadow-xl border border-slate-100 p-2 z-50 rounded mt-2">
-            <input type="text" autoFocus placeholder="Search news..." className="w-full px-3 py-2 border rounded focus:outline-none focus:border-red-500 text-sm" />
+            <input
+              type="text"
+              autoFocus
+              placeholder="Search news..."
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:border-red-500 text-sm"
+              onKeyDown={handleSearch}
+            />
           </div>
         )}
       </div>
@@ -126,7 +143,7 @@ export default function Header() {
                 href={cat.link}
                 className={`py-2 px-1 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 whitespace-nowrap ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
               >
-                {lang === 'bn' ? cat.bn : cat.name}
+                {lang === 'bn' ? cat.bn : cat.name} {cat.hot && <span className="text-[10px]">🔥</span>}
               </Link>
             ))}
           </nav>

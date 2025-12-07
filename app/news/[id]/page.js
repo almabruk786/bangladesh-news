@@ -2,7 +2,7 @@ import { db } from '../../lib/firebase';
 import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
 import ArticleContent from './ArticleContent';
-import { parseNewsContent } from '../../lib/utils';
+import { parseNewsContent, getSmartExcerpt } from '../../lib/utils';
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
@@ -12,15 +12,19 @@ export async function generateMetadata({ params }) {
 
   if (docSnap.exists()) {
     const article = docSnap.data();
-    let description = parseNewsContent(article.content) || "Latest news from Bangladesh";
+    // Smart Excerpt for Description (max 160 chars approx, based on words)
+    const description = getSmartExcerpt(article.content, 30);
 
     return {
-      title: article.title,
-      description: description.substring(0, 160),
+      title: `${article.title} - ${article.category || 'News'} | Bangladesh News`,
+      description: description,
       openGraph: {
         title: article.title,
-        description: description.substring(0, 160),
+        description: description,
         images: article.imageUrl ? [article.imageUrl] : [],
+        type: 'article',
+        publishedTime: article.publishedAt,
+        authors: [article.authorName || 'Desk Report'],
       },
     };
   }

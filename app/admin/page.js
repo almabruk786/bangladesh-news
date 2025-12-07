@@ -7,6 +7,7 @@ import { Menu, Bell, X } from "lucide-react";
 // New Components
 import Sidebar from "./components/Sidebar";
 import DashboardStats from "./components/DashboardStats";
+import DashboardOverview from "./components/DashboardOverview"; // New Dashboard 2.0
 import NewsList from "./components/NewsList";
 import NewsEditor from "./components/NewsEditor";
 import LoginScreen from "./components/LoginScreen";
@@ -54,7 +55,7 @@ export default function AdminDashboard() {
         }
 
         setUser(restoredUser);
-        if (!activeTab) setActiveTab(data.user.role === "admin" ? "analytics" : "dashboard");
+        if (!activeTab) setActiveTab(data.user.role === "admin" ? "dashboard" : "dashboard");
       }
     }
   }, []);
@@ -170,7 +171,7 @@ export default function AdminDashboard() {
     if (loggedUser) {
       setUser(loggedUser);
       localStorage.setItem("news_session", JSON.stringify({ user: loggedUser, timestamp: Date.now() }));
-      setActiveTab(loggedUser.role === "admin" ? "analytics" : "dashboard");
+      setActiveTab("dashboard");
     } else alert("Wrong credentials!");
   };
 
@@ -191,7 +192,7 @@ export default function AdminDashboard() {
 
     switch (activeTab) {
       case "dashboard":
-        return <DashboardStats stats={stats} />;
+        return <DashboardOverview stats={stats} />;
       case "manual":
         return <NewsEditor user={user} onSuccess={() => { setActiveTab(user.role === "publisher" ? "my_news" : "manage"); fetchData(); }} />;
       case "manage":
@@ -278,7 +279,7 @@ export default function AdminDashboard() {
           <button onClick={logout} className="text-red-500 text-sm font-bold">Sign Out</button>
         </div>
 
-        {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && user.role === "admin" && <DashboardStats stats={stats} />}
+        {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && activeTab !== "dashboard" && user.role === "admin" && <DashboardStats stats={stats} />}
 
         {renderContent()}
 

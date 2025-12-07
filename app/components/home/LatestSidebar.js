@@ -8,7 +8,7 @@ export default function LatestSidebar({ news }) {
         <div className="border-l border-slate-100 pl-6 h-full">
             <div className="flex items-center gap-2 mb-6">
                 <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
-                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Just In</h3>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Most Read</h3>
             </div>
 
             <div className="space-y-6">

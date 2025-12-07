@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -32,6 +33,37 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.className} flex flex-col min-h-screen text-slate-900 dark:text-white transition-colors duration-300`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Bangladesh News",
+              "url": "https://bakalia.xyz",
+              "logo": "https://bakalia.xyz/icon.png",
+              "sameAs": [
+                "https://www.facebook.com/bangladeshnews",
+                "https://twitter.com/bangladeshnews"
+              ]
+            })
+          }}
+        />
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-PCF88G7CBF"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-PCF88G7CBF');
+          `}
+        </Script>
 
         <ThemeProvider>
           <Header />

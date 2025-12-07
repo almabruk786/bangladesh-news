@@ -7,7 +7,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
         { id: "manual", label: "Write News", icon: PlusCircle, role: "all" },
         { id: "my_news", label: "My Stories", icon: FileText, role: "publisher" },
         { id: "messages", label: "Messages", icon: Mail, role: "publisher" },
-        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, role: "publisher" },
+        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, role: "all" },
 
         // Admin Only
         { id: "pending", label: "Inbox (Pending)", icon: FileText, role: "admin" },

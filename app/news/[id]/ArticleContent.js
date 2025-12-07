@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, User, TrendingUp, Copy, Share2 } from 'lucide-react';
 import NewsSlider from '../../components/NewsSlider'; // Corrected path
 import LiveBlogFeed from '../../components/LiveBlogFeed'; // Live Blog Component
-import { parseNewsContent } from '../../lib/utils';
+import { parseNewsContent, stripHtml } from '../../lib/utils';
 
 export default function ArticleContent({ article, relatedNews }) {
     // Functions for interaction
@@ -23,13 +23,70 @@ export default function ArticleContent({ article, relatedNews }) {
         ? article.imageUrls
         : (article.imageUrl ? [article.imageUrl] : []);
 
+    // JSON-LD Schema
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": article.title,
+        "image": imageList,
+        "datePublished": article.publishedAt,
+        "dateModified": article.publishedAt,
+        "author": [{
+            "@type": "Person",
+            "name": article.authorName || "Desk Report",
+            "url": "https://bakalia.xyz/about"
+        }],
+        "publisher": {
+            "@type": "Organization",
+            "name": "Bangladesh News",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://bakalia.xyz/icon.png"
+            }
+        },
+        "description": stripHtml(parseNewsContent(article.content)).substring(0, 160)
+    };
+
+    const breadcrumbLd = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://bakalia.xyz"
+        }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": article.category || "News",
+            "item": `https://bakalia.xyz/category/${article.category}`
+        }, {
+            "@type": "ListItem",
+            "position": 3,
+            "name": article.title,
+            "item": `https://bakalia.xyz/news/${article.id}`
+        }]
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+            />
             <main className="max-w-6xl mx-auto px-4 py-8">
 
-                <Link href="/" className="inline-flex items-center text-slate-500 hover:text-red-600 mb-6 transition font-medium text-sm">
-                    <ArrowLeft size={16} className="mr-2" /> প্রচ্ছদ
-                </Link>
+                <nav className="flex items-center text-sm font-medium text-slate-500 mb-6 flex-wrap gap-2">
+                    <Link href="/" className="hover:text-red-600 transition">Home</Link>
+                    <span className="text-slate-300">/</span>
+                    <Link href={`/category/${article.category}`} className="hover:text-red-600 transition">{article.category}</Link>
+                    <span className="text-slate-300">/</span>
+                    <span className="text-slate-800 line-clamp-1 max-w-[200px] md:max-w-md">{article.title}</span>
+                </nav>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 

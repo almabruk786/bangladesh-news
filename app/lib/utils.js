@@ -63,3 +63,19 @@ export function stripHtml(html) {
     // 2. Strip tags
     return decoded.replace(/<[^>]+>/g, '').trim();
 }
+
+export function getSmartExcerpt(content, wordLimit = 25) {
+    if (!content) return "";
+
+    // 1. Parse JSON if applicable and strip HTML
+    const plainText = stripHtml(parseNewsContent(content));
+
+    // 2. Split into words
+    const words = plainText.split(/\s+/);
+
+    // 3. Check if we need to truncate
+    if (words.length <= wordLimit) return plainText;
+
+    // 4. Truncate and add ellipsis
+    return words.slice(0, wordLimit).join(" ") + "...";
+}

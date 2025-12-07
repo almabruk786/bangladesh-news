@@ -65,11 +65,25 @@ export async function fetchAndProcessNews() {
         else if (item.content?.match(/src="([^"]+)"/)) imageUrl = item.content.match(/src="([^"]+)"/)[1];
 
         const prompt = `
-          Act as a Senior Journalist. Rewrite into Bangla.
-          Title: "${item.title}"
-          Content: "${item.contentSnippet || item.content}"
-          IMPORTANT: Return ONLY valid JSON. No conversational text.
-          Format: {"headline": "...", "body": "...", "category": "..."}
+          ACT AS A SENIOR INVESTIGATIVE JOURNALIST.
+          Your Task: Rewrite usage of the following news snippet into a unique, high-quality Bangla news report.
+          
+          SOURCE TITLE: "${item.title}"
+          SOURCE CONTENT: "${item.contentSnippet || item.content}"
+
+          RULES:
+          1. DO NOT translate word-for-word. You MUST rewrite in your own words.
+          2. EXPAND the content. If the source is short, add context, background info, or explain why this is important (using your knowledge).
+          3. Structure: 
+             - Strong Headline (Bangla)
+             - engaging Intro
+             - Detailed Body Paragraphs
+             - Conclusion/Summary
+          4. Tone: Professional, Neutral, Journalistic.
+          5. OUTPUT FORMAT: JSON ONLY. No markdown, no conversation.
+          
+          JSON TEMPLATE:
+          {"headline": "...", "body": "...", "category": "..."}
         `;
 
         await sleep(3000);

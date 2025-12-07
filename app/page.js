@@ -26,18 +26,25 @@ export default function Home() {
         const articlesRef = collection(db, "articles");
 
         // 1. Fetch Latest & Pinned for Hero
-        const qLatest = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(40));
+        const qLatest = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(50));
         const snapLatest = await getDocs(qLatest);
         const allDocs = snapLatest.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         // Categorize Data
+        // Slider: Show Pinned (Breaking) First, else recent
         const pinned = allDocs.filter(n => n.isPinned);
         const hero = pinned.length > 0 ? pinned[0] : allDocs[0];
+        const sliderNews = pinned.length > 0 ? pinned.slice(0, 5) : allDocs.slice(0, 5);
+
+        // Sidebar: Most Read (Sort by Views) - Client side sort for MVP if not querying directly
+        // Note: For true "Most Read", better to query orderBy("views", "desc")
+        const mostRead = [...allDocs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+
         const others = allDocs.filter(n => n.id !== hero?.id);
 
         setData({
           heroNews: hero,
-          latestNews: others.slice(0, 10), // Sidebar
+          latestNews: mostRead, // Passing Most Read to Sidebar
           politicsNews: others.filter(n => n.category === "Politics" || n.category === "রাজনীতি").slice(0, 5),
           sportsNews: others.filter(n => n.category === "Sports" || n.category === "খেলাধুলা").slice(0, 5),
           allNews: others,
