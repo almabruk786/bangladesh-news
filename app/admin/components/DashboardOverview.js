@@ -76,7 +76,7 @@ export default function DashboardOverview({ stats }) {
                 if (docs.length > 0) {
                     const latest = docs[0];
                     const analysis = analyzeSeo(latest);
-                    setSeoAnalysis({ title: latest.title, ...analysis });
+                    setSeoAnalysis({ id: latest.id, title: latest.title, ...analysis });
                 }
 
             } catch (e) { console.error("Dashboard Fetch Error:", e); }
@@ -166,9 +166,14 @@ export default function DashboardOverview({ stats }) {
                     <div className="grid md:grid-cols-2 gap-8">
                         <div>
                             <h4 className="font-bold text-sm mb-3">Target Article</h4>
-                            <p className="text-slate-600 text-sm font-medium border-l-2 border-slate-200 pl-3 italic">
-                                "{seoAnalysis.title}"
-                            </p>
+                            <a
+                                href={`/news/${seoAnalysis.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 text-sm font-medium border-l-2 border-indigo-200 pl-3 italic hover:underline block"
+                            >
+                                "{seoAnalysis.title}" ↗
+                            </a>
                         </div>
                         <div className="space-y-2">
                             {seoAnalysis.issues.map((issue, idx) => (
