@@ -123,7 +123,7 @@ export default function AdminDashboard() {
       // Fetch specific table data
       // For Admin "Manage" -> Fetch all
       if (activeTab === "manage" && user.role === "admin") {
-        q = query(collection(db, "articles"), orderBy("isPinned", "desc"), orderBy("publishedAt", "desc"), limit(100));
+        q = query(collection(db, "articles"), orderBy("isPinned", "desc"), orderBy("publishedAt", "desc"), limit(2000));
       }
       // For Admin "Pending" -> Fetch pending & pending_delete
       else if (activeTab === "pending" && user.role === "admin") {

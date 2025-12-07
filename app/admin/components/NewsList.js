@@ -10,10 +10,15 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
     const [selectedItems, setSelectedItems] = useState(new Set());
     const itemsPerPage = 10;
 
-    // Filter Logic
     const filteredData = data.filter(item => {
-        const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (item.authorName && item.authorName.toLowerCase().includes(searchTerm.toLowerCase()));
+        const term = searchTerm.toLowerCase().trim();
+        if (!term) return true;
+
+        const matchesSearch = item.title.toLowerCase().includes(term) ||
+            (item.authorName && item.authorName.toLowerCase().includes(term)) ||
+            item.id.toLowerCase().trim() === term || // Strict ID match
+            item.id.toLowerCase().includes(term) || // Partial ID match
+            term.includes(item.id); // URL paste match
 
         if (filter === "all") return matchesSearch;
         return matchesSearch && item.status === filter;
@@ -172,7 +177,7 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                                     </div>
                                 </td>
                                 <td className="p-5">
-                                    <p className="font-bold text-slate-800 line-clamp-1">{item.title}</p>
+                                    <p className="font-bold text-slate-800 line-clamp-1" title={item.title}>{item.title}</p>
                                     <p className="text-xs text-slate-400 mt-1">{new Date(item.publishedAt).toLocaleDateString()}</p>
                                 </td>
                                 <td className="p-5">

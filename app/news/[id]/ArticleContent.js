@@ -37,7 +37,7 @@ export default function ArticleContent({ article, relatedNews }) {
                         <article className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100">
                             <div className="flex items-center gap-4 mb-4 text-sm">
                                 <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
-                                    {article.category || "খবর"}
+                                    {article.category === "Auto-Imported" ? "General" : (article.category || "খবর")}
                                 </span>
                                 <span className="flex items-center text-slate-400 gap-1" suppressHydrationWarning>
                                     <Clock size={14} />
@@ -61,13 +61,27 @@ export default function ArticleContent({ article, relatedNews }) {
                             <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed text-justify text-base md:text-lg">
                                 {(() => {
                                     let contentToDisplay = article.content;
+                                    const isShortContent = !article.content || article.content.length < 200 || article.content.includes("বিস্তারিত লিংকে");
+
                                     if (article.content) {
                                         contentToDisplay = parseNewsContent(article.content);
                                     }
 
-                                    // With Tiptap, content is HTML. We must render it as HTML.
+                                    // HTML Rendering
                                     return (
-                                        <div dangerouslySetInnerHTML={{ __html: contentToDisplay }} />
+                                        <>
+                                            <div dangerouslySetInnerHTML={{ __html: contentToDisplay }} />
+
+                                            {/* Fallback for Short/Broken Content */}
+                                            {isShortContent && article.originalLink && (
+                                                <div className="mt-6 p-6 bg-red-50 rounded-xl border border-red-100 text-center">
+                                                    <p className="font-bold text-red-800 mb-3">বিস্তারিত জানতে মূল সংবাদের লিংকে ক্লিক করুন</p>
+                                                    <a href={article.originalLink} target="_blank" rel="nofollow noopener" className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition">
+                                                        মূল সংবাদ পড়ুন (Read Source)
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </>
                                     );
                                 })()}
                             </div>
@@ -93,7 +107,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                     <div>
                                         <p className="text-xs text-slate-400 font-bold uppercase">প্রতিবেদক</p>
                                         <p className="text-sm font-bold text-slate-800">
-                                            {article.authorName || 'ডেস্ক রিপোর্ট'}
+                                            {article.authorName === 'Auto-Imported' ? 'Desk Report' : (article.authorName || 'ডেস্ক রিপোর্ট')}
                                         </p>
                                     </div>
                                 </div>
@@ -118,11 +132,12 @@ export default function ArticleContent({ article, relatedNews }) {
                             <div className="flex flex-col gap-5">
                                 {relatedNews.map(item => (
                                     <Link href={`/news/${item.id}`} key={item.id} className="group flex gap-3 items-start">
-                                        <div className="w-24 h-20 bg-slate-200 rounded-lg overflow-hidden shrink-0">
+                                        <div className="w-24 h-20 bg-slate-200 rounded-lg overflow-hidden shrink-0 relative">
                                             <img
-                                                src={item.imageUrl || (item.imageUrls && item.imageUrls[0]) || "https://via.placeholder.com/150"}
+                                                src={item.imageUrl || (item.imageUrls && item.imageUrls[0]) || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=200"}
                                                 alt={item.title}
                                                 loading="lazy"
+                                                onError={(e) => e.target.src = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=200"}
                                                 className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                                             />
                                         </div>

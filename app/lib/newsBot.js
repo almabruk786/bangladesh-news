@@ -78,34 +78,40 @@ export async function fetchAndProcessNews() {
         let finalData = {};
 
         if (aiText) {
-            try {
-               // Clean up markdown code blocks
-               let cleanText = aiText.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
-               
-               // Extract JSON object if there's extra text
-               const firstOpen = cleanText.indexOf('{');
-               const lastClose = cleanText.lastIndexOf('}');
-               
-               if (firstOpen !== -1 && lastClose !== -1) {
-                   cleanText = cleanText.substring(firstOpen, lastClose + 1);
-               }
+          try {
+            // Clean up markdown code blocks
+            let cleanText = aiText.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
 
-               finalData = JSON.parse(cleanText);
-            } catch (e) {
-               console.error("JSON Parse Error:", e);
-               // Fallback but try to avoid saving raw AI debug text
-               finalData = { 
-                   headline: item.title, 
-                   body: item.contentSnippet || item.content || "বিস্তারিত লিংকে...", 
-                   category: "General" 
-               };
+            // Extract JSON object if there's extra text
+            const firstOpen = cleanText.indexOf('{');
+            const lastClose = cleanText.lastIndexOf('}');
+
+            if (firstOpen !== -1 && lastClose !== -1) {
+              cleanText = cleanText.substring(firstOpen, lastClose + 1);
             }
+
+            finalData = JSON.parse(cleanText);
+          } catch (e) {
+            console.error("JSON Parse Error:", e);
+            // Fallback but try to avoid saving raw AI debug text
+            finalData = {
+              headline: item.title,
+              body: item.contentSnippet || item.content || "বিস্তারিত লিংকে...",
+              category: "General"
+            };
+          }
         } else {
           finalData = {
             headline: item.title,
             body: item.contentSnippet || "বিস্তারিত লিংকে...",
             category: "Auto-Imported"
           };
+        }
+
+        // Quality Check: Don't save if content is too short or is just the fallback
+        if (!finalData.body || finalData.body.length < 100 || finalData.body.includes("বিস্তারিত লিংকে")) {
+          console.warn(`⚠️ Skipping low-quality article: ${item.title}`);
+          continue;
         }
 
         // ডাটাবেসে সেভ (আপডেট: লেখকের নাম News Desk)
