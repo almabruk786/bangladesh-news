@@ -17,7 +17,7 @@ import {
     Table as TableIcon, Link as LinkIcon,
     Undo, Redo, AlertTriangle
 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
 const MenuBar = ({ editor, onImageUpload, addVideo }) => {
     if (!editor) return null;
@@ -122,15 +122,15 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
         }
     }, []);
 
-    // Effect to update content if it changes externally (e.g., initial load or reset)
-    // IMPORTANT: We need to be careful not to create loops. 
-    // We only update if the content is completely different and editor is not focused? 
-    // A simple check is: if editor content is empty and prop content exists.
-    // Or just rely on initialContent. Updates from parent while editing are rare for this use-case unless reset.
-    // For now, we assume `content` prop is primarily for initial state.
-    // However, if we implement drafts, we might need to update it.
-
-    // We will assume content is the source of truth only initially.
+    // Sync editor content when prop changes (e.g., initial load)
+    useEffect(() => {
+        if (editor && content) {
+            // Check if editor is empty but content prop has value (Initial Load / Edit Mode)
+            if (editor.getText().trim() === "" && content.trim() !== "") {
+                editor.commands.setContent(content);
+            }
+        }
+    }, [content, editor]);
 
     return (
         <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">

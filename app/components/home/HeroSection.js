@@ -6,15 +6,15 @@ export default function HeroSection({ heroNews, sideNews }) {
     if (!heroNews) return null;
 
     return (
-        <section className="py-8 border-b border-slate-100">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <section className="py-6 border-b border-slate-100">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
 
                 {/* Main Hero Story */}
                 <div className="lg:col-span-8 group">
                     <Link href={`/news/${heroNews.id}`} className="block">
                         <div className="flex flex-col">
                             {/* Image - Compact Aspect Ratio */}
-                            <div className="relative overflow-hidden rounded-xl aspect-[2/1] bg-slate-100 mb-4 shadow-sm">
+                            <div className="relative overflow-hidden rounded-xl aspect-[2.4/1] bg-slate-100 mb-3 shadow-sm">
                                 <img
                                     src={heroNews.imageUrl || heroNews.imageUrls?.[0]}
                                     alt={heroNews.title}
@@ -35,10 +35,10 @@ export default function HeroSection({ heroNews, sideNews }) {
                                         <Clock size={12} /> {new Date(heroNews.publishedAt).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <h1 className="text-2xl md:text-4xl font-black text-slate-900 leading-tight mb-2 group-hover:text-red-700 transition-colors">
+                                <h1 className="text-xl md:text-3xl font-black text-slate-900 leading-tight mb-2 group-hover:text-red-700 transition-colors">
                                     {heroNews.title}
                                 </h1>
-                                <p className="text-slate-600 text-lg leading-relaxed line-clamp-3 md:w-5/6">
+                                <p className="text-slate-600 text-base leading-relaxed line-clamp-2 md:w-5/6">
                                     {(() => {
                                         const content = parseNewsContent(heroNews.content);
                                         return content.substring(0, 180) + (content.length > 180 ? "..." : "");
