@@ -61,14 +61,14 @@ export default function ArticleContent({ article, relatedNews }) {
                             <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed text-justify text-base md:text-lg">
                                 {(() => {
                                     let contentToDisplay = article.content;
-                                    // Improved robust parsing using shared utility
                                     if (article.content) {
                                         contentToDisplay = parseNewsContent(article.content);
                                     }
 
-                                    return contentToDisplay.split('\n').map((para, index) => (
-                                        <p key={index} className="mb-4">{para}</p>
-                                    ));
+                                    // With Tiptap, content is HTML. We must render it as HTML.
+                                    return (
+                                        <div dangerouslySetInnerHTML={{ __html: contentToDisplay }} />
+                                    );
                                 })()}
                             </div>
 

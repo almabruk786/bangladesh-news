@@ -15,6 +15,11 @@ export const metadata = {
   title: { template: '%s | Bangladesh News', default: 'Bangladesh News - Latest Breaking News BD' },
   description: "Automated AI News Portal providing latest breaking news, sports, politics, and technology updates 24/7.",
   verification: { google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk" },
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/apple-icon.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'bn_BD',

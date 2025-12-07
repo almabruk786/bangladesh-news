@@ -208,10 +208,12 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 // Merge unique tags
                 const newTags = [...new Set([...form.tags, ...data.tags])];
                 setForm(p => ({ ...p, tags: newTags }));
+            } else if (data.error) {
+                alert("Auto Tag Error: " + data.error);
             }
         } catch (error) {
             console.error("Tag Gen Error:", error);
-            alert("Failed to generate tags. Try again.");
+            alert("Failed to generate tags. Check your connection or API Key.");
         }
         setGeneratingTags(false);
     };
@@ -363,18 +365,33 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
 
                 {/* Tags Section */}
                 <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 flex justify-between items-center">
-                        <span>Tags (SEO)</span>
+                    <div className="flex justify-between items-center">
+                        <label className="text-sm font-bold text-slate-700">Tags (SEO)</label>
                         <button
                             type="button"
                             onClick={generateAutoTags}
-                            disabled={generatingTags}
-                            className="text-xs flex items-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1.5 rounded-full hover:shadow-md transition-all disabled:opacity-50"
+                            disabled={generatingTags || (!form.title && !form.content)}
+                            className={`text-xs flex items-center gap-2 px-4 py-2 rounded-full font-bold shadow-sm transition-all
+                                 ${!form.title && !form.content
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:shadow-md hover:scale-105 active:scale-95'
+                                }
+                             `}
+                            title={!form.title && !form.content ? "Write a headline or content first" : "Generate SEO tags using AI"}
                         >
-                            {generatingTags ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                            Auto Tags
+                            {generatingTags ? (
+                                <>
+                                    <Loader2 size={14} className="animate-spin" />
+                                    <span>Analyzing...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles size={14} className="text-yellow-200" />
+                                    <span>Auto Generate Tags</span>
+                                </>
+                            )}
                         </button>
-                    </label>
+                    </div>
                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 flex flex-wrap gap-2 items-center min-h-[50px]">
                         {form.tags.map((tag, i) => (
                             <span key={i} className="bg-white border border-slate-200 text-slate-700 text-sm font-medium px-2 py-1 rounded-lg flex items-center gap-1">
@@ -412,12 +429,36 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     {form.imageUrls.length > 0 && (
                         <div className="flex gap-2 overflow-x-auto py-2 scrollbar-thin scrollbar-thumb-slate-200">
                             {form.imageUrls.map((url, idx) => (
-                                <div key={idx} className="relative w-24 h-24 shrink-0 group">
-                                    <img src={url} alt="preview" className="w-full h-full object-cover rounded-lg shadow-sm" />
+                                <div key={idx} className={`relative w-48 aspect-[2/1] shrink-0 group rounded-lg overflow-hidden border ${idx === 0 ? 'border-red-500 ring-2 ring-red-100' : 'border-slate-200'} bg-slate-100`}>
+                                    <img src={url} alt="preview" className="w-full h-full object-cover" />
+
+                                    {/* Cover Badge */}
+                                    {idx === 0 && (
+                                        <div className="absolute top-1 left-1 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm z-10">
+                                            MAIN COVER
+                                        </div>
+                                    )}
+
+                                    {/* Set as Cover Button (for non-first images) */}
+                                    {idx !== 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const newUrls = [...form.imageUrls];
+                                                const [selected] = newUrls.splice(idx, 1);
+                                                newUrls.unshift(selected); // Move to front
+                                                setForm(p => ({ ...p, imageUrls: newUrls }));
+                                            }}
+                                            className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-slate-900/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black"
+                                        >
+                                            Set as Cover
+                                        </button>
+                                    )}
+
                                     <button
                                         type="button"
                                         onClick={() => setForm(p => ({ ...p, imageUrls: p.imageUrls.filter((_, i) => i !== idx) }))}
-                                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20"
                                     >
                                         <XCircle size={14} />
                                     </button>

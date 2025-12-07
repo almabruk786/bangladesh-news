@@ -53,33 +53,45 @@ export default function Header() {
     <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-sans">
 
       {/* 1. Main Header Area (Logo + Utilities) */}
-      <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 flex justify-between items-center relative">
+      {/* 1. Main Header Area (Logo + Utilities) */}
+      <div className="max-w-7xl mx-auto px-4 py-2 md:py-3 flex justify-between items-center relative">
 
         {/* LOGO (LEFT ALIGNED) */}
-        <Link href="/" className="flex-none flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <div className="lg:hidden">
             <button className="p-1 text-slate-800 dark:text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <MenuIcon size={24} />
             </button>
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-none">
-            BANGLA<span className="text-red-600">DESH</span>
-          </h1>
-        </Link>
+
+          <Link href="/" className="flex flex-col">
+            {/* Logo Image */}
+            <div className="flex items-center gap-2">
+              <img src="/favicon.png" alt="Bangladesh News" className="w-8 h-8 md:w-10 md:h-10 object-contain" />
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-none">
+                BANGLA<span className="text-red-600">DESH</span>
+              </h1>
+            </div>
+            {/* Mobile Date (Visible below logo) */}
+            <span className="lg:hidden text-[10px] text-slate-500 font-bold mt-0.5 ml-10">
+              {currentDate.split('|')[0]}
+            </span>
+          </Link>
+        </div>
 
         {/* Date (Middle - Hidden on mobile) */}
-        <div className="hidden lg:flex flex-col text-sm text-slate-600 font-bold text-center absolute left-1/2 transform -translate-x-1/2 min-w-[250px]">
+        <div className="hidden lg:flex flex-col text-xs text-slate-600 font-bold text-center absolute left-1/2 transform -translate-x-1/2 min-w-[250px]">
           <span>{currentDate}</span>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center justify-end gap-3 lg:gap-5">
-          <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition">
-            <Search size={22} />
+        <div className="flex items-center justify-end gap-2 lg:gap-4">
+          <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition">
+            <Search size={20} />
           </button>
-          <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
-            <button onClick={toggleTheme} className="p-1.5 hover:text-red-500 transition text-slate-500">
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+          <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+            <button onClick={toggleTheme} className="p-1 hover:text-red-500 transition text-slate-500">
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </div>
         </div>
@@ -95,15 +107,15 @@ export default function Header() {
       {/* 2. Navigation Bar (Centered & Sticky) */}
       <div className={`border-t border-slate-100 dark:border-slate-800 ${isScrolled ? 'fixed top-0 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-md z-50 transition-all duration-300' : 'relative z-40'}`}>
         <div className="max-w-7xl mx-auto px-4">
-          <nav className="flex items-center justify-center gap-1 overflow-x-auto no-scrollbar md:gap-6">
-            <Link href="/" className="py-3 px-1 border-b-2 border-transparent hover:border-red-600 text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0">
+          <nav className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar md:gap-5 py-2">
+            <Link href="/" className="px-1 md:px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0">
               {lang === 'bn' ? 'প্রচ্ছদ' : 'Home'}
             </Link>
 
             {/* GLOWING E-PAPER BUTTON */}
             <Link
               href="/newspapers"
-              className="py-3 px-1 border-b-2 border-transparent text-sm font-black uppercase tracking-tight text-red-600 hover:text-red-700 transition shrink-0 flex items-center gap-1 animate-pulse"
+              className="py-2 px-1 border-b-2 border-transparent text-xs md:text-sm font-black uppercase tracking-tight text-red-600 hover:text-red-700 transition shrink-0 flex items-center gap-1 animate-pulse"
             >
               NewsPapers 📰
             </Link>
@@ -112,7 +124,7 @@ export default function Header() {
               <Link
                 key={cat.name}
                 href={cat.link}
-                className={`py-3 px-1 border-b-2 border-transparent hover:border-red-600 text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 whitespace-nowrap ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
+                className={`py-2 px-1 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 whitespace-nowrap ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
               >
                 {lang === 'bn' ? cat.bn : cat.name}
               </Link>
@@ -131,9 +143,24 @@ export default function Header() {
             </div>
             <div className="overflow-y-auto flex-1 p-4">
               <nav className="flex flex-col space-y-1">
-                <Link href="/" className="block px-4 py-3 rounded-lg bg-red-50 text-red-700 font-bold">Home</Link>
+                {/* Mobile Date & Search */}
+                <div className="mb-4 space-y-3">
+                  <div className="text-xs font-bold text-slate-500 text-center bg-slate-50 p-2 rounded">
+                    {currentDate}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search news..."
+                      className="w-full px-3 py-2 bg-slate-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-red-500 outline-none"
+                    />
+                    <Search size={16} className="absolute right-3 top-2.5 text-slate-400" />
+                  </div>
+                </div>
+
+                <Link href="/" className="block px-4 py-3 rounded-lg bg-red-50 text-red-700 font-bold" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
                 {categories.map((cat) => (
-                  <Link key={cat.name} href={cat.link} className="block px-4 py-3 rounded-lg hover:bg-slate-50 font-semibold text-slate-700 dark:text-slate-300">
+                  <Link key={cat.name} href={cat.link} className="block px-4 py-3 rounded-lg hover:bg-slate-50 font-semibold text-slate-700 dark:text-slate-300" onClick={() => setIsMobileMenuOpen(false)}>
                     {lang === 'bn' ? cat.bn : cat.name}
                   </Link>
                 ))}
