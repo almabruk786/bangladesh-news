@@ -2,6 +2,7 @@ import { BetaAnalyticsDataClient } from '@google-analytics/data';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+    let credentials;
     try {
         // 1. Check if Credentials Exist
         if (!process.env.GOOGLE_APPLICATION_CREDENTIALS || !process.env.GA_PROPERTY_ID) {
@@ -11,7 +12,7 @@ export async function GET() {
         }
 
         // 2. Initialize Client
-        const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+        credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
         if (credentials.private_key) {
             credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
         }
@@ -39,6 +40,16 @@ export async function GET() {
     } catch (error) {
         console.error("GA API Error:", error);
         // Fallback to mock on error
-        return NextResponse.json({ activeUsers: 42, error: error.message, source: 'error_fallback' });
+        return NextResponse.json({
+            activeUsers: 42,
+            error: error.message,
+            debug: {
+                keyLength: credentials?.private_key?.length,
+                hasRealNewlines: credentials?.private_key?.includes('\n'),
+                hasEscapedNewlines: credentials?.private_key?.includes('\\n'),
+                heading: credentials?.private_key?.substring(0, 35)
+            },
+            source: 'error_fallback'
+        });
     }
 }
