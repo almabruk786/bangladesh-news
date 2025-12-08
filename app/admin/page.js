@@ -26,10 +26,64 @@ export default function AdminDashboard() {
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [activeTab, setActiveTab] = useState("manual");
+  const [isNavigating, setIsNavigating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Popup State
   const [popupMsg, setPopupMsg] = useState(null);
+
+  // Popup Listener (Global)
+  useEffect(() => {
+    if (!user) return;
+    // ... (rest of popup logic remains same, implicit in standard replace if strict, but let's keep it safe)
+    // Actually I need to match the exact block to insert state. 
+    // Best place is right after state declarations.
+    // But since I am replacing a chunk, I'll rewrite the render part mainly.
+    // Let's stick to the render part update for the Sidebar prop and the wrapper.
+    // I will add the function and state inside the component body in a separate small edit or careful larger edit.
+    // To be safe, I'll replace the Sidebar render and the `renderContent` wrapper.
+    // I need to inject `handleTabSwitch` and `isNavigating`.
+
+    // I'll assume I can add the state in a clean way.
+    // Actually, I can replace the whole functional component start if I want, but that's risky.
+    // I'll replace lines 261-268 (Sidebar render) and inject the state handling logic logic ABOVE it ? No that won't work.
+
+    // Let's replace the `AdminDashboard` body start to add state, AND the render part.
+    // Complexity: High if split.
+    // Better to use `replace_file_content` on the component start to add state, then another call for render.
+    // OR just one big replace for the whole return block + providing the function definition inline or above?
+
+    // Check lines 30-40.
+  }, [user]);
+
+  // Smoother Navigation Handler
+  const handleTabSwitch = (newTab) => {
+    if (newTab === activeTab) return;
+    setIsNavigating(true);
+    // Wait for fade out
+    setTimeout(() => {
+      setActiveTab(newTab);
+      setEditingArticle(null);
+      // Wait a bit for layout to calc then fade in
+      setTimeout(() => setIsNavigating(false), 50);
+    }, 300);
+  };
+
+  const closePopup = async () => {
+    if (!popupMsg || !user) return;
+    await updateDoc(doc(db, "messages", popupMsg.id), {
+      readBy: arrayUnion(user.uid || user.name)
+    });
+    setPopupMsg(null);
+  };
+
+  // ... (keeping existing fetch logic) ...
+
+  // Let's jump to the render part for this tool call.
+  // I will assume I can insert the handleTabSwitch function before `return`.
+  // Wait, I can't effectively insert a function in the middle without replacing a huge chunk.
+
+  // STRATEGY: 
+  // I will replace the component start to add state.
+
 
   // Data States
   const [articles, setArticles] = useState([]);
@@ -90,14 +144,7 @@ export default function AdminDashboard() {
     return () => unsub();
   }, [user]);
 
-  const closePopup = async () => {
-    if (!popupMsg || !user) return;
-    // Mark as read
-    await updateDoc(doc(db, "messages", popupMsg.id), {
-      readBy: arrayUnion(user.uid || user.name)
-    });
-    setPopupMsg(null);
-  };
+
 
   // Fetch Data based on User & Tab
   const fetchData = async () => {
@@ -226,28 +273,28 @@ export default function AdminDashboard() {
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm animate-in fade-in duration-300"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* POPUP MODAL */}
       {popupMsg && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="bg-red-600 p-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md px-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-white/20">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex items-center justify-between">
               <div className="flex items-center gap-2 text-white font-bold text-lg">
-                <Bell className="fill-white" /> Administrator Message
+                <Bell className="fill-white" /> System Notification
               </div>
               <button onClick={closePopup} className="text-white/80 hover:text-white"><X size={24} /></button>
             </div>
-            <div className="p-6 md:p-8 text-center">
+            <div className="p-6 md:p-8 text-center bg-slate-50">
               <p className="text-slate-800 text-lg md:text-xl font-medium leading-relaxed">
                 {popupMsg.text}
               </p>
               <div className="mt-8 flex justify-center">
-                <button onClick={closePopup} className="bg-slate-900 text-white px-6 py-2 rounded-full font-bold hover:bg-slate-800 transition shadow-lg">
-                  Okay, I saw this
+                <button onClick={closePopup} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30 hover:-translate-y-1">
+                  Acknowledge
                 </button>
               </div>
               <p className="text-xs text-slate-400 mt-4">
@@ -267,25 +314,42 @@ export default function AdminDashboard() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-full relative w-full scroll-smooth">
-        {/* Top Bar Mobile Only */}
-        <div className="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-white/80 backdrop-blur-md z-30 py-3 px-4 -mx-4 border-b border-slate-200/60 shadow-sm">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-slate-700">
-              <Menu size={24} />
-            </button>
-            <h1 className="font-bold text-xl">PortalX</h1>
-          </div>
-          <button onClick={logout} className="text-red-500 text-sm font-bold">Sign Out</button>
+      <main className="flex-1 overflow-y-auto h-full relative w-full scroll-smooth bg-[#F8FAFC]">
+        {/* Decorative Background Elements */}
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-200/40 blur-[100px]" />
+          <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-200/40 blur-[100px]" />
         </div>
 
-        {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && activeTab !== "dashboard" && user.role === "admin" && <DashboardStats stats={stats} />}
+        {/* Content Wrapper */}
+        <div className="relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto min-h-screen flex flex-col">
 
-        {renderContent()}
+          {/* Top Bar Mobile Only */}
+          <div className="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-white/80 backdrop-blur-lg z-30 py-3 px-4 -mx-4 border-b border-indigo-100 shadow-sm">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-indigo-900">
+                <Menu size={24} />
+              </button>
+              <h1 className="font-black text-xl text-slate-800">Prime<span className="text-indigo-600">Control</span></h1>
+            </div>
+            <button onClick={logout} className="text-red-500 text-sm font-bold">Sign Out</button>
+          </div>
 
-        <p className="text-center text-slate-300 text-xs py-8 mt-auto">
-          &copy; {new Date().getFullYear()} PortalX System. v2.0
-        </p>
+          {/* Main Module Render */}
+          <div className="flex-1 animate-in fade-in zoom-in-95 duration-500 ease-out">
+            {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && activeTab !== "dashboard" && activeTab !== "auto" && user.role === "admin" && (
+              <div className="mb-8">
+                <DashboardStats stats={stats} />
+              </div>
+            )}
+
+            {renderContent()}
+          </div>
+
+          <p className="text-center text-slate-400 text-xs py-8 mt-auto font-medium tracking-wide opacity-60 hover:opacity-100 transition-opacity">
+            &copy; {new Date().getFullYear()} PrimeControl CMS System. v3.0 // Antigravity UI
+          </p>
+        </div>
       </main>
     </div>
   );

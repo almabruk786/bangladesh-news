@@ -1,79 +1,128 @@
 import {
-    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail, BarChart3
+    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail, BarChart3, Bot, Newspaper
 } from "lucide-react";
 
 export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen, onClose }) {
+    // Menu items configuration based on user requests
     const menuItems = [
-        { id: "manual", label: "Write News", icon: PlusCircle, role: "all" },
-        { id: "my_news", label: "My Stories", icon: FileText, role: "publisher" },
-        { id: "messages", label: "Messages", icon: Mail, role: "publisher" },
+        // Common
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, role: "all" },
+        { id: "manual", label: "Write News", icon: PlusCircle, role: "all" },
 
-        // Admin Only
+        // Admin Specific Order
         { id: "pending", label: "Inbox (Pending)", icon: FileText, role: "admin" },
-        { id: "messages", label: "Messages", icon: Mail, role: "admin" },
-        { id: "manage", label: "All News", icon: LayoutDashboard, role: "admin" },
+        { id: "messages", label: "Messages", icon: Mail, role: "admin" }, // Also for publisher? Keeping strict to valid logic
+        { id: "manage", label: "All News", icon: Newspaper, role: "admin" }, // Using Newspaper icon for 'All News'
         { id: "category", label: "Categories", icon: Tags, role: "admin" },
         { id: "users", label: "Team", icon: Users, role: "admin" },
         { id: "ads", label: "Monetization", icon: Megaphone, role: "admin" },
         { id: "analytics", label: "Visitor Analytics", icon: BarChart3, role: "admin" },
         { id: "epaper", label: "E-Paper Manager", icon: FileText, role: "admin" },
-        { id: "auto", label: "AI Control", icon: Settings, role: "admin" },
+        { id: "auto", label: "AI Control", icon: Bot, role: "admin" },
+
+        // Publisher Specific (Hidden for Admin if duplicated in logic, or handled by role check)
+        { id: "my_news", label: "My Stories", icon: FileText, role: "publisher" },
+        { id: "messages", label: "Messages", icon: Mail, role: "publisher" },
     ];
+
+    // Filter duplicates for admin if matched (prevent double messages)
+    const filteredItems = menuItems.filter((item, index, self) =>
+        index === self.findIndex((t) => (
+            t.id === item.id && t.role === item.role
+        ))
+    );
 
     return (
         <aside className={`
-            fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-xl border-r border-slate-200 shadow-2xl 
-            transform transition-transform duration-300 ease-in-out
-            md:translate-x-0 md:static md:shadow-none md:h-screen md:sticky md:top-0 md:flex md:flex-col
+            fixed inset-y-0 left-0 z-50 w-72 
+            bg-white/80 backdrop-blur-2xl border-r border-white/20 shadow-[8px_0_30px_rgba(0,0,0,0.04)]
+            transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
+            md:translate-x-0 md:static md:h-screen md:sticky md:top-0 md:flex md:flex-col
             ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}>
-            <div className="p-8 border-b border-slate-100 bg-gradient-to-r from-slate-900 to-slate-800 text-white relative">
-                <h1 className="font-bold text-2xl tracking-tight">Portal<span className="text-red-500">X</span></h1>
+            {/* Glossy Header */}
+            <div className="p-8 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 opacity-90 group-hover:scale-110 transition-transform duration-700"></div>
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-soft-light"></div>
+
+                <div className="relative z-10 text-white">
+                    <h1 className="font-black text-2xl tracking-tight flex items-center gap-2">
+                        <span className="bg-white/20 p-1.5 rounded-lg backdrop-blur-md shadow-inner">
+                            <Bot size={20} className="text-white" />
+                        </span>
+                        Prime<span className="text-indigo-200">Control</span>
+                    </h1>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-indigo-100 mt-2 font-semibold">
+                        CMS Version 3.0
+                    </p>
+                </div>
 
                 {/* Mobile Close Button */}
-                <button onClick={onClose} className="absolute top-4 right-4 md:hidden text-slate-400 hover:text-white">
+                <button onClick={onClose} className="absolute top-4 right-4 md:hidden text-white/70 hover:text-white transition-colors">
                     <LogOut size={20} className="rotate-180" />
                 </button>
+            </div>
 
-                <div className="flex items-center gap-2 mt-4 opacity-80">
-                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-sm">
+            {/* Profile Section (Floating Glass) */}
+            <div className="px-6 py-6">
+                <div className="p-4 rounded-2xl bg-gradient-to-b from-white/60 to-white/30 backdrop-blur-md border border-white/40 shadow-sm flex items-center gap-3 group hover:shadow-md transition-all duration-300">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-indigo-200 text-sm">
                         {user.name.charAt(0)}
                     </div>
-                    <div className="overflow-hidden">
-                        <p className="text-sm font-medium truncate">{user.name}</p>
-                        <p className="text-xs text-slate-400 capitalize">{user.role}</p>
+                    <div className="overflow-hidden flex-1">
+                        <p className="text-sm font-bold text-slate-700 truncate group-hover:text-indigo-600 transition-colors">{user.name}</p>
+                        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{user.role}</p>
                     </div>
                 </div>
             </div>
 
-            <nav className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-thin scrollbar-thumb-slate-200">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-3 mt-2">Menu</p>
-                {menuItems.map((item) => {
+            {/* Menu Items */}
+            <nav className="flex-1 overflow-y-auto px-4 space-y-2 pb-4 scrollbar-hide">
+                <p className="px-4 text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Main Menu</p>
+                {filteredItems.map((item) => {
                     if (item.role !== "all" && item.role !== user.role) return null;
                     const isActive = activeTab === item.id;
+                    const Icon = item.icon;
+
                     return (
                         <button
-                            key={item.id}
+                            key={item.id + item.role}
                             onClick={() => { setActiveTab(item.id); onClose(); }}
-                            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 font-medium text-sm group ${isActive
-                                ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20 translate-x-1"
-                                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1"
-                                }`}
+                            className={`
+                                w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden
+                                ${isActive
+                                    ? "text-white shadow-[0_10px_20px_-5px_rgba(79,70,229,0.3)] scale-[1.02]"
+                                    : "text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5"
+                                }
+                            `}
                         >
-                            <item.icon size={20} className={isActive ? "text-red-400" : "text-slate-400 group-hover:text-red-500"} />
-                            {item.label}
+                            {/* Active Background Gradient */}
+                            {isActive && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 animate-in fade-in zoom-in duration-300"></div>
+                            )}
+
+                            <Icon
+                                size={18}
+                                className={`relative z-10 transition-transform duration-300 ${isActive ? "text-white scale-110" : "group-hover:scale-110 group-hover:text-indigo-500"}`}
+                            />
+                            <span className={`relative z-10 text-sm font-bold tracking-wide ${isActive ? "text-white" : ""}`}>
+                                {item.label}
+                            </span>
+
+                            {/* Active Shine Effect */}
+                            {isActive && <div className="absolute inset-0 bg-white/20 translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>}
                         </button>
                     );
                 })}
             </nav>
 
-            <div className="p-4 border-t border-slate-100">
+            <div className="p-4">
                 <button
                     onClick={logout}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors font-medium text-sm"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-100 text-red-500 hover:bg-red-50 hover:border-red-200 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 font-bold text-sm"
                 >
-                    <LogOut size={20} /> Sign Out
+                    <LogOut size={16} />
+                    <span>Sign Out</span>
                 </button>
             </div>
         </aside>
