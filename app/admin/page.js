@@ -58,13 +58,13 @@ export default function AdminDashboard() {
   const handleTabSwitch = (newTab) => {
     if (newTab === activeTab) return;
     setIsNavigating(true);
-    // Wait for fade out
+    // Wait for fade out (faster for "instant" feel)
     setTimeout(() => {
       setActiveTab(newTab);
       setEditingArticle(null);
       // Wait a bit for layout to calc then fade in
       setTimeout(() => setIsNavigating(false), 50);
-    }, 300);
+    }, 150);
   };
 
   const closePopup = async () => {
@@ -335,8 +335,11 @@ export default function AdminDashboard() {
             <button onClick={logout} className="text-red-500 text-sm font-bold">Sign Out</button>
           </div>
 
-          {/* Main Module Render */}
-          <div className="flex-1 animate-in fade-in zoom-in-95 duration-500 ease-out">
+          {/* Main Module Render with Smooth Transition */}
+          <div className={`
+              flex-1 transition-all duration-300 ease-in-out
+              ${isNavigating ? 'opacity-0 scale-95 blur-sm translate-y-4' : 'opacity-100 scale-100 blur-0 translate-y-0'}
+          `}>
             {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && activeTab !== "dashboard" && activeTab !== "auto" && user.role === "admin" && (
               <div className="mb-8">
                 <DashboardStats stats={stats} />
