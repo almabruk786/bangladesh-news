@@ -131,7 +131,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                             <div dangerouslySetInnerHTML={{ __html: contentToDisplay }} />
 
                                             {/* Fallback for Short/Broken Content */}
-                                            {isShortContent && article.originalLink && (
+                                            {isShortContent && article.originalLink && (article.originalLink.startsWith('http') || article.originalLink.startsWith('https')) && (
                                                 <div className="mt-6 p-6 bg-red-50 rounded-xl border border-red-100 text-center">
                                                     <p className="font-bold text-red-800 mb-3">বিস্তারিত জানতে মূল সংবাদের লিংকে ক্লিক করুন</p>
                                                     <a href={article.originalLink} target="_blank" rel="nofollow noopener" className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition">

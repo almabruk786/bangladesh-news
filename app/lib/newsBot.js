@@ -135,19 +135,13 @@ export async function fetchAndProcessNews(logger = () => { }) {
             };
           }
         } else {
-          logger(`AI Generation Failed. Using raw content.`, "error");
-          finalData = {
-            headline: item.title,
-            body: item.contentSnippet || "বিস্তারিত লিংকে...",
-            category: "Auto-Imported",
-            metaTitle: item.title,
-            metaDescription: "Latest news update.",
-            keywords: ["news"]
-          };
+          logger(`AI Generation Failed. Skipping this article to avoid low-quality content.`, "error");
+          continue;
         }
 
-        if (!finalData.body || finalData.body.length < 100 || finalData.body.includes("বিস্তারিত লিংকে")) {
-          logger(`Quality Control Failed: Article too short. Skipping.`, "warning");
+        // Quality Control: Ensure article is long enough (approx 500 chars minimum)
+        if (!finalData.body || finalData.body.length < 500 || finalData.body.includes("বিস্তারিত লিংকে")) {
+          logger(`Quality Control Failed: Article too short (${finalData.body?.length || 0} chars). Skipping to maintain quality.`, "warning");
           continue;
         }
 

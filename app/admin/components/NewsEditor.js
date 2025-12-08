@@ -182,6 +182,15 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
         }
     };
 
+    const handleTagPaste = (e) => {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        const newTags = paste.split(',').map(tag => tag.trim()).filter(tag => tag && !form.tags.includes(tag));
+        if (newTags.length > 0) {
+            setForm(p => ({ ...p, tags: [...p.tags, ...newTags] }));
+        }
+    };
+
     const removeTag = (tag) => {
         setForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }));
     };
@@ -406,6 +415,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                             value={tagInput}
                             onChange={(e) => setTagInput(e.target.value)}
                             onKeyDown={handleTagKeyDown}
+                            onPaste={handleTagPaste}
                             placeholder="Add tag..."
                             className="bg-transparent outline-none text-sm text-slate-700 flex-1 min-w-[80px] p-1"
                         />

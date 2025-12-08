@@ -11,7 +11,7 @@ export async function generateMetadata({ params }) {
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    const article = docSnap.data();
+    const article = { id: docSnap.id, ...docSnap.data() };
     // Smart Excerpt for Description (max 160 chars approx, based on words)
     const description = getSmartExcerpt(article.content, 30);
 
@@ -45,7 +45,7 @@ export default async function NewsDetails({ params }) {
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    article = docSnap.data();
+    article = { id: docSnap.id, ...docSnap.data() };
 
     // Fetch related news (Sidebar)
     // Note: Firestore structured queries might need composite indexes. 
