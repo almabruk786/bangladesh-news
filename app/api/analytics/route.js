@@ -14,9 +14,15 @@ export async function GET() {
         // 2. Initialize Client
         credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
         if (credentials.private_key) {
+            // 1. Remove optional surrounding quotes (sometimes copied by mistake)
+            if (credentials.private_key.startsWith('"') && credentials.private_key.endsWith('"')) {
+                credentials.private_key = credentials.private_key.slice(1, -1);
+            }
+
+            // 2. Normalize Newlines
             credentials.private_key = credentials.private_key
-                .replace(/\\n/g, '\n') // Replace escaped newlines
-                .replace(/\r/g, '');   // Remove Windows carriage returns
+                .replace(/\\n/g, '\n') // Replace literal \n with real newline
+                .replace(/\r/g, '');   // Remove Windows CR
         }
 
         const analyticsDataClient = new BetaAnalyticsDataClient({
@@ -41,7 +47,22 @@ export async function GET() {
 
     } catch (error) {
         console.error("GA API Error:", error);
-        // Fallback to mock on error
-        return NextResponse.json({ activeUsers: 42, error: error.message, source: 'error_fallback' });
+
+        // Safe Debugging to find the root cause
+        const keySample = credentials?.private_key
+            ? credentials.private_key.substring(0, 50) + "..."
+            : "UNDEFINED";
+
+        return NextResponse.json({
+            activeUsers: 42,
+            error: error.message,
+            debug: {
+                startOfKey: keySample,
+                totalLength: credentials?.private_key?.length,
+                includesRealNewline: credentials?.private_key?.includes('\n'),
+                includesEscapedNewline: credentials?.private_key?.includes('\\n'),
+            },
+            source: 'error_fallback'
+        });
     }
 }
