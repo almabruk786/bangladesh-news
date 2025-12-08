@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { db } from "../../lib/firebase";
-import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { Send, LogIn, MessageSquare, Trash2, Facebook, Mail } from "lucide-react";
 
 export default function CommentSection({ articleId }) {
@@ -34,19 +34,34 @@ export default function CommentSection({ articleId }) {
         e.preventDefault();
         if (!newComment.trim() || !user) return;
 
+        setLoading(true); // Temporarily show loading state for submission
         try {
-            await addDoc(collection(db, "comments"), {
-                articleId,
-                text: newComment,
-                uid: user.uid,
-                displayName: user.displayName || "Anonymous",
-                photoURL: user.photoURL,
-                createdAt: serverTimestamp(),
+            const res = await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: newComment,
+                    user: {
+                        uid: user.uid,
+                        displayName: user.displayName || "Anonymous",
+                        photoURL: user.photoURL
+                    },
+                    articleId
+                })
             });
-            setNewComment("");
+
+            const data = await res.json();
+
+            if (!data.success) {
+                alert(data.error); // Show AI rejection reason
+            } else {
+                setNewComment(""); // Clear input on success
+            }
         } catch (error) {
-            console.error("Error adding comment:", error);
+            console.error("Error submitting comment:", error);
             alert("মতামত পাঠাতে সমস্যা হয়েছে।");
+        } finally {
+            setLoading(false);
         }
     };
 
