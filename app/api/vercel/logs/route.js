@@ -40,7 +40,11 @@ export async function GET() {
             return {
                 id: d.uid,
                 type,
+                state: d.state,
                 msg: d.meta?.githubCommitMessage || `Deployment ${d.state}`,
+                branch: d.meta?.githubCommitRef || 'unknown',
+                committer: d.meta?.githubCommitAuthorName || 'Vercel',
+                url: d.url ? `https://${d.url}` : null,
                 time: timeStr
             };
         });

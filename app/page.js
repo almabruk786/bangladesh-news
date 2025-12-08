@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { db } from './lib/firebase';
 import { collection, getDocs, orderBy, query, limit, where, doc, getDoc } from 'firebase/firestore';
 import { Loader2, X } from 'lucide-react';
@@ -89,7 +90,7 @@ export default function Home() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {data.allNews.slice(10, 19).map(item => (
-                  <div key={item.id} className="group">
+                  <Link href={`/news/${item.id}`} key={item.id} className="group block">
                     <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden mb-3">
                       <img
                         src={item.imageUrl || item.imageUrls?.[0]}
@@ -100,7 +101,7 @@ export default function Home() {
                       {item.title}
                     </h3>
                     <p className="text-xs text-slate-400 mt-1">{new Date(item.publishedAt).toLocaleDateString()}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

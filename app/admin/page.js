@@ -192,7 +192,7 @@ export default function AdminDashboard() {
 
     switch (activeTab) {
       case "dashboard":
-        return <DashboardOverview stats={stats} />;
+        return <DashboardOverview stats={stats} user={user} />;
       case "manual":
         return <NewsEditor user={user} onSuccess={() => { setActiveTab(user.role === "publisher" ? "my_news" : "manage"); fetchData(); }} />;
       case "manage":
