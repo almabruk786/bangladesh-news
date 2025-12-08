@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Play, Activity, Terminal, CheckCircle, AlertTriangle, Cpu, Loader2, Database, Wifi } from "lucide-react";
+import { Bot, Play, Activity, Terminal, CheckCircle, AlertTriangle, Cpu, Loader2, Database, Wifi, Square, Copy, Check } from "lucide-react";
 
 const STEPS = [
     { id: 'init', label: 'Initialize', icon: Bot },
@@ -14,7 +14,9 @@ export default function AutoBot({ masterKey }) {
     const [logs, setLogs] = useState([]);
     const [status, setStatus] = useState("idle"); // idle, running, success, error
     const [currentStep, setCurrentStep] = useState('idle');
+    const [copied, setCopied] = useState(false);
     const logsEndRef = useRef(null);
+    const abortControllerRef = useRef(null);
 
     // Auto-scroll logs
     useEffect(() => {
@@ -34,8 +36,31 @@ export default function AutoBot({ masterKey }) {
         else if (msg.includes("finished") || msg.includes("Complete")) setCurrentStep('done');
     };
 
+    const copyLogs = () => {
+        const text = logs.join('\n');
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const stopBot = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+        setIsLoading(false);
+        setStatus("idle");
+        addLog("🛑 Process stopped by user.", "warning");
+    };
+
     const runBot = async () => {
         if (!confirm("Start AI Auto-Publisher?")) return;
+
+        // Stop previous if running
+        if (abortControllerRef.current) abortControllerRef.current.abort();
+
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
 
         setIsLoading(true);
         setStatus("running");
@@ -43,7 +68,9 @@ export default function AutoBot({ masterKey }) {
         setCurrentStep('init');
 
         try {
-            const response = await fetch(`/api/cron?key=${masterKey}`);
+            const response = await fetch(`/api/cron?key=${masterKey}`, {
+                signal: controller.signal
+            });
 
             if (!response.body) throw new Error("No response body");
 
@@ -73,10 +100,17 @@ export default function AutoBot({ masterKey }) {
                 }
             }
         } catch (e) {
-            addLog(`Critical Error: ${e.message}`, "error");
-            setStatus("error");
+            if (e.name === 'AbortError') {
+                addLog("Operation aborted.", "warning");
+            } else {
+                addLog(`Critical Error: ${e.message}`, "error");
+                setStatus("error");
+            }
         } finally {
-            setIsLoading(false);
+            if (abortControllerRef.current === controller) {
+                setIsLoading(false);
+                abortControllerRef.current = null;
+            }
         }
     };
 
@@ -92,7 +126,7 @@ export default function AutoBot({ masterKey }) {
                     <p className="text-slate-500 text-sm mt-1">Real-time Neural News Generation Engine</p>
                 </div>
                 <div className={`px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 ${status === 'running' ? 'bg-indigo-100 text-indigo-700 animate-pulse' :
-                        status === 'success' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+                    status === 'success' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
                     }`}>
                     {status === 'running' ? <Loader2 className="animate-spin" size={16} /> : <Activity size={16} />}
                     {status === 'idle' ? 'SYSTEM READY' : status.toUpperCase()}
@@ -104,7 +138,7 @@ export default function AutoBot({ masterKey }) {
                 {/* Left Panel: Controls & Visualizer */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* Run Button */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
                         <button
                             onClick={runBot}
                             disabled={isLoading}
@@ -114,6 +148,21 @@ export default function AutoBot({ masterKey }) {
                             <div className="relative z-10 flex items-center justify-center gap-2">
                                 {isLoading ? <Bot className="animate-bounce" /> : <Play fill="currentColor" />}
                                 {isLoading ? "EXECUTING AI..." : "RUN AUTO-BOT"}
+                            </div>
+                        </button>
+
+                        {/* STOP Button - Only shows when running or always visible but disabled if not running? User asked 'under RUN AUTO-BOT' */}
+                        <button
+                            onClick={stopBot}
+                            disabled={!isLoading}
+                            className={`w-full group relative overflow-hidden p-3 rounded-xl font-bold border-2 transition-all ${isLoading
+                                ? "border-red-500 text-red-600 hover:bg-red-50"
+                                : "border-slate-200 text-slate-300 cursor-not-allowed"
+                                }`}
+                        >
+                            <div className="flex items-center justify-center gap-2">
+                                <Square size={18} fill={isLoading ? "currentColor" : "none"} />
+                                STOP AUTO-BOT
                             </div>
                         </button>
                     </div>
@@ -131,7 +180,7 @@ export default function AutoBot({ masterKey }) {
                                     <div key={step.id} className={`flex items-center gap-3 transition-all duration-500 ${isActive ? "opacity-100 translate-x-2" : isPast ? "opacity-50" : "opacity-30"
                                         }`}>
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${isActive ? "border-indigo-600 bg-indigo-50 text-indigo-600" :
-                                                isPast ? "border-green-500 bg-green-50 text-green-500" : "border-slate-300 text-slate-300"
+                                            isPast ? "border-green-500 bg-green-50 text-green-500" : "border-slate-300 text-slate-300"
                                             }`}>
                                             <Icon size={14} />
                                         </div>
@@ -156,10 +205,22 @@ export default function AutoBot({ masterKey }) {
                             <Terminal size={14} className="text-indigo-400" />
                             <span className="text-xs font-mono font-bold text-slate-400">root@news-ai:~# tail -f logs</span>
                         </div>
-                        <div className="flex gap-1.5">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50"></div>
-                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
-                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/50"></div>
+                        <div className="flex items-center gap-3">
+                            {/* Copy Button */}
+                            <button
+                                onClick={copyLogs}
+                                className="text-xs font-mono font-bold text-slate-400 hover:text-white flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-700 transition-colors"
+                                title="Copy Logs to Clipboard"
+                            >
+                                {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+                                {copied ? "COPIED" : "COPY LOGS"}
+                            </button>
+
+                            <div className="flex gap-1.5 pl-2 border-l border-slate-700">
+                                <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/50"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -173,9 +234,9 @@ export default function AutoBot({ masterKey }) {
                         )}
                         {logs.map((log, i) => (
                             <div key={i} className={`break-words leading-relaxed ${log.includes("Error") ? "text-red-400" :
-                                    log.includes("success") || log.includes("PUBLISHED") ? "text-emerald-400" :
-                                        log.includes("Refining") ? "text-purple-400" :
-                                            "text-blue-200"
+                                log.includes("success") || log.includes("PUBLISHED") ? "text-emerald-400" :
+                                    log.includes("Refining") ? "text-purple-400" :
+                                        "text-blue-200"
                                 }`}>
                                 <span className="opacity-30 mr-2">$</span>
                                 {log}
