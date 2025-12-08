@@ -3,51 +3,6 @@ import { db } from './firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 
 const parser = new Parser({
-  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
-});
-
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const MAX_NEWS_LIMIT = 1;
-
-// মডেল তালিকা - Prioritize stable models with version suffixes and fallback
-const MODELS = ["gemini-1.5-flash-001", "gemini-1.5-pro-001", "gemini-pro"];
-
-async function generateWithGemini(prompt, logger) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    if (logger) logger("CRITICAL: GEMINI_API_KEY is missing in environment variables!", "error");
-    return null;
-  }
-
-  for (const modelName of MODELS) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Model ${modelName} Failed: ${response.status}`, errorText);
-        if (logger) logger(`Model ${modelName} Error (${response.status}): ${errorText.substring(0, 100)}...`, "warning");
-        throw new Error(`Status ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text;
-    } catch (error) {
-      console.warn(`Attempt with ${modelName} failed, trying next...`);
-      // Warning is already logged inside the try block for HTTP errors
-      await sleep(1000);
-    }
-  }
-  return null;
-}
-
-const RSS_FEEDS = [
-  "https://feeds.bbci.co.uk/bengali/rss.xml",
   "https://www.prothomalo.com/feed/",
   "https://www.dhakapost.com/rss/rss.xml",
   "https://www.jagonews24.com/rss/rss.xml",
