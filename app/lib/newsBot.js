@@ -7,7 +7,7 @@ const parser = new Parser({
 });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const MAX_NEWS_LIMIT = 3;
+const MAX_NEWS_LIMIT = 1;
 
 // মডেল তালিকা - Prioritize stable models
 const MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"];
@@ -80,7 +80,8 @@ export async function fetchAndProcessNews(logger = () => { }) {
 
       logger(`Feed Parsed: Found ${feed.items.length} items. Scanning for fresh content...`, "success");
 
-      for (const item of feed.items.slice(0, 5)) {
+      // Scan more items to find non-duplicates
+      for (const item of feed.items.slice(0, 15)) {
         if (publishedCount >= MAX_NEWS_LIMIT) break;
 
         const q = query(collection(db, "articles"), where("originalLink", "==", item.link));
@@ -109,11 +110,11 @@ export async function fetchAndProcessNews(logger = () => { }) {
           SOURCE CONTENT: "${item.contentSnippet || item.content}"
 
           REQUIREMENTS:
-          1. **Length**: MUST be approx 600 words. Detailed, comprehensive, and engaging.
+          1. **Length**: MUST be approx 250 words. Concise but detailed.
           2. **Headline**: Write a "Beautiful Headline" (আকর্ষণীয় ও শক্তিশালী শিরোনাম).
           3. **Structure**: 
              - **Intro**: Hook the reader immediately.
-             - **Body**: 3-4 deep paragraphs with context, analysis, and background.
+             - **Body**: 2-3 deep paragraphs with context, analysis, and background.
              - **Conclusion**: A strong summary or forward-looking statement.
           4. **SEO & Meta**: Generate optimized Meta Title, Meta Description (160 chars), and Keywords.
           5. **Tone**: Neutral, Authoritative, Professional.
@@ -129,8 +130,8 @@ export async function fetchAndProcessNews(logger = () => { }) {
           }
         `;
 
-        await sleep(2000); // Artificial delay for "Thinking" visualization if needed, but keeping it small
-        logger(`Sending to AI Engine (Gemini 2.0)... Waiting for generation (600+ words)...`, "info");
+        await sleep(2000); // Artificial delay for "Thinking" visualization if needed
+        logger(`Sending to AI Engine (Gemini 2.0)... Waiting for generation (250+ words)...`, "info");
 
         let aiText = await generateWithGemini(prompt);
         let finalData = {};
