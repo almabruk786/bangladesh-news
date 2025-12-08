@@ -9,8 +9,8 @@ const parser = new Parser({
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const MAX_NEWS_LIMIT = 1;
 
-// মডেল তালিকা - Prioritize stable models
-const MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"];
+// মডেল তালিকা - Prioritize stable models with version suffixes and fallback
+const MODELS = ["gemini-1.5-flash-001", "gemini-1.5-pro-001", "gemini-pro"];
 
 async function generateWithGemini(prompt, logger) {
   const apiKey = process.env.GEMINI_API_KEY;
