@@ -9,11 +9,11 @@ const parser = new Parser({
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const MAX_NEWS_LIMIT = 1;
 
-// Cached working model to avoid repeated lookups
-let validModel = null;
+// Cached working models list
+let availableModels = [];
 
-async function validateAndGetModel(apiKey, logger) {
-  if (validModel) return validModel;
+async function getAvailableModels(apiKey, logger) {
+  if (availableModels.length > 0) return availableModels;
 
   try {
     if (logger) logger("Validating API Key and discovering available models...", "info");
@@ -22,15 +22,11 @@ async function validateAndGetModel(apiKey, logger) {
     if (!response.ok) {
       const text = await response.text();
       if (logger) logger(`Failed to list models: ${response.status} - ${text}`, "error");
-      return null;
+      return [];
     }
 
     const data = await response.json();
     const models = data.models || [];
-
-    // Log available models for debugging
-    const modelNames = models.map(m => m.name.replace('models/', ''));
-    if (logger) logger(`Available Models: ${modelNames.join(", ")}`, "info");
 
     // Filter for generation capable models
     const generationModels = models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
@@ -39,29 +35,36 @@ async function validateAndGetModel(apiKey, logger) {
     // Preference list
     const preferred = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"];
 
-    // Find first match
+    // Sort models: Preferred ones first, then others
+    const sortedModels = [];
+
+    // Add preferred matches first
     for (const p of preferred) {
       const match = generationNames.find(name => name === p || name.startsWith(p));
-      if (match) {
-        validModel = match;
-        if (logger) logger(`Selected Model: ${validModel}`, "success");
-        return validModel;
+      if (match && !sortedModels.includes(match)) {
+        sortedModels.push(match);
       }
     }
 
-    // Fallback to any generation model
-    if (generationNames.length > 0) {
-      validModel = generationNames[0];
-      if (logger) logger(`Selected Fallback Model: ${validModel}`, "warning");
-      return validModel;
+    // Add remaining generation models
+    for (const name of generationNames) {
+      if (!sortedModels.includes(name)) {
+        sortedModels.push(name);
+      }
+    }
+
+    if (sortedModels.length > 0) {
+      availableModels = sortedModels;
+      if (logger) logger(`Discovered Models (Priority Order): ${availableModels.join(", ")}`, "success");
+      return availableModels;
     }
 
     if (logger) logger("No models found with 'generateContent' capability.", "error");
-    return null;
+    return [];
 
   } catch (e) {
     if (logger) logger(`Model discovery failed: ${e.message}`, "error");
-    return null;
+    return [];
   }
 }
 
@@ -72,34 +75,53 @@ async function generateWithGemini(prompt, logger) {
     return null;
   }
 
-  // Ensure we have a valid model
-  const modelName = await validateAndGetModel(apiKey, logger);
-  if (!modelName) {
-    if (logger) logger("ABORT: Could not find a valid Gemini model for this API key.", "error");
+  // Get list of valid models to try
+  const modelList = await getAvailableModels(apiKey, logger);
+
+  if (modelList.length === 0) {
+    if (logger) logger("ABORT: Could not find any valid Gemini models for this API key.", "error");
     return null;
   }
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
+  // Loop through models until one works
+  for (const modelName of modelList) {
+    try {
+      // if (logger) logger(`Attempting generation with model: ${modelName}...`, "info");
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Model ${modelName} Failed: ${response.status}`, errorText);
-      if (logger) logger(`Model ${modelName} Error (${response.status}): ${errorText.substring(0, 100)}...`, "warning");
-      throw new Error(`Status ${response.status}: ${errorText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        // If Quota Exceeded (429), strictly try next model
+        if (response.status === 429) {
+          if (logger) logger(`Model ${modelName} Quota Exceeded (429). Switching to next model...`, "warning");
+          continue; // Try next model
+        }
+
+        console.error(`Model ${modelName} Failed: ${response.status}`, errorText);
+        if (logger) logger(`Model ${modelName} Error (${response.status}). Trying next...`, "warning");
+        continue; // Try next model for other errors too
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (text) {
+        return text; // Success! Return immediately
+      }
+
+    } catch (error) {
+      if (logger) logger(`Error with ${modelName}: ${error.message}. Switching...`, "warning");
+      // Continue to next model
     }
-
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text;
-  } catch (error) {
-    console.warn(`Generation with ${modelName} failed.`);
-    if (logger) logger(`Generation failed: ${error.message}`, "error");
   }
+
+  if (logger) logger("ALL MODELS FAILED. Please check your API Quota or Key.", "error");
   return null;
 }
 
