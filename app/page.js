@@ -15,6 +15,7 @@ export default function Home() {
   const [data, setData] = useState({
     heroNews: null,
     latestNews: [],
+    realLatestNews: [],
     politicsNews: [],
     sportsNews: [],
     allNews: [],
@@ -37,15 +38,15 @@ export default function Home() {
         const hero = pinned.length > 0 ? pinned[0] : allDocs[0];
         const sliderNews = pinned.length > 0 ? pinned.slice(0, 5) : allDocs.slice(0, 5);
 
-        // Sidebar: Most Read (Sort by Views) - Client side sort for MVP if not querying directly
-        // Note: For true "Most Read", better to query orderBy("views", "desc")
+        // Sidebar: Most Read (Sort by Views)
         const mostRead = [...allDocs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
 
         const others = allDocs.filter(n => n.id !== hero?.id);
 
         setData({
           heroNews: hero,
-          latestNews: mostRead, // Passing Most Read to Sidebar
+          latestNews: mostRead, // Keep key for Sidebar (which expects Most Read)
+          realLatestNews: allDocs.filter(n => n.id !== hero?.id).slice(0, 10), // True Latest for Hero Side
           politicsNews: others.filter(n => n.category === "Politics" || n.category === "রাজনীতি").slice(0, 5),
           sportsNews: others.filter(n => n.category === "Sports" || n.category === "খেলাধুলা").slice(0, 5),
           allNews: others,
@@ -70,11 +71,11 @@ export default function Home() {
       <AdPopup />
 
       {/* 1. Breaking Ticker */}
-      <BreakingTicker news={data.latestNews.slice(0, 5)} />
+      <BreakingTicker news={data.realLatestNews.slice(0, 5)} />
 
       <main className="container-custom py-8">
         {/* 2. Hero Section */}
-        <HeroSection heroNews={data.heroNews} sideNews={data.latestNews.slice(0, 4)} />
+        <HeroSection heroNews={data.heroNews} sideNews={data.realLatestNews.slice(0, 4)} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Main Content Area */}

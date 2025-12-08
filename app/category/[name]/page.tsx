@@ -8,17 +8,50 @@ export default function CategoryPage({ params }: { params: Promise<{ name: strin
   const { name } = use(params);
   const [news, setNews] = useState([]);
 
+  const categories = [
+    { name: "Bangladesh", bn: "বাংলাদেশ" },
+    { name: "Politics", bn: "রাজনীতি" },
+    { name: "International", bn: "আন্তর্জাতিক" },
+    { name: "Sports", bn: "খেলা" },
+    { name: "Opinion", bn: "মতামত" },
+    { name: "Business", bn: "বাণিজ্য" },
+    { name: "Entertainment", bn: "বিনোদন" },
+    { name: "Lifestyle", bn: "জীবনযাপন" },
+    // Add common variations or fallbacks
+    { name: "Technology", bn: "প্রযুক্তি" },
+    { name: "Health", bn: "স্বাস্থ্য" },
+    { name: "Education", bn: "শিক্ষা" }
+  ];
+
   useEffect(() => {
     const load = async () => {
+      const decodedName = decodeURIComponent(name);
+
+      // Find matching category to get both English and Bangla tags
+      const catMatch = categories.find(c =>
+        c.name.toLowerCase() === decodedName.toLowerCase() ||
+        c.bn === decodedName
+      );
+
+      const searchTags = catMatch ? [catMatch.name, catMatch.bn] : [decodedName];
+
+      // Also add capitalized/lowercase variations just in case
+      if (!searchTags.includes(decodedName)) searchTags.push(decodedName);
+
       const q = query(
         collection(db, "articles"),
-        where("category", "==", name),
-        orderBy("createdAt", "desc")
+        where("category", "in", searchTags),
+        orderBy("publishedAt", "desc")
       );
-      const snap = await getDocs(q);
-      let data: any = [];
-      snap.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
-      setNews(data);
+
+      try {
+        const snap = await getDocs(q);
+        let data: any = [];
+        snap.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
+        setNews(data);
+      } catch (e) {
+        console.error("Category Fetch Error:", e);
+      }
     };
     load();
   }, [name]);
