@@ -12,8 +12,13 @@ const MAX_NEWS_LIMIT = 1;
 // মডেল তালিকা - Prioritize stable models
 const MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"];
 
-async function generateWithGemini(prompt) {
+async function generateWithGemini(prompt, logger) {
   const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    if (logger) logger("CRITICAL: GEMINI_API_KEY is missing in environment variables!", "error");
+    return null;
+  }
+
   for (const modelName of MODELS) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
@@ -26,6 +31,7 @@ async function generateWithGemini(prompt) {
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Model ${modelName} Failed: ${response.status}`, errorText);
+        if (logger) logger(`Model ${modelName} Error (${response.status}): ${errorText.substring(0, 100)}...`, "warning");
         throw new Error(`Status ${response.status}: ${errorText}`);
       }
 
@@ -33,6 +39,7 @@ async function generateWithGemini(prompt) {
       return data.candidates?.[0]?.content?.parts?.[0]?.text;
     } catch (error) {
       console.warn(`Attempt with ${modelName} failed, trying next...`);
+      // Warning is already logged inside the try block for HTTP errors
       await sleep(1000);
     }
   }
@@ -133,7 +140,7 @@ export async function fetchAndProcessNews(logger = () => { }) {
         await sleep(2000); // Artificial delay for "Thinking" visualization if needed
         logger(`Sending to AI Engine (Gemini 2.0)... Waiting for generation (250+ words)...`, "info");
 
-        let aiText = await generateWithGemini(prompt);
+        let aiText = await generateWithGemini(prompt, logger);
         let finalData = {};
 
         if (aiText) {
