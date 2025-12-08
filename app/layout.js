@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
 // ১. কুকি কনসেন্ট ইম্পোর্ট করা হলো
 import CookieConsent from "./components/CookieConsent";
 import AnalyticsTracker from "./components/AnalyticsTracker";
@@ -66,16 +67,17 @@ export default function RootLayout({ children }) {
         </Script>
 
         <ThemeProvider>
-          <Header />
-          <div className="flex-grow">
-            {children}
-          </div>
-          <Footer />
+          <AuthProvider>
+            <Header />
+            <div className="flex-grow">
+              {children}
+            </div>
+            <Footer />
 
-          {/* ২. কুকি পপ-আপটি এখানে বসানো হলো */}
-          <CookieConsent />
-          <AnalyticsTracker />
-
+            {/* ২. কুকি পপ-আপটি এখানে বসানো হলো */}
+            <CookieConsent />
+            <AnalyticsTracker />
+          </AuthProvider>
         </ThemeProvider>
 
         {/* Microsoft Clarity (Paste ID below) */}
