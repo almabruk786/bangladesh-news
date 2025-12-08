@@ -11,50 +11,50 @@ export default function HeroSection({ heroNews, sideNews }) {
 
                 {/* Main Hero Story - Side by Side Layout for Compactness */}
                 <div className="lg:col-span-8 group">
-                    <Link href={`/news/${heroNews.id}`} className="block h-full">
-                        <div className="flex flex-col gap-3">
-                            {/* 1. Headline at Top */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="bg-red-600 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-sm">Top Story</span>
-                                    <span className="text-slate-400 text-xs font-semibold flex items-center gap-1">
-                                        <Clock size={12} /> {new Date(heroNews.publishedAt).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <h1 className="text-xl md:text-3xl font-black text-slate-900 leading-tight group-hover:text-red-700 transition-colors">
+                    <div className="flex flex-col gap-3 h-full">
+                        {/* 1. Headline at Top */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="bg-red-600 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-sm">Top Story</span>
+                                <span className="text-slate-400 text-xs font-semibold flex items-center gap-1">
+                                    <Clock size={12} /> {new Date(heroNews.publishedAt).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <Link href={`/news/${heroNews.id}`} className="hover:text-red-700 transition-colors">
+                                <h1 className="text-xl md:text-3xl font-black text-slate-900 leading-tight">
                                     {heroNews.title}
                                 </h1>
-                            </div>
+                            </Link>
+                        </div>
 
-                            {/* 2. Split: Image (Left) + Excerpt (Right) */}
-                            <div className="grid md:grid-cols-12 gap-6 items-start">
-                                <div className="md:col-span-7 relative overflow-hidden rounded-xl aspect-video bg-slate-100 shadow-sm">
-                                    <img
-                                        src={heroNews.imageUrl || heroNews.imageUrls?.[0]}
-                                        alt={heroNews.title}
-                                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
-                                    />
-                                    {heroNews.isVideo && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition">
-                                            <PlayCircle size={48} className="text-white opacity-80" />
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="md:col-span-5 flex flex-col justify-between h-full py-1">
-                                    <p className="text-slate-600 text-sm leading-relaxed text-justify line-clamp-[8]">
-                                        {/* Smart Excerpt: 25 words max */}
-                                        {getSmartExcerpt(heroNews.content, 25)}
-                                    </p>
-                                    <div className="mt-3">
-                                        <span className="inline-block text-xs font-bold text-red-600 border-b-2 border-red-100 hover:border-red-600 transition-all">
-                                            Read Full Story →
-                                        </span>
+                        {/* 2. Split: Image (Left) + Excerpt (Right) */}
+                        <div className="grid md:grid-cols-12 gap-6 items-start">
+                            <Link href={`/news/${heroNews.id}`} className="md:col-span-7 relative overflow-hidden rounded-xl aspect-video bg-slate-100 shadow-sm block">
+                                <img
+                                    src={heroNews.imageUrl || heroNews.imageUrls?.[0]}
+                                    alt={heroNews.title}
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                                />
+                                {heroNews.isVideo && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition">
+                                        <PlayCircle size={48} className="text-white opacity-80" />
                                     </div>
+                                )}
+                            </Link>
+
+                            <div className="md:col-span-5 flex flex-col justify-between h-full py-1">
+                                <p className="text-slate-600 text-sm leading-relaxed text-justify line-clamp-[8] select-text">
+                                    {/* Smart Excerpt: Increased to 70 words to fill space */}
+                                    {getSmartExcerpt(heroNews.content, 70)}
+                                </p>
+                                <div className="mt-3">
+                                    <Link href={`/news/${heroNews.id}`} className="inline-block text-xs font-bold text-red-600 border-b-2 border-red-100 hover:border-red-600 transition-all">
+                                        Read Full Story →
+                                    </Link>
                                 </div>
                             </div>
                         </div>
-                    </Link>
+                    </div>
                 </div>
 
                 {/* Side Stories (Ultra Compact) */}

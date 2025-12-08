@@ -3,14 +3,14 @@ import { db } from './firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 
 const parser = new Parser({
-  headers: { 'User-Agent': 'Mozilla/5.0' }
+  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
 });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const MAX_NEWS_LIMIT = 1;
+const MAX_NEWS_LIMIT = 3;
 
-// মডেল তালিকা
-const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+// মডেল তালিকা - Prioritize stable models
+const MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"];
 
 async function generateWithGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -22,10 +22,19 @@ async function generateWithGemini(prompt) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       });
-      if (!response.ok) throw new Error(`Status ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Model ${modelName} Failed: ${response.status}`, errorText);
+        throw new Error(`Status ${response.status}: ${errorText}`);
+      }
+
       const data = await response.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text;
-    } catch (error) { await sleep(1000); }
+    } catch (error) {
+      console.warn(`Attempt with ${modelName} failed, trying next...`);
+      await sleep(1000);
+    }
   }
   return null;
 }
@@ -52,7 +61,23 @@ export async function fetchAndProcessNews(logger = () => { }) {
 
     try {
       logger(`Fetching RSS Feed: ${feedUrl}...`, "info");
-      const feed = await parser.parseURL(feedUrl);
+
+      // Manual Fetch to handle BOM or whitespace issues
+      const response = await fetch(feedUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'application/rss+xml, application/xml, text/xml'
+        }
+      });
+
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+      const text = await response.text();
+      // Clean BOM and leading whitespace
+      const cleanText = text.replace(/^\uFEFF/g, '').trim();
+
+      const feed = await parser.parseString(cleanText);
+
       logger(`Feed Parsed: Found ${feed.items.length} items. Scanning for fresh content...`, "success");
 
       for (const item of feed.items.slice(0, 5)) {

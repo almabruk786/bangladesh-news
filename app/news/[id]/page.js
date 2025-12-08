@@ -16,7 +16,7 @@ export async function generateMetadata({ params }) {
     const description = getSmartExcerpt(article.content, 30);
 
     return {
-      title: `${article.title} - ${article.category || 'News'} | Bangladesh News`,
+      title: `${article.title} - ${article.category === "Auto-Imported" ? "News" : (article.category || 'News')} | Bangladesh News`,
       description: description,
       openGraph: {
         title: article.title,

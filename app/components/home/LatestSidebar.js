@@ -15,7 +15,7 @@ export default function LatestSidebar({ news }) {
                 {news.map((item) => (
                     <Link key={item.id} href={`/news/${item.id}`} className="group block border-b border-slate-50 pb-4 last:border-0">
                         <span className="text-red-600 text-[10px] font-bold uppercase tracking-wider mb-1 block">
-                            {item.category || "General"}
+                            {item.category === "Auto-Imported" ? "General" : (item.category || "General")}
                         </span>
                         <h4 className="font-bold text-base text-slate-900 leading-snug group-hover:text-red-600 transition-colors mb-2">
                             {item.title}
