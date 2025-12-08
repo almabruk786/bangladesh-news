@@ -15,7 +15,7 @@ export const metadata = {
   metadataBase: new URL('https://bakalia.xyz'),
   alternates: { canonical: './' },
   title: { template: '%s | Bangladesh News', default: 'Bangladesh News - Latest Breaking News BD' },
-  description: "Automated AI News Portal providing latest breaking news, sports, politics, and technology updates 24/7.",
+  description: "Bangladesh - News You Can Trust, Anytime",
   verification: { google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk" },
   icons: {
     icon: '/icon.png',
