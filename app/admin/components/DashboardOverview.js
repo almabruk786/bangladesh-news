@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     BarChart, Activity, TrendingUp, AlertCircle,
-    Terminal, Globe, Users, CheckCircle, Clock
+    Terminal, Globe, Users, CheckCircle, Clock, Search
 } from 'lucide-react';
 import { analyzeSeo } from '../lib/SeoAnalyzer';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
@@ -12,6 +12,7 @@ export default function DashboardOverview({ stats, user }) {
     const [trendingNews, setTrendingNews] = useState([]);
     const [seoAnalysis, setSeoAnalysis] = useState(null);
     const [logs, setLogs] = useState([]);
+    const [searchResults, setSearchResults] = useState([]); // Search State
 
     const isAdmin = user?.role === 'admin';
 
@@ -120,28 +121,75 @@ export default function DashboardOverview({ stats, user }) {
             </div>
 
             {/* 3. Automated SEO Score Checker (Unified Full Width) */}
-            <div className={`md:col-span-2 ${isAdmin ? 'lg:col-span-3' : 'lg:col-span-4'} bg-white rounded-2xl p-6 border border-slate-100 shadow-sm`}>
-                <div className="flex items-center justify-between mb-6">
+            <div className={`md:col-span-2 ${isAdmin ? 'lg:col-span-3' : 'lg:col-span-4'} bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-visible`}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-2">
                         <div className="bg-blue-100 p-2 rounded-lg">
                             <CheckCircle className="text-blue-600" size={20} />
                         </div>
                         <div>
-                            <h2 className="font-bold text-slate-800">
-                                {isAdmin ? "Latest SEO Analysis" : "Performance Report: Latest Article"}
-                            </h2>
-                            <p className="text-xs text-slate-400">Automated quality check</p>
+                            <h2 className="font-bold text-slate-800">SEO Analyzer</h2>
+                            <p className="text-xs text-slate-400">Check performance of any article</p>
                         </div>
                     </div>
+
+                    {/* Search Bar */}
+                    <div className="relative z-20 w-full md:w-64">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Search article title..."
+                                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val.length > 2) {
+                                        const searchTitle = async () => {
+                                            const q = query(
+                                                collection(db, "articles"),
+                                                where("title", ">=", val),
+                                                where("title", "<=", val + '\uf8ff'),
+                                                limit(5)
+                                            );
+                                            const snap = await getDocs(q);
+                                            setSearchResults(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+                                        };
+                                        searchTitle();
+                                    } else {
+                                        setSearchResults([]);
+                                    }
+                                }}
+                            />
+                        </div>
+                        {/* Search Results Dropdown */}
+                        {searchResults.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 p-2 max-h-60 overflow-y-auto">
+                                {searchResults.map(res => (
+                                    <div
+                                        key={res.id}
+                                        onClick={() => {
+                                            const analysis = analyzeSeo(res);
+                                            setSeoAnalysis({ id: res.id, title: res.title, ...analysis });
+                                            setSearchResults([]);
+                                        }}
+                                        className="p-2 hover:bg-slate-50 rounded-lg cursor-pointer text-sm font-medium text-slate-700 truncate transition"
+                                    >
+                                        {res.title}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     {seoAnalysis && (
-                        <div className={`text-2xl font-black px-4 py-2 rounded-lg ${seoAnalysis.score >= 80 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        <div className={`hidden md:block text-2xl font-black px-4 py-2 rounded-lg ${seoAnalysis.score >= 80 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                             {seoAnalysis.score}/100
                         </div>
                     )}
                 </div>
 
                 {seoAnalysis ? (
-                    <div className={`grid ${isAdmin ? 'md:grid-cols-3' : 'md:grid-cols-3'} gap-8`}>
+                    <div className="grid md:grid-cols-3 gap-8">
                         <div className="md:col-span-1">
                             <h4 className="font-bold text-sm mb-3 text-slate-500 uppercase tracking-wider">Target Article</h4>
                             <a

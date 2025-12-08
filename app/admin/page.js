@@ -221,12 +221,12 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900">
+    <div className="h-[100dvh] overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col md:flex-row font-sans text-slate-900">
 
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -267,9 +267,9 @@ export default function AdminDashboard() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen relative w-full">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-full relative w-full scroll-smooth">
         {/* Top Bar Mobile Only */}
-        <div className="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-slate-50/90 backdrop-blur z-30 py-2 border-b border-slate-200">
+        <div className="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-white/80 backdrop-blur-md z-30 py-3 px-4 -mx-4 border-b border-slate-200/60 shadow-sm">
           <div className="flex items-center gap-3">
             <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-slate-700">
               <Menu size={24} />
