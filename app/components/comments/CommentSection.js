@@ -50,7 +50,14 @@ export default function CommentSection({ articleId }) {
                 })
             });
 
-            const data = await res.json();
+            let data;
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await res.json();
+            } else {
+                // Not JSON, likely an HTML error page (404/500)
+                throw new Error(`Server returned ${res.status} ${res.statusText}`);
+            }
 
             if (!data.success) {
                 alert(data.error); // Show AI rejection reason

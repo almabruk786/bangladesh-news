@@ -57,6 +57,11 @@ export async function POST(request) {
             })
         });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
+        }
+
         const data = await response.json();
         const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 

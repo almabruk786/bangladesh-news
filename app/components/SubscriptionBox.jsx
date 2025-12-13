@@ -21,7 +21,13 @@ export default function SubscriptionBox() {
                 body: JSON.stringify({ email })
             });
 
-            const data = await res.json();
+            let data;
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await res.json();
+            } else {
+                throw new Error("Server Error");
+            }
 
             if (data.success) {
                 setStatus("success");

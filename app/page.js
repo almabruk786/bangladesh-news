@@ -129,7 +129,8 @@ function AdPopup() {
   useEffect(() => {
     const timer = setTimeout(() => {
       getDoc(doc(db, "ads", "popup")).then(snap => {
-        if (snap.exists() && snap.data().isActive) { setAd(snap.data()); setShow(true); }
+        // Explicitly check for boolean true to avoid falsy string issues
+        if (snap.exists() && snap.data().isActive === true) { setAd(snap.data()); setShow(true); }
       });
     }, 2000);
     return () => clearTimeout(timer);

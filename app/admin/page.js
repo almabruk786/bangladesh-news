@@ -171,7 +171,9 @@ export default function AdminDashboard() {
       // Fetch specific table data
       // For Admin "Manage" -> Fetch all
       if (activeTab === "manage" && user.role === "admin") {
-        q = query(collection(db, "articles"), orderBy("isPinned", "desc"), orderBy("publishedAt", "desc"), limit(2000));
+        // Fix: Removed orderBy("isPinned", "desc") to avoid missing index error.
+        // We will sort by pinned status in the client side below.
+        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(100)); // Fetches latest 100 articles
       }
       // For Admin "Pending" -> Fetch pending & pending_delete
       else if (activeTab === "pending" && user.role === "admin") {
@@ -191,7 +193,14 @@ export default function AdminDashboard() {
 
       if (q) {
         const snap = await getDocs(q);
-        setArticles(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Client-side sort for "Manage" tab: Pinned first
+        if (activeTab === "manage") {
+          docs.sort((a, b) => Number(!!b.isPinned) - Number(!!a.isPinned));
+        }
+
+        setArticles(docs);
       }
     } catch (error) {
       console.error("Data Fetch Error:", error);
