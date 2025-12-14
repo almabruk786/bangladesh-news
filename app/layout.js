@@ -5,7 +5,6 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
-// ১. কুকি কনসেন্ট ইম্পোর্ট করা হলো
 import CookieConsent from "./components/CookieConsent";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 
@@ -66,7 +65,7 @@ export default function RootLayout({ children }) {
           `}
         </Script>
 
-        {/* ✅ Google AdSense Script Added Here */}
+        {/* ✅ Google AdSense Script */}
         <Script
           id="adsense-init"
           strategy="afterInteractive"
@@ -82,7 +81,6 @@ export default function RootLayout({ children }) {
             </div>
             <Footer />
 
-            {/* ২. কুকি পপ-আপটি এখানে বসানো হলো */}
             <CookieConsent />
             <AnalyticsTracker />
           </AuthProvider>
@@ -98,9 +96,8 @@ export default function RootLayout({ children }) {
                 })(window, document, "clarity", "script", "YOUR_CLARITY_ID_HERE");
             `
         }} />
-
       </body>
     </html>
   );
-}
-}
+                }
+            
