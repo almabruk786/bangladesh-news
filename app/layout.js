@@ -66,6 +66,14 @@ export default function RootLayout({ children }) {
           `}
         </Script>
 
+        {/* ✅ Google AdSense Script Added Here */}
+        <Script
+          id="adsense-init"
+          strategy="afterInteractive"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2257905734584691"
+          crossOrigin="anonymous"
+        />
+
         <ThemeProvider>
           <AuthProvider>
             <Header />
@@ -80,7 +88,7 @@ export default function RootLayout({ children }) {
           </AuthProvider>
         </ThemeProvider>
 
-        {/* Microsoft Clarity (Paste ID below) */}
+        {/* Microsoft Clarity */}
         <script dangerouslySetInnerHTML={{
           __html: `
                 (function(c,l,a,r,i,t,y){
@@ -94,4 +102,5 @@ export default function RootLayout({ children }) {
       </body>
     </html>
   );
+}
 }
