@@ -11,14 +11,25 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
     const itemsPerPage = 10;
 
     const filteredData = data.filter(item => {
-        const term = searchTerm.toLowerCase().trim();
+        let term = searchTerm.toLowerCase().trim();
         if (!term) return true;
+
+        // Extract ID if URL is pasted (e.g., https://site.com/news/12345)
+        // Looks for last segment
+        if (term.includes('/')) {
+            const parts = term.split('/').filter(p => p.length > 5); // ID usually long
+            if (parts.length > 0) {
+                const potentialId = parts[parts.length - 1];
+                // If ID extracted, use it for checking
+                if (item.id.toLowerCase() === potentialId.toLowerCase()) return true;
+            }
+        }
 
         const matchesSearch = item.title.toLowerCase().includes(term) ||
             (item.authorName && item.authorName.toLowerCase().includes(term)) ||
             item.id.toLowerCase().trim() === term || // Strict ID match
             item.id.toLowerCase().includes(term) || // Partial ID match
-            term.includes(item.id); // URL paste match
+            term.includes(item.id); // URL paste match (fallback)
 
         if (filter === "all") return matchesSearch;
         return matchesSearch && item.status === filter;

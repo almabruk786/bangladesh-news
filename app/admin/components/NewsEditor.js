@@ -278,7 +278,6 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 authorRole: user.role,
                 tags: form.tags,
                 ogImage: form.ogImage, // Include OG Image
-                ogImage: form.ogImage, // Include OG Image
                 videoUrl: form.videoUrl, // Include Video URL
                 metaDescription: form.metaDescription, // Manual SEO Description
                 isLive: form.isLive // Live Blog Status
