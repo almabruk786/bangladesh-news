@@ -1,7 +1,7 @@
-import { db } from '../../lib/firebase';
+import { db } from '../lib/firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { formatIsoDate } from '../../lib/dateUtils';
-import { generateSeoUrl } from '../../lib/urlUtils';
+import { formatIsoDate } from '../lib/dateUtils';
+import { generateSeoUrl } from '../lib/urlUtils';
 
 export const dynamic = 'force-dynamic';
 
