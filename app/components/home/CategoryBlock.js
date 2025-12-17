@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { parseNewsContent, stripHtml } from "../../lib/utils";
 
@@ -23,11 +24,13 @@ export default function CategoryBlock({ title, news, color = "border-slate-800" 
                 {/* Main large story */}
                 <div className="lg:col-span-2 group">
                     <Link href={`/news/${mainStory.id}`}>
-                        <div className="aspect-video bg-slate-100 overflow-hidden rounded-lg mb-3 shadow-sm border border-slate-100">
-                            <img
-                                src={mainStory.imageUrl || mainStory.imageUrls?.[0]}
+                        <div className="aspect-video bg-slate-100 overflow-hidden rounded-lg mb-3 shadow-sm border border-slate-100 relative">
+                            <Image
+                                src={mainStory.imageUrl || mainStory.imageUrls?.[0] || '/placeholder.png'}
                                 alt={mainStory.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                                className="object-cover group-hover:scale-105 transition duration-500"
                             />
                         </div>
                         <h3 className="text-xl font-bold leading-tight group-hover:text-red-600 text-slate-900 mb-2">
@@ -47,11 +50,13 @@ export default function CategoryBlock({ title, news, color = "border-slate-800" 
                 <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
                     {sideStories.map((item) => (
                         <Link key={item.id} href={`/news/${item.id}`} className="group flex flex-col gap-2">
-                            <div className="aspect-[3/2] bg-slate-100 overflow-hidden rounded-md border border-slate-100">
-                                <img
-                                    src={item.imageUrl || item.imageUrls?.[0]}
+                            <div className="aspect-[3/2] bg-slate-100 overflow-hidden rounded-md border border-slate-100 relative">
+                                <Image
+                                    src={item.imageUrl || item.imageUrls?.[0] || '/placeholder.png'}
                                     alt={item.title}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                                    fill
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+                                    className="object-cover group-hover:scale-110 transition duration-500"
                                 />
                             </div>
                             <h4 className="font-bold text-sm text-slate-800 leading-snug group-hover:text-red-600 line-clamp-3">

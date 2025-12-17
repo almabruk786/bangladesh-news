@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Clock, PlayCircle } from "lucide-react";
 import { parseNewsContent, stripHtml, getSmartExcerpt } from "../../lib/utils";
 
@@ -30,10 +31,13 @@ export default function HeroSection({ heroNews, sideNews }) {
                         {/* 2. Split: Image (Left) + Excerpt (Right) */}
                         <div className="grid md:grid-cols-12 gap-6 items-start">
                             <Link href={`/news/${heroNews.id}`} className="md:col-span-7 relative overflow-hidden rounded-xl aspect-video bg-slate-100 shadow-sm block">
-                                <img
-                                    src={heroNews.imageUrl || heroNews.imageUrls?.[0]}
+                                <Image
+                                    src={heroNews.imageUrl || heroNews.imageUrls?.[0] || '/placeholder.png'}
                                     alt={heroNews.title}
-                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                                    fill
+                                    priority
+                                    sizes="(max-width: 768px) 100vw, 60vw"
+                                    className="object-cover transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
                                 />
                                 {heroNews.isVideo && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition">
@@ -75,11 +79,13 @@ export default function HeroSection({ heroNews, sideNews }) {
                                         {new Date(item.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
-                                <div className="w-16 h-12 bg-slate-100 overflow-hidden rounded shrink-0 border border-slate-100">
-                                    <img
-                                        src={item.imageUrl || item.imageUrls?.[0]}
+                                <div className="w-16 h-12 bg-slate-100 overflow-hidden rounded shrink-0 border border-slate-100 relative">
+                                    <Image
+                                        src={item.imageUrl || item.imageUrls?.[0] || '/placeholder.png'}
                                         alt={item.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                        fill
+                                        sizes="64px"
+                                        className="object-cover group-hover:scale-105 transition duration-500"
                                     />
                                 </div>
                             </Link>

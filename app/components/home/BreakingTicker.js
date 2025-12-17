@@ -2,7 +2,16 @@ import Link from "next/link";
 import { Zap } from "lucide-react";
 
 export default function BreakingTicker({ news }) {
-    if (!news || news.length === 0) return null;
+    // SEO FIX: Strictly filter for news from the last 24 hours
+    const recentNews = news?.filter(item => {
+        if (!item.publishedAt) return false;
+        const pubDate = new Date(item.publishedAt);
+        const twentyFourHoursAgo = new Date();
+        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+        return pubDate > twentyFourHoursAgo;
+    }) || [];
+
+    if (recentNews.length === 0) return null;
 
     return (
         <div className="bg-slate-900 border-b border-slate-800 text-white sticky top-[72px] z-30">
@@ -13,7 +22,7 @@ export default function BreakingTicker({ news }) {
 
                 <div className="flex-1 overflow-hidden relative h-full flex items-center bg-slate-900">
                     <div className="absolute whitespace-nowrap animate-marquee flex gap-8 items-center text-sm font-medium text-slate-300">
-                        {news.map((item, idx) => (
+                        {recentNews.map((item, idx) => (
                             <Link key={idx} href={`/news/${item.id}`} className="hover:text-white transition-colors flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 bg-red-500 rounded-full inline-block"></span>
                                 {item.title}
@@ -21,7 +30,7 @@ export default function BreakingTicker({ news }) {
                             </Link>
                         ))}
                         {/* Duplicate for infinite effect */}
-                        {news.map((item, idx) => (
+                        {recentNews.map((item, idx) => (
                             <Link key={`dup-${idx}`} href={`/news/${item.id}`} className="hover:text-white transition-colors flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 bg-red-500 rounded-full inline-block"></span>
                                 {item.title}

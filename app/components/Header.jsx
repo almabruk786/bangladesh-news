@@ -10,6 +10,7 @@ export default function Header() {
   const { darkMode, toggleTheme, lang, toggleLang } = useTheme();
   const pathname = usePathname();
   const [currentDate, setCurrentDate] = useState("");
+  const [currentIso, setCurrentIso] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -39,6 +40,7 @@ export default function Header() {
       const timeStr = now.toLocaleTimeString(lang === 'bn' ? 'bn-BD' : 'en-US', timeOptions);
 
       setCurrentDate(`${dateStr} | ${timeStr}`);
+      setCurrentIso(now.toISOString());
     }, 1000);
     return () => clearInterval(timer);
   }, [lang]);
@@ -92,16 +94,16 @@ export default function Header() {
 
         {/* Date (Middle - Hidden on mobile) */}
         <div className="hidden lg:flex flex-col text-xs text-slate-600 font-bold text-center absolute left-1/2 transform -translate-x-1/2 min-w-[250px]">
-          <span>{currentDate}</span>
+          <time datetime={currentIso}>{currentDate}</time>
         </div>
 
         {/* Right: Actions */}
         <div className="flex items-center justify-end gap-2 lg:gap-4">
-          <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition">
+          <button onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition">
             <Search size={20} />
           </button>
           <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
-            <button onClick={toggleTheme} className="p-1 hover:text-red-500 transition text-slate-500">
+            <button onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500">
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </div>
@@ -113,6 +115,7 @@ export default function Header() {
             <input
               type="text"
               autoFocus
+              aria-label="Search Query"
               placeholder="Search news..."
               className="w-full px-3 py-2 border rounded focus:outline-none focus:border-red-500 text-sm"
               onKeyDown={handleSearch}
@@ -124,14 +127,19 @@ export default function Header() {
       {/* 2. Navigation Bar (Centered & Sticky) */}
       <div className={`border-t border-slate-100 dark:border-slate-800 ${isScrolled ? 'fixed top-0 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-md z-50 transition-all duration-300' : 'relative z-40'}`}>
         <div className="max-w-7xl mx-auto px-4">
-          <nav className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar md:gap-5 py-2">
-            <Link href="/" className="px-1 md:px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0">
+          <nav aria-label="Main Navigation" className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar md:gap-5 py-2">
+            <Link
+              href="/"
+              aria-label="Home"
+              className="px-1 md:px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0"
+            >
               {lang === 'bn' ? 'প্রচ্ছদ' : 'Home'}
             </Link>
 
             {/* GLOWING E-PAPER BUTTON */}
             <Link
               href="/newspapers"
+              aria-label="NewsPapers"
               className="py-2 px-1 border-b-2 border-transparent text-xs md:text-sm font-black uppercase tracking-tight text-red-600 hover:text-red-700 transition shrink-0 flex items-center gap-1 animate-pulse"
             >
               NewsPapers 📰
@@ -141,6 +149,7 @@ export default function Header() {
               <Link
                 key={cat.name}
                 href={cat.link}
+                aria-current={pathname === cat.link ? 'page' : undefined}
                 className={`py-2 px-1 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 whitespace-nowrap ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
               >
                 {lang === 'bn' ? cat.bn : cat.name} {cat.hot && <span className="text-[10px]">🔥</span>}

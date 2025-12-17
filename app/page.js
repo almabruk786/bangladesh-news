@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { db } from './lib/firebase';
 import { collection, getDocs, orderBy, query, limit, where, doc, getDoc } from 'firebase/firestore';
 import { Loader2, X } from 'lucide-react';
@@ -97,10 +98,13 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {data.allNews.slice(10, 19).map(item => (
                   <Link href={`/news/${item.id}`} key={item.id} className="group block">
-                    <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden mb-3">
-                      <img
-                        src={item.imageUrl || item.imageUrls?.[0]}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden mb-3 relative">
+                      <Image
+                        src={item.imageUrl || item.imageUrls?.[0] || '/placeholder.png'}
+                        alt={item.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition duration-500"
                       />
                     </div>
                     <h3 className="font-bold leading-tight group-hover:text-red-600 transition-colors">
