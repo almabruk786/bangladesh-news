@@ -18,8 +18,8 @@ export const metadata = {
   description: "Bangladesh - News You Can Trust, Anytime",
   verification: { google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk" },
   icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
+    icon: '/bn-icon.png',
+    shortcut: '/bn-icon.png',
     apple: '/apple-icon.png',
   },
   openGraph: {

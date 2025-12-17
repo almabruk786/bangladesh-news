@@ -82,7 +82,7 @@ export default function Header() {
             <div className="flex items-center gap-2">
               <img src="/favicon.png" alt="Bangladesh News" className="w-8 h-8 md:w-10 md:h-10 object-contain" />
               <h1 className="text-2xl md:text-4xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-none">
-                BANGLA<span className="text-red-600">DESH</span>
+                BAKALIA <span className="text-red-600">NEWS</span>
               </h1>
             </div>
             {/* Mobile Date (Visible below logo) */}
@@ -94,7 +94,7 @@ export default function Header() {
 
         {/* Date (Middle - Hidden on mobile) */}
         <div className="hidden lg:flex flex-col text-xs text-slate-600 font-bold text-center absolute left-1/2 transform -translate-x-1/2 min-w-[250px]">
-          <time datetime={currentIso}>{currentDate}</time>
+          <time dateTime={currentIso}>{currentDate}</time>
         </div>
 
         {/* Right: Actions */}
