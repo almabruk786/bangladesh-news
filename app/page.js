@@ -12,6 +12,7 @@ import HeroSection from './components/home/HeroSection';
 import CategoryBlock from './components/home/CategoryBlock';
 import LatestSidebar from './components/home/LatestSidebar';
 import { generateItemListSchema } from './lib/schemas';
+import GoogleAd from './components/GoogleAd';
 
 export default function Home() {
   const [data, setData] = useState({
@@ -121,8 +122,9 @@ export default function Home() {
           <div className="lg:col-span-3">
             <LatestSidebar news={data.latestNews} />
             {/* Sticky Ad Placeholder */}
-            <div className="sticky top-24 mt-8 bg-slate-50 h-[600px] flex items-center justify-center text-slate-300 font-bold border border-dashed border-slate-200 rounded-xl">
-              AD SPACE
+            <div className="sticky top-24 mt-8">
+              <GoogleAd slotId="3652013893" style={{ minHeight: '600px' }} />
+              <p className="text-center text-xs text-slate-300 mt-1">Advertisement</p>
             </div>
           </div>
         </div>

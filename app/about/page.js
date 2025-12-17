@@ -1,6 +1,15 @@
 export const metadata = {
-  title: 'আমাদের সম্পর্কে | Bangladesh News',
-  description: 'Bakalia News (bakalia.xyz) হলো বাংলাদেশের একটি স্বাধীন, ডিজিটাল সংবাদমাধ্যম।',
+  title: 'About Us - Bangladesh News (Bakalia News)',
+  description: 'Learn about Bakalia News (bakalia.xyz) - An independent digital news platform in Bangladesh delivering fast and accurate news.',
+  alternates: {
+    canonical: 'https://bakalia.xyz/about',
+  },
+  openGraph: {
+    title: 'About Us - Bangladesh News (Bakalia News)',
+    description: 'Learn about Bakalia News (bakalia.xyz) - An independent digital news platform in Bangladesh.',
+    url: 'https://bakalia.xyz/about',
+    type: 'website',
+  }
 };
 
 export default function AboutPage() {

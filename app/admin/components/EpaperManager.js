@@ -2,13 +2,15 @@
 import { useState, useEffect } from 'react';
 import { db } from '../../lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { Trash2, Edit2, Plus, ExternalLink, RefreshCw } from 'lucide-react';
+import { Trash2, Edit2, Plus, ExternalLink, RefreshCw, Upload } from 'lucide-react';
+import BulkImport from './BulkImport';
 
 export default function EpaperManager() {
     const [newspapers, setNewspapers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [currentId, setCurrentId] = useState(null);
+    const [showImport, setShowImport] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -155,10 +157,24 @@ export default function EpaperManager() {
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">E-Paper Manager <span className="text-sm font-normal text-slate-500">({newspapers.length} Papers)</span></h2>
-                <button onClick={seedDefaults} className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-sm font-bold hover:bg-blue-200">
-                    <RefreshCw size={14} /> Import/Update Defaults
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={() => setShowImport(true)} className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded text-sm font-bold hover:bg-green-200">
+                        <Upload size={14} /> Import from Excel/CSV
+                    </button>
+                    <button onClick={seedDefaults} className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-sm font-bold hover:bg-blue-200">
+                        <RefreshCw size={14} /> Import/Update Defaults
+                    </button>
+                </div>
             </div>
+
+            {showImport && (
+                <BulkImport
+                    onClose={() => setShowImport(false)}
+                    onComplete={() => {
+                        // Optional: refresh logic if needed, but snapshot handles it
+                    }}
+                />
+            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { generateBreadcrumbSchema } from "../../lib/schemas";
+import GoogleAd from "../../components/GoogleAd";
 
 export default function CategoryPage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = use(params);
@@ -69,6 +70,11 @@ export default function CategoryPage({ params }: { params: Promise<{ name: strin
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <h1 className="text-2xl font-black mb-4 capitalize border-b pb-2 border-red-600 inline-block">{decodeURIComponent(name)} News</h1>
+
+      <div className="mb-8">
+        <GoogleAd slotId="3652013893" style={{ minHeight: '120px' }} />
+      </div>
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {news.map((item: any) => {
           // Safe extraction and stripping

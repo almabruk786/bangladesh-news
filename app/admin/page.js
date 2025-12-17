@@ -17,6 +17,7 @@ import AdManager from "./components/AdManager";
 import EpaperManager from "./components/EpaperManager";
 import UserManager from "./components/UserManager";
 import AutoBot from "./components/AutoBot";
+import LogoFetcher from "./components/LogoFetcher";
 import Messenger from "./components/Messenger"; // Messages Chat System
 
 const MASTER_PASSWORD = "Arif@42480";
@@ -261,8 +262,20 @@ export default function AdminDashboard() {
         return <CategoryManager />;
       case "ads":
         return <AdManager />;
+      case "newspapers":
+        return (
+          <div className="space-y-8">
+            <LogoFetcher />
+            <NewspaperManager />
+          </div>
+        );
       case "epaper":
-        return <EpaperManager />;
+        return (
+          <div className="space-y-6">
+            <LogoFetcher />
+            <EpaperManager />
+          </div>
+        );
       case "analytics":
         return <AnalyticsViewer />;
       case "users":
