@@ -10,6 +10,7 @@ import BreakingTicker from './components/home/BreakingTicker';
 import HeroSection from './components/home/HeroSection';
 import CategoryBlock from './components/home/CategoryBlock';
 import LatestSidebar from './components/home/LatestSidebar';
+import { generateItemListSchema } from './lib/schemas';
 
 export default function Home() {
   const [data, setData] = useState({
@@ -68,6 +69,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateItemListSchema(data.realLatestNews)) }}
+      />
       <AdPopup />
 
       {/* 1. Breaking Ticker */}

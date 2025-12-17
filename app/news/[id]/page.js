@@ -2,8 +2,8 @@ import { db } from '../../lib/firebase';
 import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
 import ArticleContent from './ArticleContent';
+import { generateNewsArticleSchema, generateBreadcrumbSchema } from '../../lib/schemas';
 import { parseNewsContent, getSmartExcerpt } from '../../lib/utils';
-
 import { extractIdFromUrl, generateSeoUrl } from '../../lib/urlUtils';
 
 // Generate dynamic metadata for SEO
@@ -82,5 +82,24 @@ export default async function NewsDetails({ params }) {
     return <div className="text-center py-20 font-bold">খবরটি পাওয়া যায়নি!</div>;
   }
 
-  return <ArticleContent article={article} relatedNews={relatedNews} />;
+  const newsSchema = generateNewsArticleSchema({ ...article, updatedAt: null }); // Pass updatedAt if available in db
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: article.category, url: `/category/${article.category}` },
+    { name: article.title, url: `/news/${id}` }
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(newsSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <ArticleContent article={article} relatedNews={relatedNews} />
+    </>
+  );
 }

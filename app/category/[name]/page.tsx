@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { generateBreadcrumbSchema } from "../../lib/schemas";
 
 export default function CategoryPage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = use(params);
@@ -56,8 +57,17 @@ export default function CategoryPage({ params }: { params: Promise<{ name: strin
     load();
   }, [name]);
 
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: decodeURIComponent(name), url: `/category/${name}` }
+  ]);
+
   return (
     <div className="max-w-5xl mx-auto p-4">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <h1 className="text-2xl font-black mb-4 capitalize border-b pb-2 border-red-600 inline-block">{decodeURIComponent(name)} News</h1>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {news.map((item: any) => {
