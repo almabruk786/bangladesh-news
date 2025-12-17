@@ -17,17 +17,32 @@ export default function EpaperManager() {
         name: '',
         bn: '',
         url: '',
-        logo: ''
+        url: '',
+        logo: '',
+        order: 999
     });
 
     // Fetch Newspapers
     useEffect(() => {
-        const q = query(collection(db, "newspapers"), orderBy("name"));
+        const q = query(collection(db, "newspapers"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const newsData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
+
+            // Client-side sort to avoid Firestore Index requirement
+            newsData.sort((a, b) => {
+                const orderA = a.order !== undefined ? a.order : 999;
+                const orderB = b.order !== undefined ? b.order : 999;
+
+                // Sort by Order first
+                if (orderA !== orderB) return orderA - orderB;
+
+                // Then by Name
+                return a.name.localeCompare(b.name);
+            });
+
             setNewspapers(newsData);
             setLoading(false);
         });
@@ -56,7 +71,9 @@ export default function EpaperManager() {
             name: paper.name,
             bn: paper.bn || '',
             url: paper.url,
-            logo: paper.logo || ''
+            url: paper.url,
+            logo: paper.logo || '',
+            order: paper.order || 999
         });
         setIsEditing(true);
         setCurrentId(paper.id);
@@ -69,7 +86,7 @@ export default function EpaperManager() {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', bn: '', url: '', logo: '' });
+        setFormData({ name: '', bn: '', url: '', logo: '', order: 999 });
         setIsEditing(false);
         setCurrentId(null);
     };
@@ -220,6 +237,16 @@ export default function EpaperManager() {
                         onChange={e => setFormData({ ...formData, logo: e.target.value })}
                     />
                 </div>
+                <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Display Order (Lower = First)</label>
+                    <input
+                        type="number"
+                        placeholder="999"
+                        className="w-full px-3 py-2 border rounded dark:bg-slate-800 dark:border-slate-700"
+                        value={formData.order}
+                        onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 999 })}
+                    />
+                </div>
                 <div className="md:col-span-2 flex justify-end gap-2 mt-2">
                     {isEditing && (
                         <button type="button" onClick={resetForm} className="px-4 py-2 text-slate-500 text-sm font-bold hover:bg-slate-200 rounded">Cancel</button>
@@ -240,7 +267,10 @@ export default function EpaperManager() {
                                 {paper.logo ? <img src={paper.logo} alt={paper.name} className="max-w-full max-h-full object-contain" /> : <span className="text-xs font-bold text-slate-400">No Logo</span>}
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-800 dark:text-white">{paper.name} <span className="text-slate-400 font-normal text-sm">({paper.bn})</span></h4>
+                                <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    {paper.name}
+                                    <span className="text-xs bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">#{paper.order || 999}</span>
+                                </h4>
                                 <a href={paper.url} target="_blank" className="text-xs text-blue-500 flex items-center gap-1 hover:underline"><ExternalLink size={10} /> {paper.url}</a>
                             </div>
                         </div>

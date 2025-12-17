@@ -12,9 +12,18 @@ export default function NewspapersList() {
     useEffect(() => {
         const fetchPapers = async () => {
             try {
-                const q = query(collection(db, "newspapers"), orderBy("name"));
+                const q = query(collection(db, "newspapers"));
                 const querySnapshot = await getDocs(q);
-                const papers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                let papers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Client-side sort
+                papers.sort((a, b) => {
+                    const orderA = a.order !== undefined ? a.order : 999;
+                    const orderB = b.order !== undefined ? b.order : 999;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return a.name.localeCompare(b.name);
+                });
+
                 setNewspapers(papers);
             } catch (error) {
                 console.error("Error fetching newspapers:", error);
