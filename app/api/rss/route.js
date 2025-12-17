@@ -1,4 +1,4 @@
-import { db } from '../../../lib/firebase';
+import { db } from '../../lib/firebase';
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 export const dynamic = 'force-dynamic';
