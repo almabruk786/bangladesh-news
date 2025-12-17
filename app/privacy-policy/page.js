@@ -27,6 +27,16 @@ export default function PrivacyPolicy() {
       <h2>Cookies:</h2>
       <p>We use cookies to personalize content and analyze traffic.</p>
 
+      <h2>Advertising & Cookies (AdSense):</h2>
+      <p>
+        We use Google AdSense to serve ads. Google allows third-party vendors to use cookies (including the DoubleClick cookie) to serve ads based on your previous visits to this website or other websites.
+      </p>
+      <ul>
+        <li>Google uses advertising cookies to adapt ads to you and your interests.</li>
+        <li>Users can opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="nofollow">Google Ads Settings</a>.</li>
+        <li>You can also opt out of third-party vendor's use of cookies for personalized advertising by visiting <a href="https://www.aboutads.info" target="_blank" rel="nofollow">www.aboutads.info</a>.</li>
+      </ul>
+
       <h2>Third-Party Services:</h2>
       <p>We use Google Firebase, Google Analytics, and Facebook Login. These services may collect data as described in their respective privacy policies.</p>
 

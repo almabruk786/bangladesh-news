@@ -174,11 +174,28 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     const handleTagKeyDown = (e) => {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
-            const val = tagInput.trim();
-            if (val && !form.tags.includes(val)) {
-                setForm(p => ({ ...p, tags: [...p.tags, val] }));
-                setTagInput("");
-            }
+            addTags(tagInput);
+        }
+    };
+
+    const addTags = (input) => {
+        const newTags = input.split(',')
+            .map(tag => tag.trim())
+            .filter(tag => tag && !form.tags.includes(tag));
+
+        if (newTags.length > 0) {
+            setForm(p => ({ ...p, tags: [...p.tags, ...newTags] }));
+            setTagInput("");
+        }
+    };
+
+    // Also handle comma on change for mobile keyboards which might not fire keydown properly
+    const handleTagInput = (e) => {
+        const val = e.target.value;
+        if (val.includes(',')) {
+            addTags(val);
+        } else {
+            setTagInput(val);
         }
     };
 
@@ -413,7 +430,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                         ))}
                         <input
                             value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
+                            onChange={handleTagInput}
                             onKeyDown={handleTagKeyDown}
                             onPaste={handleTagPaste}
                             placeholder="Add tag..."

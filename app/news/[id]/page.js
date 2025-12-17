@@ -25,6 +25,7 @@ export async function generateMetadata({ params }) {
         type: 'article',
         publishedTime: article.publishedAt,
         authors: [article.authorName || 'Desk Report'],
+        url: `https://bakalia.xyz/news/${article.id}`,
       },
     };
   }

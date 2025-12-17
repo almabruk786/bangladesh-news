@@ -34,10 +34,10 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
 
     return (
         <aside className={`
-            fixed inset-y-0 left-0 z-50 w-72 
+            fixed inset-y-0 left-0 z-50 w-72 h-[100dvh] flex flex-col
             bg-white/80 backdrop-blur-2xl border-r border-white/20 shadow-[8px_0_30px_rgba(0,0,0,0.04)]
             transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
-            md:translate-x-0 md:static md:h-screen md:sticky md:top-0 md:flex md:flex-col
+            md:translate-x-0 md:static md:h-screen md:sticky md:top-0
             ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}>
             {/* Glossy Header */}
