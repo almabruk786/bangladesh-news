@@ -14,8 +14,8 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   metadataBase: new URL('https://bakalia.xyz'),
   alternates: { canonical: './' },
-  title: { template: '%s | Bangladesh News', default: 'Bangladesh News - Latest Breaking News BD' },
-  description: "Bangladesh - News You Can Trust, Anytime",
+  title: { template: '%s | বাকলিয়া নিউজ', default: 'বাকলিয়া নিউজ | সর্বশেষ বাংলা খবর ও ব্রেকিং নিউজ আপডেট' },
+  description: "বাংলাদেশ ও বিশ্বের সর্বশেষ বাংলা খবর, রাজনীতি, খেলাধুলা, বিনোদন ও লাইভ আপডেট পড়ুন বাকলিয়া নিউজে। সত্য ও বস্তুনিষ্ঠ সংবাদের বিশ্বস্ত অনলাইন ঠিকানা।",
   verification: { google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk" },
   icons: {
     icon: '/bn-icon.png',
@@ -26,7 +26,7 @@ export const metadata = {
     type: 'website',
     locale: 'bn_BD',
     url: 'https://bakalia.xyz',
-    siteName: 'Bangladesh News'
+    siteName: 'বাকলিয়া নিউজ'
   },
 };
 
