@@ -4,20 +4,27 @@ import Link from 'next/link';
 import ArticleContent from './ArticleContent';
 import { parseNewsContent, getSmartExcerpt } from '../../lib/utils';
 
+import { extractIdFromUrl, generateSeoUrl } from '../../lib/urlUtils';
+
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
-  const { id } = await params; // Resolve params in Next.js 15+
+  const { id: slugId } = await params;
+  const id = extractIdFromUrl(slugId) || slugId; // Support both "123" and "news-title-123"
+
   const docRef = doc(db, "articles", id);
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
     const article = { id: docSnap.id, ...docSnap.data() };
-    // Smart Excerpt for Description (max 160 chars approx, based on words)
     const description = getSmartExcerpt(article.content, 30);
+    const seoUrl = `https://bakalia.xyz/news/${generateSeoUrl(article.title, article.id)}`;
 
     return {
-      title: `${article.title} - ${article.category === "Auto-Imported" ? "News" : (article.category || 'News')} | Bangladesh News`,
+      title: `${article.title} - ${article.category || 'News'} | Bangladesh News`,
       description: description,
+      alternates: {
+        canonical: seoUrl, // Force SEO URL as canonical
+      },
       openGraph: {
         title: article.title,
         description: description,
@@ -25,7 +32,7 @@ export async function generateMetadata({ params }) {
         type: 'article',
         publishedTime: article.publishedAt,
         authors: [article.authorName || 'Desk Report'],
-        url: `https://bakalia.xyz/news/${article.id}`,
+        url: seoUrl,
       },
     };
   }
@@ -37,7 +44,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function NewsDetails({ params }) {
-  const { id } = await params;
+  const { id: slugId } = await params;
+  const id = extractIdFromUrl(slugId) || slugId;
 
   let article = null;
   let relatedNews = [];
