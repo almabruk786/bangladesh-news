@@ -16,7 +16,7 @@ export async function generateMetadata({ params }) {
 
   if (docSnap.exists()) {
     const article = { id: docSnap.id, ...docSnap.data() };
-    const description = getSmartExcerpt(article.content, 30);
+    const description = article.metaDescription || getSmartExcerpt(article.content, 30);
     const seoUrl = `https://bakalia.xyz/news/${generateSeoUrl(article.title, article.id)}`;
 
     return {
@@ -28,7 +28,9 @@ export async function generateMetadata({ params }) {
       openGraph: {
         title: article.title,
         description: description,
-        images: article.imageUrl ? [article.imageUrl] : [],
+        images: article.ogImage
+          ? [article.ogImage]
+          : (article.imageUrl ? [article.imageUrl] : (article.imageUrls && article.imageUrls.length > 0 ? [article.imageUrls[0]] : [])),
         type: 'article',
         publishedTime: article.publishedAt,
         authors: [article.authorName || 'Desk Report'],

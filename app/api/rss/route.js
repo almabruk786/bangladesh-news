@@ -1,51 +1,50 @@
-// আপডেট: সঠিক পাথ (২ ঘর পেছনে) - এটি নিশ্চিত করুন
-import { db } from '../../lib/firebase';
-import { collection, getDocs, orderBy, limit, query } from 'firebase/firestore';
-import { NextResponse } from 'next/server';
-import { parseNewsContent } from '../../lib/utils';
+import { db } from '../../../lib/firebase';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const baseUrl = 'https://bakalia.xyz';
+  try {
+    const q = query(
+      collection(db, "articles"),
+      orderBy("publishedAt", "desc"),
+      limit(20)
+    );
 
-  const q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(20));
-  const snapshot = await getDocs(q);
+    const querySnapshot = await getDocs(q);
+    const articles = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
-  let rss = `<?xml version="1.0" encoding="UTF-8" ?>
-  <rss version="2.0">
-    <channel>
-      <title>Bangladesh News</title>
-      <link>${baseUrl}</link>
-      <description>Latest News from Bangladesh</description>
-      <language>bn</language>
-  `;
+    const feedXml = `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+<channel>
+  <title>Bakalia News</title>
+  <link>https://bakalia.xyz</link>
+  <description>Latest News from Bakalia News</description>
+  <language>bn-BD</language>
+  ${articles.map(article => `
+  <item>
+    <title><![CDATA[${article.title}]]></title>
+    <link>https://bakalia.xyz/news/${article.id}</link>
+    <guid>https://bakalia.xyz/news/${article.id}</guid>
+    <description><![CDATA[${article.content ? article.content.replace(/<[^>]+>/g, '').substring(0, 200) + '...' : ''}]]></description>
+    <pubDate>${new Date(article.publishedAt?.seconds * 1000 || Date.now()).toUTCString()}</pubDate>
+    ${article.imageUrl ? `<enclosure url="${article.imageUrl}" type="image/jpeg" />` : ''}
+  </item>
+  `).join('')}
+</channel>
+</rss>`;
 
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    const link = `${baseUrl}/news/${doc.id}`;
-
-    const content = parseNewsContent(data.content);
-
-    rss += `
-      <item>
-        <title><![CDATA[${data.title}]]></title>
-        <link>${link}</link>
-        <description><![CDATA[${content.substring(0, 150)}...]]></description>
-        <pubDate>${new Date(data.publishedAt).toUTCString()}</pubDate>
-        <guid>${link}</guid>
-      </item>
-    `;
-  });
-
-  rss += `
-    </channel>
-  </rss>`;
-
-  return new NextResponse(rss, {
-    headers: {
-      'Content-Type': 'text/xml',
-      'Cache-Control': 's-maxage=3600, stale-while-revalidate',
-    },
-  });
+    return new Response(feedXml, {
+      headers: {
+        'Content-Type': 'application/xml',
+        'Cache-Control': 's-maxage=3600, stale-while-revalidate',
+      },
+    });
+  } catch (error) {
+    console.error("RSS Generation Error:", error);
+    return new Response("Error generating feed", { status: 500 });
+  }
 }

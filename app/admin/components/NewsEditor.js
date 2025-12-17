@@ -7,7 +7,7 @@ import LiveBlogConsole from "./LiveBlogConsole";
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
-        title: "", content: "", imageUrls: [], category: "National", scheduledAt: "", tags: [], ogImage: "", videoUrl: "", isLive: false
+        title: "", content: "", imageUrls: [], category: "National", scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", isLive: false
     });
     const [tagInput, setTagInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -59,6 +59,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 tags: existingData.tags || [],
                 ogImage: existingData.ogImage || "",
                 videoUrl: existingData.videoUrl || "",
+                metaDescription: existingData.metaDescription || "",
                 isLive: existingData.isLive || false
             });
             setDocId(existingData.id);
@@ -277,7 +278,9 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 authorRole: user.role,
                 tags: form.tags,
                 ogImage: form.ogImage, // Include OG Image
+                ogImage: form.ogImage, // Include OG Image
                 videoUrl: form.videoUrl, // Include Video URL
+                metaDescription: form.metaDescription, // Manual SEO Description
                 isLive: form.isLive // Live Blog Status
             };
 
@@ -328,6 +331,23 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                             <Sparkles size={20} />
                         </button>
                     </div>
+                </div>
+
+                {/* Meta Description */}
+                <div className="space-y-2">
+                    <div className="flex justify-between">
+                        <label className="text-sm font-bold text-slate-700">Meta Description (SEO)</label>
+                        <span className={`text-xs font-bold ${form.metaDescription?.length > 160 ? 'text-red-500' : 'text-slate-400'}`}>
+                            {form.metaDescription?.length || 0}/160
+                        </span>
+                    </div>
+                    <textarea
+                        name="metaDescription"
+                        placeholder="Write a short summary for Google (150-160 characters)..."
+                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px]"
+                        value={form.metaDescription}
+                        onChange={handleChange}
+                    />
                 </div>
 
                 {/* Category & Date */}
@@ -383,11 +403,13 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 </div>
 
                 {/* Live Blog Console (Only if Saved & Live) */}
-                {form.isLive && docId && (
-                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <LiveBlogConsole articleId={docId} user={user} />
-                    </div>
-                )}
+                {
+                    form.isLive && docId && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <LiveBlogConsole articleId={docId} user={user} />
+                        </div>
+                    )
+                }
 
                 {/* Tags Section */}
                 <div className="space-y-2">
@@ -567,7 +589,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     </button>
                 </div>
 
-            </form>
-        </div>
+            </form >
+        </div >
     );
 }
