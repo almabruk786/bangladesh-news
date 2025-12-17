@@ -6,6 +6,19 @@ import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { generateBreadcrumbSchema } from "../../lib/schemas";
 import GoogleAd from "../../components/GoogleAd";
 
+export async function generateMetadata({ params }) {
+  const { name } = await params;
+  const decodedName = decodeURIComponent(name);
+  return {
+    title: `${decodedName} খবর - সর্বশেষ আপডেট | বাকলিয়া নিউজ`,
+    description: `${decodedName} সংক্রান্ত সর্বশেষ খবর, ছবি ও ভিডিও পড়ুন বাকলিয়া নিউজে। সত্য ও বস্তুনিষ্ঠ সংবাদের বিশ্বস্ত অনলাইন ঠিকানা।`,
+    openGraph: {
+      title: `${decodedName} খবর - বাকলিয়া নিউজ`,
+      description: `${decodedName} সংক্রান্ত সর্বশেষ আপডেট।`,
+    }
+  };
+}
+
 export default function CategoryPage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = use(params);
   const [news, setNews] = useState([]);
