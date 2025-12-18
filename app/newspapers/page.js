@@ -43,7 +43,10 @@ async function getNewspapers() {
 export const revalidate = 60; // Cache for 1 minute
 
 export default async function NewspapersPage() {
-    const papers = await getNewspapers();
+    // Fetch data
+    const rawPapers = await getNewspapers();
+    // Serialize to ensure plain JSON (removes Timestamps, undefined, etc) to prevent hydration mismatch
+    const papers = JSON.parse(JSON.stringify(rawPapers));
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-900 font-sans">

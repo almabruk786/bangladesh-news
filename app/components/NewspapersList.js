@@ -39,51 +39,6 @@ export default function NewspapersList({ initialPapers = [] }) {
     const onlinePapers = newspapers.filter(p => !p.type || p.type === 'online');
     const ePapers = newspapers.filter(p => p.type === 'epaper');
 
-    const PaperGrid = ({ papers }) => (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {papers.map((paper) => (
-                <Link
-                    key={paper.id || paper.name}
-                    href={`/site/${paper.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:shadow-xl hover:border-red-200 transition-all duration-300 flex flex-col items-center justify-between gap-4 text-center h-40 relative"
-                >
-                    <div className="flex-1 w-full flex items-center justify-center relative">
-                        {paper.logo ? (
-                            <img
-                                src={paper.logo}
-                                alt={paper.name}
-                                loading="lazy"
-                                onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'block';
-                                }}
-                                className="max-h-16 max-w-full object-contain transition duration-300"
-                            />
-                        ) : null}
-                        <span
-                            style={{ display: paper.logo ? 'none' : 'block' }}
-                            className="text-xl font-bold font-serif text-blue-600 dark:text-blue-400 group-hover:text-red-500 transition-colors"
-                        >
-                            {paper.bn || paper.name}
-                        </span>
-                    </div>
-
-                    <div className="w-full border-t border-slate-100 dark:border-slate-800 pt-3">
-                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-red-600 transition-colors truncate block">
-                            {paper.name}
-                        </span>
-                    </div>
-
-                    <div className="absolute top-3 right-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ExternalLink size={14} />
-                    </div>
-                </Link>
-            ))}
-        </div>
-    );
-
     return (
         <div className="space-y-8 md:space-y-12">
             {loading ? (
@@ -136,3 +91,48 @@ export default function NewspapersList({ initialPapers = [] }) {
         </div>
     );
 }
+
+const PaperGrid = ({ papers }) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {papers.map((paper) => (
+            <Link
+                key={paper.id || paper.name}
+                href={`/site/${paper.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:shadow-xl hover:border-red-200 transition-all duration-300 flex flex-col items-center justify-between gap-4 text-center h-40 relative"
+            >
+                <div className="flex-1 w-full flex items-center justify-center relative">
+                    {paper.logo ? (
+                        <img
+                            src={paper.logo}
+                            alt={paper.name}
+                            loading="lazy"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'block';
+                            }}
+                            className="max-h-16 max-w-full object-contain transition duration-300"
+                        />
+                    ) : null}
+                    <span
+                        style={{ display: paper.logo ? 'none' : 'block' }}
+                        className="text-xl font-bold font-serif text-blue-600 dark:text-blue-400 group-hover:text-red-500 transition-colors"
+                    >
+                        {paper.bn || paper.name}
+                    </span>
+                </div>
+
+                <div className="w-full border-t border-slate-100 dark:border-slate-800 pt-3">
+                    <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-red-600 transition-colors truncate block">
+                        {paper.name}
+                    </span>
+                </div>
+
+                <div className="absolute top-3 right-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ExternalLink size={14} />
+                </div>
+            </Link>
+        ))}
+    </div>
+);
