@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Eye, Search, Filter, CheckCircle, XCircle, Pin, MoreHorizontal, Image as ImageIcon } from "lucide-react";
+import { Edit, Trash2, Eye, EyeOff, Search, Filter, CheckCircle, XCircle, Pin, MoreHorizontal, Image as ImageIcon } from "lucide-react";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
@@ -86,10 +86,17 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
         }
     };
 
-    const handleStatusUpdate = async (id, newStatus) => {
-        if (window.confirm(`Mark as ${newStatus}?`)) {
-            await updateDoc(doc(db, "articles", id), { status: newStatus });
+    const handleStatusUpdate = async (id, action) => {
+        if (action === "hide" || action === "show") {
+            // Toggle Hidden Status
+            await updateDoc(doc(db, "articles", id), { hidden: action === "hide" });
             refreshData();
+        } else {
+            // Normal Status Update
+            if (window.confirm(`Mark as ${action}?`)) {
+                await updateDoc(doc(db, "articles", id), { status: action });
+                refreshData();
+            }
         }
     };
 
@@ -206,11 +213,12 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                                 </td>
                                 <td className="p-5">
                                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide
-                    ${item.status === "published" ? "bg-green-100 text-green-700" :
-                                            item.status === "pending" ? "bg-amber-100 text-amber-700" :
-                                                item.status === "pending_delete" ? "bg-red-100 text-red-700" :
-                                                    item.status === "rejected" ? "bg-red-50 text-red-500 line-through" : "bg-slate-100 text-slate-600"}`}>
-                                        {item.status === "pending_delete" ? "Del Req" : item.status}
+                                        ${item.hidden ? "bg-slate-800 text-white" :
+                                            item.status === "published" ? "bg-green-100 text-green-700" :
+                                                item.status === "pending" ? "bg-amber-100 text-amber-700" :
+                                                    item.status === "pending_delete" ? "bg-red-100 text-red-700" :
+                                                        item.status === "rejected" ? "bg-red-50 text-red-500 line-through" : "bg-slate-100 text-slate-600"}`}>
+                                        {item.hidden ? "HIDDEN" : (item.status === "pending_delete" ? "Del Req" : item.status)}
                                     </span>
                                 </td>
                                 {type === "admin" && (
@@ -225,7 +233,7 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                                     </td>
                                 )}
                                 <td className="p-5 text-right">
-                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex justify-end gap-2">
                                         {/* Admin specific Actions */}
                                         {type === "admin" && (
                                             <>
@@ -245,8 +253,19 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                                         )}
 
                                         <a href={`/news/${item.id}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100" title="Visit Live"><div className="flex items-center gap-1"><Eye size={16} /></div></a>
-                                        {onView && <button onClick={() => onView(item)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100" title="Quick View"><Eye size={16} /></button>}
+
                                         <button onClick={() => onEdit(item)} className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200" title="Edit"><Edit size={16} /></button>
+
+                                        {/* Hide/Show Toggle */}
+                                        {type === "admin" && (
+                                            <button
+                                                onClick={() => handleStatusUpdate(item.id, item.hidden ? "show" : "hide")}
+                                                className={`p-2 rounded-lg ${item.hidden ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-400 hover:text-slate-600"}`}
+                                                title={item.hidden ? "Show on Website" : "Hide from Website"}
+                                            >
+                                                {item.hidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                                            </button>
+                                        )}
 
                                         {/* Delete Logic */}
                                         {type === "admin" && item.status !== "pending_delete" && (

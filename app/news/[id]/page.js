@@ -68,7 +68,7 @@ export default async function NewsDetails({ params }) {
         // Filter out current article and serialize data
         relatedNews = snap.docs
           .map(d => ({ id: d.id, ...d.data(), publishedAt: d.data().publishedAt })) // Ensure needed fields are present
-          .filter(n => n.id !== id);
+          .filter(n => n.id !== id && !n.hidden);
       } catch (e) {
         console.error("Error fetching related news:", e);
       }
@@ -78,8 +78,16 @@ export default async function NewsDetails({ params }) {
     // You might want to return a specific error component or let it fall through to "News Not Found"
   }
 
-  if (!article) {
-    return <div className="text-center py-20 font-bold">খবরটি পাওয়া যায়নি!</div>;
+  if (!article || article.hidden) {
+    return (
+      <div className="min-h-[60vh] flex flex-col justify-center items-center text-center p-8">
+        <h1 className="text-2xl font-bold text-slate-800 mb-2">News Not Available</h1>
+        <p className="text-slate-500">The news article you are looking for is currently unavailable or has been removed.</p>
+        <Link href="/" className="mt-6 px-6 py-2 bg-slate-900 text-white rounded-full hover:bg-slate-800 transition">
+          Back to Home
+        </Link>
+      </div>
+    );
   }
 
   const newsSchema = generateNewsArticleSchema({ ...article, updatedAt: null }); // Pass updatedAt if available in db

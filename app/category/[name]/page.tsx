@@ -3,7 +3,8 @@ import { db } from "../../lib/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 
 // Helper to fetch news on the server
-async function getCategoryNews(categoryName) {
+// Helper to fetch news on the server
+async function getCategoryNews(categoryName: string) {
   const categories = [
     { name: "Bangladesh", bn: "বাংলাদেশ" },
     { name: "Politics", bn: "রাজনীতি" },
@@ -44,16 +45,16 @@ async function getCategoryNews(categoryName) {
         id: doc.id,
         ...data,
         publishedAt: data.publishedAt?.seconds ? data.publishedAt.seconds * 1000 : Date.now(),
-        // Ensure other non-serializable fields are handled if any
-      };
-    });
+        hidden: data.hidden,
+      } as any;
+    }).filter((article: any) => !article.hidden);
   } catch (e) {
     console.error("Category Fetch Error:", e);
     return [];
   }
 }
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata({ params }: { params: Promise<{ name: string }> }) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
   return {
@@ -66,7 +67,7 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function CategoryPage({ params }) {
+export default async function CategoryPage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = await params;
   const news = await getCategoryNews(name);
 

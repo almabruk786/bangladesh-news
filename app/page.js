@@ -33,7 +33,10 @@ export default function Home() {
         // 1. Fetch Latest & Pinned for Hero
         const qLatest = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(50));
         const snapLatest = await getDocs(qLatest);
-        const allDocs = snapLatest.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Filter hidden news (client-side for compatibility with missing fields)
+        const allDocs = snapLatest.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(doc => !doc.hidden);
 
         // Categorize Data
         // Slider: Show Pinned (Breaking) First, else recent
