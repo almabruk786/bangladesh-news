@@ -34,65 +34,101 @@ export default function NewspapersList() {
         fetchPapers();
     }, []);
 
+    const onlinePapers = newspapers.filter(p => !p.type || p.type === 'online');
+    const ePapers = newspapers.filter(p => p.type === 'epaper');
+
+    const PaperGrid = ({ papers }) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {papers.map((paper) => (
+                <Link
+                    key={paper.id || paper.name}
+                    href={`/site/${paper.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:shadow-xl hover:border-red-200 transition-all duration-300 flex flex-col items-center justify-between gap-4 text-center h-40 relative"
+                >
+                    <div className="flex-1 w-full flex items-center justify-center relative">
+                        {paper.logo ? (
+                            <img
+                                src={paper.logo}
+                                alt={paper.name}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'block';
+                                }}
+                                className="max-h-16 max-w-full object-contain filter grayscale group-hover:grayscale-0 transition duration-300"
+                            />
+                        ) : null}
+                        <span
+                            style={{ display: paper.logo ? 'none' : 'block' }}
+                            className="text-xl font-bold font-serif text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
+                        >
+                            {paper.bn || paper.name}
+                        </span>
+                    </div>
+
+                    <div className="w-full border-t border-slate-100 dark:border-slate-800 pt-3">
+                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-red-600 transition-colors truncate block">
+                            {paper.name}
+                        </span>
+                    </div>
+
+                    <div className="absolute top-3 right-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ExternalLink size={14} />
+                    </div>
+                </Link>
+            ))}
+        </div>
+    );
+
     return (
-        <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-6 md:p-8 border border-slate-100 dark:border-slate-800">
+        <div className="space-y-12">
             {loading ? (
                 <div className="flex justify-center py-20">
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600"></div>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                    {newspapers.map((paper) => (
-                        <Link
-                            key={paper.id || paper.name}
-                            href={`/site/${paper.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-
-                            className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:shadow-xl hover:border-red-200 transition-all duration-300 flex flex-col items-center justify-between gap-4 text-center h-40 relative"
-                        >
-                            <div className="flex-1 w-full flex items-center justify-center relative">
-                                {paper.logo ? (
-                                    <img
-                                        src={paper.logo}
-                                        alt={paper.name}
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.style.display = 'none';
-                                            e.target.nextSibling.style.display = 'block';
-                                        }}
-                                        className="max-h-16 max-w-full object-contain filter grayscale group-hover:grayscale-0 transition duration-300"
-                                    />
-                                ) : null}
-                                <span
-                                    style={{ display: paper.logo ? 'none' : 'block' }}
-                                    className="text-xl font-bold font-serif text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
-                                >
-                                    {paper.bn || paper.name}
-                                </span>
+                <>
+                    {/* Section 1: E-Papers (First) */}
+                    {ePapers.length > 0 && (
+                        <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-6 md:p-8 border border-slate-100 dark:border-slate-800">
+                            <div className="mb-8 border-l-4 border-blue-600 pl-4">
+                                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                    E-Newspaper (E-Paper)
+                                </h2>
+                                <p className="text-slate-500 text-sm mt-1">
+                                    List of all Bangla E-Newspapers / সকল বাংলা ই-পেপার - কাগজের পত্রিকার মতো পড়তে চাইলে এখানে দেখুন
+                                </p>
                             </div>
+                            <PaperGrid papers={ePapers} />
+                        </div>
+                    )}
 
-                            <div className="w-full border-t border-slate-100 dark:border-slate-800 pt-3">
-                                <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-red-600 transition-colors truncate block">
-                                    {paper.name}
-                                </span>
+                    {/* Section 2: Online Newspapers */}
+                    {onlinePapers.length > 0 && (
+                        <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-6 md:p-8 border border-slate-100 dark:border-slate-800">
+                            <div className="mb-8 border-l-4 border-green-600 pl-4">
+                                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                    Online Newspaper
+                                </h2>
+                                <p className="text-slate-500 text-sm mt-1">
+                                    List of all Bangla Online Newspapers / বাংলা অনলাইন সংবাদপত্র সমূহ
+                                </p>
                             </div>
+                            <PaperGrid papers={onlinePapers} />
+                        </div>
+                    )}
 
-                            <div className="absolute top-3 right-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <ExternalLink size={14} />
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                    {onlinePapers.length === 0 && ePapers.length === 0 && (
+                        <div className="text-center py-20 text-slate-400">
+                            No newspapers found.
+                        </div>
+                    )}
+                </>
             )}
 
-            {!loading && newspapers.length === 0 && (
-                <div className="text-center py-20 text-slate-400">
-                    No newspapers found.
-                </div>
-            )}
-
-            <div className="mt-12 text-center">
+            <div className="text-center">
                 <p className="text-slate-400 text-sm">More newspapers and e-papers coming soon...</p>
             </div>
         </div>

@@ -17,9 +17,9 @@ export default function EpaperManager() {
         name: '',
         bn: '',
         url: '',
-        url: '',
         logo: '',
-        order: 999
+        order: 999,
+        type: 'online' // Default to Online Newspaper
     });
 
     // Fetch Newspapers
@@ -71,9 +71,9 @@ export default function EpaperManager() {
             name: paper.name,
             bn: paper.bn || '',
             url: paper.url,
-            url: paper.url,
             logo: paper.logo || '',
-            order: paper.order || 999
+            order: paper.order || 999,
+            type: paper.type || 'online'
         });
         setIsEditing(true);
         setCurrentId(paper.id);
@@ -86,7 +86,7 @@ export default function EpaperManager() {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', bn: '', url: '', logo: '', order: 999 });
+        setFormData({ name: '', bn: '', url: '', logo: '', order: 999, type: 'online' });
         setIsEditing(false);
         setCurrentId(null);
     };
@@ -95,55 +95,55 @@ export default function EpaperManager() {
     const seedDefaults = async () => {
         const defaults = [
             // Major / Existing (Preserving manual SVGs/PNGs where good)
-            { name: "Prothom Alo", bn: "প্রথম আলো", url: "https://www.prothomalo.com", logo: "/newspapers/prothom-alo.svg" },
-            { name: "Bangladesh Pratidin", bn: "বাংলাদেশ প্রতিদিন", url: "https://www.bd-pratidin.com", logo: "/newspapers/bd-pratidin.svg" },
-            { name: "Ittefaq", bn: "ইত্তেফাক", url: "https://www.ittefaq.com.bd", logo: "/newspapers/ittefaq.png" },
-            { name: "Kaler Kantho", bn: "কালের কণ্ঠ", url: "https://www.kalerkantho.com", logo: "/newspapers/kaler-kantho.svg" },
-            { name: "Naya Diganta", bn: "নয়া দিগন্ত", url: "https://www.dailynayadiganta.com", logo: "/newspapers/dailynayadiganta_com.png" },
-            { name: "Amar Sangbad", bn: "আমার সংবাদ", url: "https://www.amarsangbad.com", logo: "https://www.amarsangbad.com/images/default/logo.png" },
-            { name: "Jugantor", bn: "যুগান্তর", url: "https://www.jugantor.com", logo: "/newspapers/jugantor.svg" },
-            { name: "Samakal", bn: "সমকাল", url: "https://samakal.com", logo: "/newspapers/samakal.png" },
-            { name: "Janakantha", bn: "জনকণ্ঠ", url: "https://www.dailyjanakantha.com", logo: "/newspapers/dailyjanakantha_com.png" },
-            { name: "Manab Zamin", bn: "মানবজমিন", url: "https://mzamin.com", logo: "https://mzamin.com/assets/images/logo.png" },
-            { name: "The Daily Star", bn: "দ্য ডেইলি স্টার", url: "https://www.thedailystar.net", logo: "/newspapers/daily-star.svg" },
-            { name: "Dhaka Tribune", bn: "ঢাকা ট্রিবিউন", url: "https://www.dhakatribune.com", logo: "/newspapers/dhaka-tribune.png" },
+            { name: "Prothom Alo", bn: "প্রথম আলো", url: "https://www.prothomalo.com", logo: "/newspapers/prothom-alo.svg", type: 'online' },
+            { name: "Bangladesh Pratidin", bn: "বাংলাদেশ প্রতিদিন", url: "https://www.bd-pratidin.com", logo: "/newspapers/bd-pratidin.svg", type: 'online' },
+            { name: "Ittefaq", bn: "ইত্তেফাক", url: "https://www.ittefaq.com.bd", logo: "/newspapers/ittefaq.png", type: 'online' },
+            { name: "Kaler Kantho", bn: "কালের কণ্ঠ", url: "https://www.kalerkantho.com", logo: "/newspapers/kaler-kantho.svg", type: 'online' },
+            { name: "Naya Diganta", bn: "নয়া দিগন্ত", url: "https://www.dailynayadiganta.com", logo: "/newspapers/dailynayadiganta_com.png", type: 'online' },
+            { name: "Amar Sangbad", bn: "আমার সংবাদ", url: "https://www.amarsangbad.com", logo: "https://www.amarsangbad.com/images/default/logo.png", type: 'online' },
+            { name: "Jugantor", bn: "যুগান্তর", url: "https://www.jugantor.com", logo: "/newspapers/jugantor.svg", type: 'online' },
+            { name: "Samakal", bn: "সমকাল", url: "https://samakal.com", logo: "/newspapers/samakal.png", type: 'online' },
+            { name: "Janakantha", bn: "জনকণ্ঠ", url: "https://www.dailyjanakantha.com", logo: "/newspapers/dailyjanakantha_com.png", type: 'online' },
+            { name: "Manab Zamin", bn: "মানবজমিন", url: "https://mzamin.com", logo: "https://mzamin.com/assets/images/logo.png", type: 'online' },
+            { name: "The Daily Star", bn: "দ্য ডেইলি স্টার", url: "https://www.thedailystar.net", logo: "/newspapers/daily-star.svg", type: 'online' },
+            { name: "Dhaka Tribune", bn: "ঢাকা ট্রিবিউন", url: "https://www.dhakatribune.com", logo: "/newspapers/dhaka-tribune.png", type: 'online' },
 
             // New Additions (Crawled Logos)
-            { name: "Protidiners Sangbad", bn: "প্রতিদিনের সংবাদ", url: "https://www.protidinersangbad.com", logo: "" },
-            { name: "Daily Sangram", bn: "সংগ্রাম", url: "https://www.dailysangram.com", logo: "/newspapers/dailysangram_com.png" },
-            { name: "Amader Shomoy", bn: "আমাদের সময়", url: "https://www.dainikamadershomoy.com", logo: "/newspapers/dainikamadershomoy_com.png" },
-            { name: "Bonik Barta", bn: "বণিক বার্তা", url: "https://bonikbarta.net", logo: "/newspapers/bonikbarta_net.png" },
-            { name: "Jai Jai Din", bn: "যায় যায় দিন", url: "https://www.jjdin.com", logo: "" },
-            { name: "Bhorer Kagoj", bn: "ভোরের কাগজ", url: "https://www.bhorerkagoj.net", logo: "/newspapers/bhorerkagoj_net.png" },
-            { name: "Arthoniteer Kagoj", bn: "অর্থনীতির কাগজ", url: "https://www.arthoniteerkagoj.com", logo: "/newspapers/arthoniteerkagoj_com.png" },
-            { name: "Inqilab", bn: "ইনকিলাব", url: "https://www.dailyinqilab.com", logo: "https://m.dailyinqilab.com/includes/themes/inqilabmobile/images/logo.png" },
-            { name: "Sangbad", bn: "সংবাদ", url: "https://thesangbad.net", logo: "" },
-            { name: "Manobkantha", bn: "মানবকিণ্ঠ", url: "https://www.manobkantha.com", logo: "" },
-            { name: "Suprobhat", bn: "সুপ্রভাত", url: "https://suprobhat.com", logo: "" },
-            { name: "Bangladesh Journal", bn: "বাংলাদেশ জার্নাল", url: "https://www.bd-journal.com", logo: "" },
-            { name: "Dinkal", bn: "দিনকাল", url: "https://dailydinkal.net", logo: "" },
-            { name: "Alokito Bangladesh", bn: "আলোকিত বাংলাদেশ", url: "https://www.alokitobangladesh.com", logo: "/newspapers/alokitobangladesh_com.png" },
-            { name: "Ajker Bazzar", bn: "আজকের বাজার", url: "https://www.ajkerbazzar.com", logo: "" },
-            { name: "Amader Orthoneeti", bn: "আমাদের অর্থনীতি", url: "https://www.amaderorthoneeti.com", logo: "" },
-            { name: "Bangladesh Post", bn: "বাংলাদেশ পোস্ট", url: "https://bangladeshpost.net", logo: "/newspapers/bangladeshpost_net.png" },
-            { name: "Sorejomin Barta", bn: "সরেজমিন বার্তা", url: "https://www.sorejominbarta.com", logo: "" },
-            { name: "Khabarpatra", bn: "খবরপত্র", url: "https://www.khabarpatrabd.com", logo: "" },
-            { name: "Vorer Pata", bn: "ভোরের পাতা", url: "https://www.dailyvorerpata.com", logo: "/newspapers/dailyvorerpata_com.png" },
-            { name: "Shomoyer Alo", bn: "সময়ের আলো", url: "https://www.shomoyeralo.com", logo: "/newspapers/shomoyeralo_com.png" },
-            { name: "Share Biz", bn: "শেয়ার বিজ", url: "https://sharebiz.net", logo: "/newspapers/sharebiz_net.png" },
-            { name: "Bartoman", bn: "বর্তমান", url: "https://dailybartoman.com", logo: "" },
-            { name: "Ajkaler Khobor", bn: "আজকালের খবর", url: "https://www.ajkalerkhobor.com", logo: "/newspapers/ajkalerkhobor_com.png" },
-            { name: "Sangbad Konika", bn: "সংবাদ কণিকা", url: "https://sangbadkonika.com", logo: "" },
-            { name: "Khola Kagoj", bn: "খোলা কাগজ", url: "https://www.kholakagojbd.com", logo: "/newspapers/kholakagojbd_com.png" },
-            { name: "Gonokantho", bn: "গণকণ্ঠ", url: "https://gonokantho.com", logo: "" },
-            { name: "Daily Observer", bn: "অবজারভার", url: "https://www.observerbd.com", logo: "/newspapers/observerbd_com.png" },
-            { name: "Financial Express", bn: "ফাইন্যান্সিয়াল এক্সপ্রেস", url: "https://thefinancialexpress.com.bd", logo: "" },
-            { name: "Desh Rupantor", bn: "দেশ রূপান্তর", url: "https://www.deshrupantor.com", logo: "/newspapers/deshrupantor_com.png" },
-            { name: "Bangladesher Khabor", bn: "বাংলাদেশের খবর", url: "https://www.bangladesherkhabor.net", logo: "/newspapers/bangladesherkhabor_net.png" },
-            { name: "TBS News", bn: "টিবিএস", url: "https://tbsnews.net", logo: "" },
-            { name: "Business Post", bn: "বিজনেস পোস্ট", url: "https://businesspostbd.com", logo: "" },
-            { name: "Ajker Patrika", bn: "আজকের পত্রিকা", url: "https://www.ajkerpatrika.com", logo: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Ajker_Patrika_Logo.png" },
-            { name: "Dainik Bangla", bn: "দৈনিক বাংলা", url: "https://www.dainikbangla.com.bd", logo: "" },
+            { name: "Protidiners Sangbad", bn: "প্রতিদিনের সংবাদ", url: "https://www.protidinersangbad.com", logo: "", type: 'online' },
+            { name: "Daily Sangram", bn: "সংগ্রাম", url: "https://www.dailysangram.com", logo: "/newspapers/dailysangram_com.png", type: 'online' },
+            { name: "Amader Shomoy", bn: "আমাদের সময়", url: "https://www.dainikamadershomoy.com", logo: "/newspapers/dainikamadershomoy_com.png", type: 'online' },
+            { name: "Bonik Barta", bn: "বণিক বার্তা", url: "https://bonikbarta.net", logo: "/newspapers/bonikbarta_net.png", type: 'online' },
+            { name: "Jai Jai Din", bn: "যায় যায় দিন", url: "https://www.jjdin.com", logo: "", type: 'online' },
+            { name: "Bhorer Kagoj", bn: "ভোরের কাগজ", url: "https://www.bhorerkagoj.net", logo: "/newspapers/bhorerkagoj_net.png", type: 'online' },
+            { name: "Arthoniteer Kagoj", bn: "অর্থনীতির কাগজ", url: "https://www.arthoniteerkagoj.com", logo: "/newspapers/arthoniteerkagoj_com.png", type: 'online' },
+            { name: "Inqilab", bn: "ইনকিলাব", url: "https://www.dailyinqilab.com", logo: "https://m.dailyinqilab.com/includes/themes/inqilabmobile/images/logo.png", type: 'online' },
+            { name: "Sangbad", bn: "সংবাদ", url: "https://thesangbad.net", logo: "", type: 'online' },
+            { name: "Manobkantha", bn: "মানবকিণ্ঠ", url: "https://www.manobkantha.com", logo: "", type: 'online' },
+            { name: "Suprobhat", bn: "সুপ্রভাত", url: "https://suprobhat.com", logo: "", type: 'online' },
+            { name: "Bangladesh Journal", bn: "বাংলাদেশ জার্নাল", url: "https://www.bd-journal.com", logo: "", type: 'online' },
+            { name: "Dinkal", bn: "দিনকাল", url: "https://dailydinkal.net", logo: "", type: 'online' },
+            { name: "Alokito Bangladesh", bn: "আলোকিত বাংলাদেশ", url: "https://www.alokitobangladesh.com", logo: "/newspapers/alokitobangladesh_com.png", type: 'online' },
+            { name: "Ajker Bazzar", bn: "আজকের বাজার", url: "https://www.ajkerbazzar.com", logo: "", type: 'online' },
+            { name: "Amader Orthoneeti", bn: "আমাদের অর্থনীতি", url: "https://www.amaderorthoneeti.com", logo: "", type: 'online' },
+            { name: "Bangladesh Post", bn: "বাংলাদেশ পোস্ট", url: "https://bangladeshpost.net", logo: "/newspapers/bangladeshpost_net.png", type: 'online' },
+            { name: "Sorejomin Barta", bn: "সরেজমিন বার্তা", url: "https://www.sorejominbarta.com", logo: "", type: 'online' },
+            { name: "Khabarpatra", bn: "খবরপত্র", url: "https://www.khabarpatrabd.com", logo: "", type: 'online' },
+            { name: "Vorer Pata", bn: "ভোরের পাতা", url: "https://www.dailyvorerpata.com", logo: "/newspapers/dailyvorerpata_com.png", type: 'online' },
+            { name: "Shomoyer Alo", bn: "সময়ের আলো", url: "https://www.shomoyeralo.com", logo: "/newspapers/shomoyeralo_com.png", type: 'online' },
+            { name: "Share Biz", bn: "শেয়ার বিজ", url: "https://sharebiz.net", logo: "/newspapers/sharebiz_net.png", type: 'online' },
+            { name: "Bartoman", bn: "বর্তমান", url: "https://dailybartoman.com", logo: "", type: 'online' },
+            { name: "Ajkaler Khobor", bn: "আজকালের খবর", url: "https://www.ajkalerkhobor.com", logo: "/newspapers/ajkalerkhobor_com.png", type: 'online' },
+            { name: "Sangbad Konika", bn: "সংবাদ কণিকা", url: "https://sangbadkonika.com", logo: "", type: 'online' },
+            { name: "Khola Kagoj", bn: "খোলা কাগজ", url: "https://www.kholakagojbd.com", logo: "/newspapers/kholakagojbd_com.png", type: 'online' },
+            { name: "Gonokantho", bn: "গণকণ্ঠ", url: "https://gonokantho.com", logo: "", type: 'online' },
+            { name: "Daily Observer", bn: "অবজারভার", url: "https://www.observerbd.com", logo: "/newspapers/observerbd_com.png", type: 'online' },
+            { name: "Financial Express", bn: "ফাইন্যান্সিয়াল এক্সপ্রেস", url: "https://thefinancialexpress.com.bd", logo: "", type: 'online' },
+            { name: "Desh Rupantor", bn: "দেশ রূপান্তর", url: "https://www.deshrupantor.com", logo: "/newspapers/deshrupantor_com.png", type: 'online' },
+            { name: "Bangladesher Khabor", bn: "বাংলাদেশের খবর", url: "https://www.bangladesherkhabor.net", logo: "/newspapers/bangladesherkhabor_net.png", type: 'online' },
+            { name: "TBS News", bn: "টিবিএস", url: "https://tbsnews.net", logo: "", type: 'online' },
+            { name: "Business Post", bn: "বিজনেস পোস্ট", url: "https://businesspostbd.com", logo: "", type: 'online' },
+            { name: "Ajker Patrika", bn: "আজকের পত্রিকা", url: "https://www.ajkerpatrika.com", logo: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Ajker_Patrika_Logo.png", type: 'online' },
+            { name: "Dainik Bangla", bn: "দৈনিক বাংলা", url: "https://www.dainikbangla.com.bd", logo: "", type: 'online' },
         ];
 
         let added = 0;
@@ -173,14 +173,14 @@ export default function EpaperManager() {
     return (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-white">E-Paper Manager <span className="text-sm font-normal text-slate-500">({newspapers.length} Papers)</span></h2>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">Newspaper Manager <span className="text-sm font-normal text-slate-500">({newspapers.length} Papers)</span></h2>
                 <div className="flex gap-2">
                     <button onClick={() => setShowImport(true)} className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded text-sm font-bold hover:bg-green-200">
-                        <Upload size={14} /> Import from Excel/CSV
+                        <Upload size={14} /> Import
                     </button>
-                    <button onClick={seedDefaults} className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-sm font-bold hover:bg-blue-200">
+                    {/* <button onClick={seedDefaults} className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-sm font-bold hover:bg-blue-200">
                         <RefreshCw size={14} /> Import/Update Defaults
-                    </button>
+                    </button> */}
                 </div>
             </div>
 
@@ -194,7 +194,35 @@ export default function EpaperManager() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Newspaper Type</label>
+                    <div className="flex gap-4 mt-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="type"
+                                value="online"
+                                checked={formData.type === 'online'}
+                                onChange={() => setFormData({ ...formData, type: 'online' })}
+                                className="accent-red-600"
+                            />
+                            <span className="text-sm font-medium">Online Newspaper</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="type"
+                                value="epaper"
+                                checked={formData.type === 'epaper'}
+                                onChange={() => setFormData({ ...formData, type: 'epaper' })}
+                                className="accent-blue-600"
+                            />
+                            <span className="text-sm font-medium">E-Paper</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">English Name</label>
                     <input
@@ -238,7 +266,7 @@ export default function EpaperManager() {
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Display Order (Lower = First)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Display Order</label>
                     <input
                         type="number"
                         placeholder="999"
@@ -247,7 +275,7 @@ export default function EpaperManager() {
                         onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 999 })}
                     />
                 </div>
-                <div className="md:col-span-2 flex justify-end gap-2 mt-2">
+                <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-2 mt-2">
                     {isEditing && (
                         <button type="button" onClick={resetForm} className="px-4 py-2 text-slate-500 text-sm font-bold hover:bg-slate-200 rounded">Cancel</button>
                     )}
@@ -263,13 +291,16 @@ export default function EpaperManager() {
                 {newspapers.map((paper) => (
                     <div key={paper.id} className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-700 rounded bg-white dark:bg-slate-900">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-slate-100 rounded flex items-center justify-center p-1">
+                            <div className="w-12 h-12 bg-slate-100 rounded flex items-center justify-center p-1 relative">
                                 {paper.logo ? <img src={paper.logo} alt={paper.name} className="max-w-full max-h-full object-contain" /> : <span className="text-xs font-bold text-slate-400">No Logo</span>}
                             </div>
                             <div>
                                 <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                     {paper.name}
                                     <span className="text-xs bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">#{paper.order || 999}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${paper.type === 'epaper' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                        {paper.type === 'epaper' ? 'E-PAPER' : 'ONLINE'}
+                                    </span>
                                 </h4>
                                 <a href={paper.url} target="_blank" className="text-xs text-blue-500 flex items-center gap-1 hover:underline"><ExternalLink size={10} /> {paper.url}</a>
                             </div>
