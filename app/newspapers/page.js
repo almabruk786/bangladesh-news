@@ -2,14 +2,14 @@ import NewspapersList from '../components/NewspapersList';
 
 
 export const metadata = {
-    title: "List of All Bangladesh Newspapers - বাংলাদেশের সংবাদপত্রসমূহ",
-    description: "e prothom alo, e kaler kantho, e jugantor, e samakal, e ittefaq, e bangladesh protidin is the most popular epaper. Manab Zamin, Janakantha, Bhorer Kagoj, Manob Kantha, Inqilab, Sangram, Bhorer Pata, Alokito Bangladesh, Ajker Patrika.",
+    title: "All Bangla Newspapers List | Online & E-Paper | বাংলাদেশের সব সংবাদপত্র",
+    description: "Read all top Bangla newspapers (Online & E-Paper) in one place. Prothom Alo, Bangladesh Pratidin, Jugantor, Kaler Kantho, The Daily Star, and more. All Bangladesh newspaper links.",
     alternates: {
         canonical: 'https://bakalia.xyz/newspapers',
     },
     openGraph: {
-        title: "List of All Bangladesh Newspapers - বাংলাদেশের সংবাদপত্রসমূহ",
-        description: "Read all Bangla newspapers online. Prothom Alo, Kaler Kantho, Jugantor, and more.",
+        title: "All Bangla Newspapers List | Online & E-Paper",
+        description: "Access all popular Bangla newspapers and e-papers in one click. Prothom Alo, Kaler Kantho, Jugantor, Bhorer Kagoj, and other top dailies.",
         url: 'https://bakalia.xyz/newspapers',
         type: 'website',
     }
@@ -22,7 +22,7 @@ export default function NewspapersPage() {
                 {/* Page Header */}
                 <div className="flex items-center gap-3 mb-8">
                     <div className="w-1.5 h-8 bg-red-600 rounded-full"></div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">All Bangla Newspapers</h1>
+                    <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">All Bangla Newspapers</h1>
                 </div>
 
                 <div className="mb-8">

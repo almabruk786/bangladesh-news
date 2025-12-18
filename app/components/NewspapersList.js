@@ -38,7 +38,7 @@ export default function NewspapersList() {
     const ePapers = newspapers.filter(p => p.type === 'epaper');
 
     const PaperGrid = ({ papers }) => (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {papers.map((paper) => (
                 <Link
                     key={paper.id || paper.name}
@@ -83,22 +83,22 @@ export default function NewspapersList() {
     );
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-8 md:space-y-12">
             {loading ? (
                 <div className="flex justify-center py-20">
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600"></div>
                 </div>
             ) : (
-                <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start">
                     {/* Section 1: E-Papers (First) */}
                     {ePapers.length > 0 && (
-                        <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-6 md:p-8 border border-slate-100 dark:border-slate-800">
-                            <div className="mb-8 border-l-4 border-blue-600 pl-4">
-                                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                        <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-4 md:p-6 border border-slate-100 dark:border-slate-800 h-full">
+                            <div className="mb-6 border-l-4 border-blue-600 pl-4">
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                                     E-Newspaper (E-Paper)
                                 </h2>
-                                <p className="text-slate-500 text-sm mt-1">
-                                    List of all Bangla E-Newspapers / সকল বাংলা ই-পেপার - কাগজের পত্রিকার মতো পড়তে চাইলে এখানে দেখুন
+                                <p className="text-slate-500 text-xs mt-1">
+                                    সকল বাংলা ই-পেপার - কাগজের পত্রিকার মতো পড়তে চাইলে এখানে দেখুন
                                 </p>
                             </div>
                             <PaperGrid papers={ePapers} />
@@ -107,13 +107,13 @@ export default function NewspapersList() {
 
                     {/* Section 2: Online Newspapers */}
                     {onlinePapers.length > 0 && (
-                        <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-6 md:p-8 border border-slate-100 dark:border-slate-800">
-                            <div className="mb-8 border-l-4 border-green-600 pl-4">
-                                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                        <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-4 md:p-6 border border-slate-100 dark:border-slate-800 h-full">
+                            <div className="mb-6 border-l-4 border-green-600 pl-4">
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                                     Online Newspaper
                                 </h2>
-                                <p className="text-slate-500 text-sm mt-1">
-                                    List of all Bangla Online Newspapers / বাংলা অনলাইন সংবাদপত্র সমূহ
+                                <p className="text-slate-500 text-xs mt-1">
+                                    বাংলা অনলাইন সংবাদপত্র সমূহ
                                 </p>
                             </div>
                             <PaperGrid papers={onlinePapers} />
@@ -121,11 +121,11 @@ export default function NewspapersList() {
                     )}
 
                     {onlinePapers.length === 0 && ePapers.length === 0 && (
-                        <div className="text-center py-20 text-slate-400">
+                        <div className="text-center py-20 text-slate-400 col-span-full">
                             No newspapers found.
                         </div>
                     )}
-                </>
+                </div>
             )}
 
             <div className="text-center">
