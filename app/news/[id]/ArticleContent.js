@@ -7,7 +7,6 @@ import NewsSlider from '../../components/NewsSlider'; // Corrected path
 import LiveBlogFeed from '../../components/LiveBlogFeed'; // Live Blog Component
 import CommentSection from '../../components/comments/CommentSection'; // Comment Component
 import { parseNewsContent, stripHtml } from '../../lib/utils';
-import GoogleAd from '../../components/GoogleAd';
 
 export default function ArticleContent({ article, relatedNews }) {
     // Functions for interaction
@@ -221,12 +220,11 @@ export default function ArticleContent({ article, relatedNews }) {
                             </div>
                             <div className="mt-8">
                                 <span className="text-xs text-slate-400 uppercase tracking-widest block text-center mb-1">Advertisement</span>
-                                <GoogleAd slotId="3652013893" style={{ minHeight: '250px' }} />
+                                {/* Manual Ad Removed - Auto Ads Active */}
                             </div>
                         </div>
                     </div>
-
-                </div >
+                </div>
             </main >
         </div >
     );

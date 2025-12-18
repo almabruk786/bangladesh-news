@@ -1,7 +1,7 @@
 "use client";
 
 import { generateBreadcrumbSchema } from "../../lib/schemas";
-import GoogleAd from "../../components/GoogleAd";
+
 
 export default function CategoryClient({ name, initialNews }: { name: string, initialNews: any[] }) {
     const news = initialNews || [];
@@ -20,7 +20,7 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
             <h1 className="text-2xl font-black mb-4 capitalize border-b pb-2 border-red-600 inline-block">{decodeURIComponent(name)} News</h1>
 
             <div className="mb-8">
-                <GoogleAd slotId="3652013893" style={{ minHeight: '120px' }} />
+                {/* Auto Ads Active */}
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

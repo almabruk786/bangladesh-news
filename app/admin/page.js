@@ -26,7 +26,7 @@ export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
-  const [activeTab, setActiveTab] = useState("manual");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [isNavigating, setIsNavigating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [popupMsg, setPopupMsg] = useState(null);
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
         }
 
         setUser(restoredUser);
-        if (!activeTab) setActiveTab(data.user.role === "admin" ? "dashboard" : "dashboard");
+        if (restoredUser.role === "admin") setActiveTab("dashboard");
       }
     }
   }, []);

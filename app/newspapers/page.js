@@ -1,5 +1,5 @@
 import NewspapersList from '../components/NewspapersList';
-import GoogleAd from '../components/GoogleAd';
+
 
 export const metadata = {
     title: "List of All Bangladesh Newspapers - বাংলাদেশের সংবাদপত্রসমূহ",
@@ -26,7 +26,7 @@ export default function NewspapersPage() {
                 </div>
 
                 <div className="mb-8">
-                    <GoogleAd slotId="3652013893" />
+                    {/* Manual Ad Removed */}
                 </div>
 
                 {/* Grid Content */}
