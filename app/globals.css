@@ -65,3 +65,11 @@ h6 {
 .text-shadow-sm {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
+
+/* Responsive Embeds (YouTube, etc) */
+iframe, video {
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.5rem;
+}
