@@ -1,5 +1,6 @@
 import NewspapersList from '../components/NewspapersList';
-
+import { db } from '../lib/firebase';
+import { collection, getDocs, query } from 'firebase/firestore';
 
 export const metadata = {
     title: "All Bangla Newspapers List | Online & E-Paper | বাংলাদেশের সব সংবাদপত্র",
@@ -15,7 +16,35 @@ export const metadata = {
     }
 };
 
-export default function NewspapersPage() {
+async function getNewspapers() {
+    try {
+        const q = query(collection(db, "newspapers"));
+        const querySnapshot = await getDocs(q);
+        const papers = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        // Sort on Server
+        papers.sort((a, b) => {
+            const orderA = a.order !== undefined ? a.order : 999;
+            const orderB = b.order !== undefined ? b.order : 999;
+            if (orderA !== orderB) return orderA - orderB;
+            return a.name.localeCompare(b.name);
+        });
+
+        return papers;
+    } catch (error) {
+        console.error("Error fetching newspapers on server:", error);
+        return [];
+    }
+}
+
+export const revalidate = 60; // Cache for 1 minute
+
+export default async function NewspapersPage() {
+    const papers = await getNewspapers();
+
     return (
         <div className="min-h-screen bg-white dark:bg-slate-900 font-sans">
             <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
@@ -30,7 +59,7 @@ export default function NewspapersPage() {
                 </div>
 
                 {/* Grid Content */}
-                <NewspapersList />
+                <NewspapersList initialPapers={papers} />
             </div>
         </div>
     );

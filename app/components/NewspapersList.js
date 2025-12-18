@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 
-export default function NewspapersList() {
-    const [newspapers, setNewspapers] = useState([]);
-    const [loading, setLoading] = useState(true);
+export default function NewspapersList({ initialPapers = [] }) {
+    const [newspapers, setNewspapers] = useState(initialPapers);
+    const [loading, setLoading] = useState(!initialPapers.length);
 
     useEffect(() => {
+        if (initialPapers.length > 0) return;
+
         const fetchPapers = async () => {
             try {
                 const q = query(collection(db, "newspapers"));
@@ -32,7 +34,7 @@ export default function NewspapersList() {
             }
         };
         fetchPapers();
-    }, []);
+    }, [initialPapers]);
 
     const onlinePapers = newspapers.filter(p => !p.type || p.type === 'online');
     const ePapers = newspapers.filter(p => p.type === 'epaper');
@@ -52,17 +54,17 @@ export default function NewspapersList() {
                             <img
                                 src={paper.logo}
                                 alt={paper.name}
+                                loading="lazy"
                                 onError={(e) => {
-                                    e.target.onerror = null;
                                     e.target.style.display = 'none';
                                     e.target.nextSibling.style.display = 'block';
                                 }}
-                                className="max-h-16 max-w-full object-contain filter grayscale group-hover:grayscale-0 transition duration-300"
+                                className="max-h-16 max-w-full object-contain transition duration-300"
                             />
                         ) : null}
                         <span
                             style={{ display: paper.logo ? 'none' : 'block' }}
-                            className="text-xl font-bold font-serif text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
+                            className="text-xl font-bold font-serif text-blue-600 dark:text-blue-400 group-hover:text-red-500 transition-colors"
                         >
                             {paper.bn || paper.name}
                         </span>

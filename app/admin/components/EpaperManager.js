@@ -18,9 +18,14 @@ export default function EpaperManager() {
         bn: '',
         url: '',
         logo: '',
-        order: 999,
+        order: '', // Default to empty for auto-calc
         type: 'online' // Default to Online Newspaper
     });
+
+    // Calculate next auto order based on current type selection
+    const relevantPapers = newspapers.filter(n => (n.type || 'online') === formData.type);
+    const maxOrder = relevantPapers.reduce((max, n) => Math.max(max, n.order || 0), 0);
+    const nextAutoOrder = maxOrder + 1;
 
     // Fetch Newspapers
     useEffect(() => {
@@ -54,11 +59,17 @@ export default function EpaperManager() {
         e.preventDefault();
         if (!formData.name || !formData.url) return;
 
+        const submissionData = {
+            ...formData,
+            // Use manually entered order OR auto-calculated one
+            order: formData.order !== '' ? parseInt(formData.order) : nextAutoOrder
+        };
+
         try {
             if (isEditing && currentId) {
-                await updateDoc(doc(db, "newspapers", currentId), formData);
+                await updateDoc(doc(db, "newspapers", currentId), submissionData);
             } else {
-                await addDoc(collection(db, "newspapers"), formData);
+                await addDoc(collection(db, "newspapers"), submissionData);
             }
             resetForm();
         } catch (error) {
@@ -72,7 +83,7 @@ export default function EpaperManager() {
             bn: paper.bn || '',
             url: paper.url,
             logo: paper.logo || '',
-            order: paper.order || 999,
+            order: paper.order !== undefined ? paper.order : '',
             type: paper.type || 'online'
         });
         setIsEditing(true);
@@ -86,7 +97,7 @@ export default function EpaperManager() {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', bn: '', url: '', logo: '', order: 999, type: 'online' });
+        setFormData({ name: '', bn: '', url: '', logo: '', order: '', type: 'online' });
         setIsEditing(false);
         setCurrentId(null);
     };
@@ -170,26 +181,75 @@ export default function EpaperManager() {
         }
     };
 
+    const handleReorder = async (targetType) => {
+        if (!confirm(`Are you sure you want to re-order all ${targetType === 'epaper' ? 'E-Papers' : 'Online Newspapers'} sequentially (1, 2, 3...)?`)) return;
+
+        const papersToReorder = newspapers
+            .filter(n => (n.type || 'online') === targetType)
+            .sort((a, b) => (a.order || 999) - (b.order || 999));
+
+        if (papersToReorder.length === 0) return;
+
+        let batchCount = 0;
+        try {
+            // Using Promise.all for parallel updates (Firestore batch limit is 500, we assume less here or simple concurrent)
+            await Promise.all(papersToReorder.map((paper, index) => {
+                const newOrder = index + 1;
+                if (paper.order !== newOrder) {
+                    batchCount++;
+                    return updateDoc(doc(db, "newspapers", paper.id), { order: newOrder });
+                }
+                return Promise.resolve();
+            }));
+            alert(`Updated orders for ${batchCount} newspapers.`);
+        } catch (error) {
+            console.error("Error reordering:", error);
+            alert("Failed to reorder. Check console.");
+        }
+    };
+
+    const [uploading, setUploading] = useState(false);
+
+    const uploadToCloudinary = async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+        const endpoint = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
+        const res = await fetch(endpoint, { method: "POST", body: formData });
+        const data = await res.json();
+        return data.secure_url;
+    };
+
+    const handleLogoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+            const url = await uploadToCloudinary(file);
+            if (url) setFormData({ ...formData, logo: url });
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Upload failed! Check console.");
+        }
+        setUploading(false);
+    };
+
     return (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+            {/* Header ... (kept same, just ensuring context for replacement) */}
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">Newspaper Manager <span className="text-sm font-normal text-slate-500">({newspapers.length} Papers)</span></h2>
                 <div className="flex gap-2">
                     <button onClick={() => setShowImport(true)} className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded text-sm font-bold hover:bg-green-200">
                         <Upload size={14} /> Import
                     </button>
-                    {/* <button onClick={seedDefaults} className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-sm font-bold hover:bg-blue-200">
-                        <RefreshCw size={14} /> Import/Update Defaults
-                    </button> */}
                 </div>
             </div>
 
             {showImport && (
                 <BulkImport
                     onClose={() => setShowImport(false)}
-                    onComplete={() => {
-                        // Optional: refresh logic if needed, but snapshot handles it
-                    }}
+                    onComplete={() => { }}
                 />
             )}
 
@@ -256,24 +316,32 @@ export default function EpaperManager() {
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Logo URL (or Path)</label>
-                    <input
-                        type="text"
-                        placeholder="/newspapers/logo.svg"
-                        className="w-full px-3 py-2 border rounded dark:bg-slate-800 dark:border-slate-700"
-                        value={formData.logo}
-                        onChange={e => setFormData({ ...formData, logo: e.target.value })}
-                    />
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Logo URL (or Upload GIF/Image)</label>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder="https://..."
+                            className="w-full px-3 py-2 border rounded dark:bg-slate-800 dark:border-slate-700"
+                            value={formData.logo}
+                            onChange={e => setFormData({ ...formData, logo: e.target.value })}
+                        />
+                        <label className={`flex items-center justify-center px-3 py-2 bg-slate-200 dark:bg-slate-700 rounded cursor-pointer hover:bg-slate-300 transition ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                            <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" disabled={uploading} />
+                            {uploading ? <RefreshCw size={16} className="animate-spin" /> : <Upload size={16} />}
+                        </label>
+                    </div>
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Display Order</label>
-                    <input
-                        type="number"
-                        placeholder="999"
-                        className="w-full px-3 py-2 border rounded dark:bg-slate-800 dark:border-slate-700"
-                        value={formData.order}
-                        onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 999 })}
-                    />
+                    <div className="flex gap-2">
+                        <input
+                            type="number"
+                            placeholder={`Auto (${nextAutoOrder})`}
+                            className="w-full px-3 py-2 border rounded dark:bg-slate-800 dark:border-slate-700"
+                            value={formData.order}
+                            onChange={e => setFormData({ ...formData, order: e.target.value })}
+                        />
+                    </div>
                 </div>
                 <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-2 mt-2">
                     {isEditing && (
@@ -287,9 +355,13 @@ export default function EpaperManager() {
             </form>
 
             {/* List */}
-            <div className="space-y-3">
-                {newspapers.map((paper) => (
-                    <div key={paper.id} className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-700 rounded bg-white dark:bg-slate-900">
+            {/* Helpers */}
+            {(() => {
+                const onlinePapers = newspapers.filter(p => !p.type || p.type === 'online');
+                const ePapers = newspapers.filter(p => p.type === 'epaper');
+
+                const NewspaperRow = ({ paper }) => (
+                    <div key={paper.id} className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-700 rounded bg-white dark:bg-slate-900 mb-2">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-slate-100 rounded flex items-center justify-center p-1 relative">
                                 {paper.logo ? <img src={paper.logo} alt={paper.name} className="max-w-full max-h-full object-contain" /> : <span className="text-xs font-bold text-slate-400">No Logo</span>}
@@ -310,11 +382,48 @@ export default function EpaperManager() {
                             <button onClick={() => handleDelete(paper.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
                         </div>
                     </div>
-                ))}
-                {newspapers.length === 0 && !loading && (
-                    <div className="text-center py-10 text-slate-400 text-sm">No newspapers found. Import defaults above.</div>
-                )}
-            </div>
+                );
+
+                return (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Online Papers Column */}
+                        <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <div className="flex items-center justify-between mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">
+                                <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                    <span className="w-2 h-6 bg-green-500 rounded-full"></span>
+                                    Online Newspapers
+                                    <span className="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">{onlinePapers.length}</span>
+                                </h3>
+                                <button onClick={() => handleReorder('online')} className="text-[10px] uppercase font-bold text-blue-500 hover:bg-blue-50 px-2 py-1 rounded">
+                                    Fix Order
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                {onlinePapers.map(paper => <NewspaperRow key={paper.id} paper={paper} />)}
+                                {onlinePapers.length === 0 && <div className="text-center py-8 text-slate-400 text-sm italic">No online newspapers yet.</div>}
+                            </div>
+                        </div>
+
+                        {/* E-Papers Column */}
+                        <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <div className="flex items-center justify-between mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">
+                                <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                    <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
+                                    E-Newspapers (E-Paper)
+                                    <span className="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">{ePapers.length}</span>
+                                </h3>
+                                <button onClick={() => handleReorder('epaper')} className="text-[10px] uppercase font-bold text-blue-500 hover:bg-blue-50 px-2 py-1 rounded">
+                                    Fix Order
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                {ePapers.map(paper => <NewspaperRow key={paper.id} paper={paper} />)}
+                                {ePapers.length === 0 && <div className="text-center py-8 text-slate-400 text-sm italic">No E-Papers yet.</div>}
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 }
