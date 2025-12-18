@@ -362,6 +362,10 @@ export default function AnalyticsViewer() {
                         </div>
                         <div className="space-y-3 text-sm">
                             <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded">
+                                <p className="text-xs font-bold text-slate-400 uppercase">Page Visited</p>
+                                <p className="font-medium dark:text-slate-200 text-blue-600 break-all">{selectedVisit.path || '/'}</p>
+                            </div>
+                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded">
                                 <p className="text-xs font-bold text-slate-400 uppercase">Location</p>
                                 <p className="font-medium dark:text-slate-200">{selectedVisit.city || 'Unknown'}, {selectedVisit.country || 'Unknown'}</p>
                                 <p className="text-xs text-slate-500">{selectedVisit.ip}</p>

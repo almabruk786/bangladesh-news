@@ -28,22 +28,56 @@ export default function AnalyticsTracker() {
                     }
                 }
 
-                // 3. Geo Info (Free Service - careful with limits)
+                // 3. Geo Info (Robust Multi-Provider Fallback)
                 let locationData = {};
-                try {
-                    const res = await fetch('https://ipapi.co/json/');
-                    if (res.ok) {
-                        const data = await res.json();
-                        locationData = {
-                            ip: data.ip,
-                            city: data.city,
-                            country: data.country_name,
-                            isp: data.org
-                        };
-                    }
-                } catch (e) {
-                    // console.warn("Geo fetch failed");
-                }
+
+                const fetchGeo = async () => {
+                    // Provider 1: ipapi.co (Primary)
+                    try {
+                        const res = await fetch('https://ipapi.co/json/');
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.city) return {
+                                ip: data.ip,
+                                city: data.city,
+                                country: data.country_name,
+                                isp: data.org
+                            };
+                        }
+                    } catch (e) { }
+
+                    // Provider 2: ipwho.is (Backup)
+                    try {
+                        const res = await fetch('https://ipwho.is/');
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.success) return {
+                                ip: data.ip,
+                                city: data.city,
+                                country: data.country,
+                                isp: data.connection?.isp
+                            };
+                        }
+                    } catch (e) { }
+
+                    // Provider 3: db-ip (Last Resort)
+                    try {
+                        const res = await fetch('https://api.db-ip.com/v2/free/self');
+                        if (res.ok) {
+                            const data = await res.json();
+                            return {
+                                ip: data.ipAddress,
+                                city: data.city,
+                                country: data.countryName,
+                                isp: 'Unknown'
+                            };
+                        }
+                    } catch (e) { }
+
+                    return {};
+                };
+
+                locationData = await fetchGeo();
 
                 // 4. Source & Referrer
                 const referrer = document.referrer || '';
