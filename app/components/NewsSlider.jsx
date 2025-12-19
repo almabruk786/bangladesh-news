@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 
 export default function NewsSlider({ images, title }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,8 +27,15 @@ export default function NewsSlider({ images, title }) {
   // যদি মাত্র ১টি ছবি থাকে, তবে স্লাইডার হবে না
   if (images.length === 1) {
     return (
-      <div className="w-full h-[250px] md:h-[400px] rounded-xl mb-8 overflow-hidden shadow-lg border border-slate-100">
-        <img src={images[0]} alt={title} className="w-full h-full object-cover" />
+      <div className="relative w-full h-[250px] md:h-[400px] rounded-xl mb-8 overflow-hidden shadow-lg border border-slate-100">
+        <Image
+          src={images[0]}
+          alt={title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
+          priority
+        />
       </div>
     );
   }
@@ -41,10 +49,13 @@ export default function NewsSlider({ images, title }) {
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
             }`}
         >
-          <img
+          <Image
             src={img}
             alt={`${title} - image ${index + 1}`}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
+            priority={index === 0}
           />
         </div>
       ))}

@@ -2,7 +2,7 @@
 const nextConfig = {
   // ১. সব জায়গা থেকে ইমেজ লোড করার পারমিশন
   images: {
-    unoptimized: true,
+    unoptimized: false,
     remotePatterns: [
       {
         protocol: 'https',
