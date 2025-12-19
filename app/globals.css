@@ -19,15 +19,7 @@
 }
 
 body {
-  @apply bg-white text-slate-900 font-sans antialiased;
-  background-color: var(--bg-page);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.dark body {
-  background-color: #0f172a !important;
-  /* Force slate-900 */
-  color: #ffffff !important;
+  @apply font-sans antialiased;
 }
 
 /* Typography Enhancements */
