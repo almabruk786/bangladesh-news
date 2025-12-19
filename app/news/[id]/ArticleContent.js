@@ -7,6 +7,7 @@ import NewsSlider from '../../components/NewsSlider'; // Corrected path
 import LiveBlogFeed from '../../components/LiveBlogFeed'; // Live Blog Component
 import CommentSection from '../../components/comments/CommentSection'; // Comment Component
 import { parseNewsContent, stripHtml } from '../../lib/utils';
+import FollowButtons from '../../components/FollowButtons';
 
 export default function ArticleContent({ article, relatedNews }) {
     // Functions for interaction
@@ -119,9 +120,15 @@ export default function ArticleContent({ article, relatedNews }) {
 
                             <NewsSlider images={imageList} title={article.title} />
 
-                            {/* Social Share Buttons */}
-                            <div className="flex items-center gap-3 my-6">
+                            {/* Social Share & Follow Buttons */}
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 my-6">
                                 <ShareButtons title={article.title} />
+                                <div className="flex-1 w-full md:w-auto">
+                                    <FollowButtons
+                                        whatsappLink="https://whatsapp.com/channel/0029VaXjY5k59PwLs0PSQ03L"
+                                        facebookLink="https://www.facebook.com/bakalianews"
+                                    />
+                                </div>
                             </div>
 
                             {/* Live Blog Feed Integration */}
@@ -144,6 +151,9 @@ export default function ArticleContent({ article, relatedNews }) {
                                     return (
                                         <>
                                             <div dangerouslySetInnerHTML={{ __html: contentToDisplay }} />
+
+                                            {/* Follow Buttons */}
+
 
                                             {/* Fallback for Short/Broken Content */}
                                             {isShortContent && article.originalLink && (article.originalLink.startsWith('http') || article.originalLink.startsWith('https')) && (
