@@ -13,28 +13,61 @@ export default function NotificationManager() {
 
             // Show prompt if default (not decided yet)
             if (Notification.permission === 'default') {
-                // Show after a small delay to not be annoying immediately
                 const timer = setTimeout(() => setShowPrompt(true), 3000);
                 return () => clearTimeout(timer);
+            } else if (Notification.permission === 'granted') {
+                // If already granted, ensure token is synced
+                requestPermission();
             }
+
+            // Foreground Message Handler
+            import('../lib/firebase').then(async ({ messaging }) => {
+                const msg = await messaging();
+                if (msg) {
+                    const { onMessage } = await import('firebase/messaging');
+                    onMessage(msg, (payload) => {
+                        console.log('Foreground Message received:', payload);
+                        const { title, body, imageUrl, link, tag } = payload.data;
+
+                        // Show custom UI or browser notification
+                        const n = new Notification(title, {
+                            body: body,
+                            icon: imageUrl || '/bn-icon.png',
+                            tag: tag
+                        });
+                        n.onclick = (event) => {
+                            event.preventDefault();
+                            window.open(link, '_blank');
+                        };
+                    });
+                }
+            });
         }
     }, []);
 
     const requestPermission = async () => {
         try {
+            console.log("Requesting permission...");
             const permissionResult = await Notification.requestPermission();
             setPermission(permissionResult);
             setShowPrompt(false);
 
             if (permissionResult === 'granted') {
-                console.log('Notification permission granted.');
+                console.log('Notification permission granted. Fetching token...');
                 // Get Token
                 const token = await getFcmToken("BLxhDnQ4pI6_KxsaFUUaegdHmQPqVkfNtWH1eEsjwHwM_nzEb7dAsNPU9odSY5_3v2S71QXhDgisMLUsfUy8bDM");
                 if (token) {
                     console.log('FCM Token:', token);
-                    // Here you would send the token to your server
-                    // For now, we just log it. 
-                    // To test: send a test message from Firebase Console to this token.
+                    // Save to server
+                    const res = await fetch('/api/notifications/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token })
+                    });
+                    const data = await res.json();
+                    console.log("Subscription API Response:", data);
+                } else {
+                    console.error("Failed to get FCM token. VAPID key might be invalid or permissions blocked.");
                 }
             }
         } catch (error) {

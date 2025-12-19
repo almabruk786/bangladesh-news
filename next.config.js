@@ -2,6 +2,7 @@
 const nextConfig = {
   // ১. সব জায়গা থেকে ইমেজ লোড করার পারমিশন
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -9,10 +10,17 @@ const nextConfig = {
       },
     ],
   },
-  
+
   // ২. টাইপস্ক্রিপ্ট এরর থাকলেও বিল্ড আটকাবে না
   typescript: {
     ignoreBuildErrors: true,
+  },
+
+  // Suppress cross-origin warning for local network development
+  experimental: {
+    turbopack: {
+      root: __dirname,
+    },
   },
 };
 

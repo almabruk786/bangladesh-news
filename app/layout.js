@@ -18,10 +18,19 @@ export const metadata = {
   title: { template: '%s | বাকলিয়া নিউজ', default: 'বাকলিয়া নিউজ | সর্বশেষ বাংলা খবর ও ব্রেকিং নিউজ আপডেট' },
   description: "বাংলাদেশ ও বিশ্বের সর্বশেষ বাংলা খবর, রাজনীতি, খেলাধুলা, বিনোদন ও লাইভ আপডেট পড়ুন বাকলিয়া নিউজে। সত্য ও বস্তুনিষ্ঠ সংবাদের বিশ্বস্ত অনলাইন ঠিকানা।",
   verification: { google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk" },
+  manifest: '/manifest.json',
   icons: {
     icon: '/bn-icon.png',
     shortcut: '/bn-icon.png',
-    apple: '/apple-icon.png',
+    apple: '/bn-icon.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'BD News',
+  },
+  formatDetection: {
+    telephone: false,
   },
   openGraph: {
     type: 'website',

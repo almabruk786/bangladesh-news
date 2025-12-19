@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Eye, EyeOff, Search, Filter, CheckCircle, XCircle, Pin, MoreHorizontal, Image as ImageIcon } from "lucide-react";
+import { Edit, Trash2, Eye, EyeOff, Search, Filter, CheckCircle, XCircle, Pin, MoreHorizontal, Image as ImageIcon, Bell } from "lucide-react";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
@@ -103,6 +103,34 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
     const togglePin = async (item) => {
         await updateDoc(doc(db, "articles", item.id), { isPinned: !item.isPinned });
         refreshData();
+    };
+
+    const handleSendNotification = async (item) => {
+        const customBody = window.prompt("Enter notification text:", item.title);
+        if (customBody === null) return; // Cancelled
+
+        try {
+            const res = await fetch('/api/notifications/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: item.title,
+                    body: customBody || "Read more on Bakalia News",
+                    imageUrl: item.imageUrl || item.imageUrls?.[0],
+                    link: `https://bakalia.xyz/news/${item.id}`
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                alert(`Notification Sent!\nSuccess: ${data.successCount}\nFailed: ${data.failureCount}`);
+            } else {
+                alert(`Error: ${data.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error("Notification Error:", error);
+            alert("Failed to send notification.");
+        }
     };
 
     return (
@@ -250,6 +278,10 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                                                     </>
                                                 )}
                                             </>
+                                        )}
+
+                                        {type === "admin" && (
+                                            <button onClick={() => handleSendNotification(item)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100" title="Send Notification"><Bell size={16} /></button>
                                         )}
 
                                         <a href={`/news/${item.id}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100" title="Visit Live"><div className="flex items-center gap-1"><Eye size={16} /></div></a>
