@@ -112,7 +112,7 @@ const PaperGrid = ({ papers }) => (
                                 e.target.style.display = 'none';
                                 e.target.nextSibling.style.display = 'block';
                             }}
-                            className="max-h-16 max-w-full object-contain transition duration-300"
+                            className="max-h-16 max-w-full object-contain transition duration-300 dark:bg-slate-200 dark:p-1 dark:rounded"
                         />
                     ) : null}
                     <span
