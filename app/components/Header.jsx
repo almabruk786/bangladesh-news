@@ -128,7 +128,7 @@ export default function Header() {
             {deferredPrompt && (
               <button
                 onClick={handleInstallClick}
-                className="hidden md:flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200"
+                className="flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200"
               >
                 <Download size={14} /> Install App
               </button>
@@ -222,6 +222,11 @@ export default function Header() {
                 <Link href="/newspapers" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-2 bg-red-600 text-white font-bold rounded text-center block">
                   NewsPapers 📰
                 </Link>
+                {deferredPrompt && (
+                  <button onClick={handleInstallClick} className="w-full py-2 bg-slate-100 text-slate-800 font-bold rounded text-center flex items-center justify-center gap-2">
+                    <Download size={18} /> Install App
+                  </button>
+                )}
                 <button onClick={toggleTheme} className="flex items-center gap-2 font-bold text-slate-600">
                   {darkMode ? <><Sun size={18} /> Light Mode</> : <><Moon size={18} /> Dark Mode</>}
                 </button>
