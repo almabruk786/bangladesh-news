@@ -29,7 +29,7 @@ h3,
 h4,
 h5,
 h6 {
-  @apply tracking-tight font-bold text-slate-900;
+  @apply tracking-tight font-bold text-slate-900 dark:text-slate-100;
 }
 
 /* Custom Scrollbar */
@@ -59,7 +59,8 @@ h6 {
 }
 
 /* Responsive Embeds (YouTube, etc) */
-iframe, video {
+iframe,
+video {
   max-width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
