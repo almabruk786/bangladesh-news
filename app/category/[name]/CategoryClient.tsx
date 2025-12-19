@@ -33,6 +33,7 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
                             <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden mb-3 relative">
                                 {item.imageUrl ? (
                                     <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                                ) : (
                                     <div className="w-full h-full flex items-center justify-center text-slate-300">No Image</div>
                                 )}
                                 <span className="absolute bottom-2 left-2 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase">
