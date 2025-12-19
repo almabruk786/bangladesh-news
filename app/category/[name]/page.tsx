@@ -16,10 +16,11 @@ async function getCategoryNews(categoryName: string) {
     { name: "Lifestyle", bn: "জীবনযাপন" },
     { name: "Technology", bn: "প্রযুক্তি" },
     { name: "Health", bn: "স্বাস্থ্য" },
-    { name: "Education", bn: "শিক্ষা" }
+    { name: "Education", bn: "শিক্ষা" },
+    { name: "National", bn: "জাতীয়" },
   ];
 
-  const decodedName = decodeURIComponent(categoryName);
+  const decodedName = decodeURIComponent(categoryName).trim();
 
   // Find matching category to get both English and Bangla tags
   const catMatch = categories.find(c =>
@@ -27,7 +28,18 @@ async function getCategoryNews(categoryName: string) {
     c.bn === decodedName
   );
 
-  const searchTags = catMatch ? [catMatch.name, catMatch.bn] : [decodedName];
+  let searchTags = [decodedName];
+  if (catMatch) {
+    searchTags = [catMatch.name, catMatch.bn, catMatch.name.toUpperCase(), catMatch.name.toLowerCase()];
+  } else {
+    // If no match, try to add case variants of the decoded name itself
+    searchTags.push(decodedName.toLowerCase());
+    searchTags.push(decodedName.toUpperCase());
+    searchTags.push(decodedName.charAt(0).toUpperCase() + decodedName.slice(1).toLowerCase());
+  }
+
+  // Deduplicate
+  searchTags = [...new Set(searchTags)];
   if (!searchTags.includes(decodedName)) searchTags.push(decodedName);
 
   // 1. Primary Query (Legacy + Primary Category) - Uses existing Index
