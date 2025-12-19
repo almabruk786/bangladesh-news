@@ -9,13 +9,26 @@ export async function POST(req) {
             return NextResponse.json({ error: 'Title and Body required' }, { status: 400 });
         }
 
+        // DEBUG: Check connection
+        if (adminDb.constructor.name === 'Object' && !adminDb.collection) {
+            // This detects if it is the Mock DB
+        }
+
+        import admin from 'firebase-admin'; // Ensure we can check admin.apps
+
+        if (!admin.apps.length) {
+            return NextResponse.json({ success: false, error: 'CRITICAL: Firebase Admin Service is NOT initialized. Check server logs/credentials.' });
+        }
+
         // 1. Fetch all subscriber tokens
         const snapshot = await adminDb.collection('subscribers').get();
-        const tokens = snapshot.docs.map(doc => doc.data().token).filter(t => t);
 
-        if (tokens.length === 0) {
-            return NextResponse.json({ success: false, error: 'No subscribers found in database.' });
+        if (snapshot.docs.length === 0) {
+            // Differentiate Empty vs Error
+            return NextResponse.json({ success: false, error: 'Database Connected but No subscribers found. (Collection Empty)' });
         }
+
+        const tokens = snapshot.docs.map(doc => doc.data().token).filter(t => t);
 
         // 2. Prepare Payload for 'sendEach' (Data-Only Message)
         // We use Data-Only to prevent the browser from automatically showing a notification

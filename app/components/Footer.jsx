@@ -90,13 +90,7 @@ export default function Footer() {
         <div className="lg:col-span-3">
           <h4 className="text-white font-bold mb-6 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Stay Connected</h4>
           <SubscriptionBox />
-          <div className="mt-6 p-4 bg-slate-800/50 rounded-lg text-xs">
-            <h5 className="text-white font-bold mb-2">Google News</h5>
-            <p className="mb-3">Follow Bakalia News on Google News for real-time updates.</p>
-            <a href="#" className="inline-flex items-center justify-center w-full py-2 bg-white text-slate-900 font-bold rounded hover:bg-slate-200 transition-colors">
-              Follow us
-            </a>
-          </div>
+
         </div>
       </div>
 

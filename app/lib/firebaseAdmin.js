@@ -2,13 +2,36 @@ import admin from 'firebase-admin';
 
 if (!admin.apps.length) {
     try {
-        // Direct file load strategy (Robust against Env parsing issues)
-        const serviceAccount = require('../../service-account.json');
+        let serviceAccount;
 
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-        });
-        console.log("Firebase Admin initialized successfully with file-based credentials.");
+        // 1. Try Environment Variable (Best for Production/Vercel)
+        if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+            try {
+                serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+                console.log("Using FIREBASE_SERVICE_ACCOUNT_JSON from environment.");
+            } catch (e) {
+                console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON", e);
+            }
+        }
+
+        // 2. Fallback to File (Best for Localhost)
+        if (!serviceAccount) {
+            try {
+                serviceAccount = require('../../service-account.json');
+                console.log("Using local service-account.json file.");
+            } catch (e) {
+                console.warn("Local service-account.json not found.");
+            }
+        }
+
+        if (serviceAccount) {
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+            });
+            console.log("Firebase Admin initialized successfully.");
+        } else {
+            console.error("No valid credentials found for Firebase Admin.");
+        }
     } catch (error) {
         console.error('Firebase admin initialization error', error);
     }
