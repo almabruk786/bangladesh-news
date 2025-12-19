@@ -54,7 +54,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} flex flex-col min-h-screen text-slate-900 dark:text-white transition-colors duration-300`}>
+      <body className={`${inter.className} flex flex-col min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300`}>
         {/* GTM NoScript */}
         <noscript>
           <iframe
