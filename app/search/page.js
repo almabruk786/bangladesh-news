@@ -96,7 +96,26 @@ function SearchResults() {
                                         })()}
                                     </p>
                                     <div className="flex items-center gap-3 text-xs text-slate-400 font-medium">
-                                        <span className="bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2 py-1 rounded text-slate-600 uppercase">{item.category}</span>
+                                        <span className="bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2 py-1 rounded text-slate-600 uppercase">
+                                            {(() => {
+                                                const cat = item.category;
+                                                const map = {
+                                                    "National": "জাতীয়", "national": "জাতীয়", "NATIONAL": "জাতীয়",
+                                                    "International": "আন্তর্জাতিক", "international": "আন্তর্জাতিক", "INTERNATIONAL": "আন্তর্জাতিক",
+                                                    "Politics": "রাজনীতি", "politics": "রাজনীতি", "POLITICS": "রাজনীতি",
+                                                    "Sports": "খেলা", "sports": "খেলা", "SPORTS": "খেলা",
+                                                    "Health": "স্বাস্থ্য", "health": "স্বাস্থ্য", "HEALTH": "স্বাস্থ্য",
+                                                    "Technology": "প্রযুক্তি", "technology": "প্রযুক্তি", "TECHNOLOGY": "প্রযুক্তি",
+                                                    "Business": "বাণিজ্য", "business": "বাণিজ্য", "BUSINESS": "বাণিজ্য",
+                                                    "Entertainment": "বিনোদন", "entertainment": "বিনোদন", "ENTERTAINMENT": "বিনোদন",
+                                                    "Lifestyle": "জীবনযাপন", "lifestyle": "জীবনযাপন", "LIFESTYLE": "জীবনযাপন",
+                                                    "Education": "শিক্ষা", "education": "শিক্ষা", "EDUCATION": "শিক্ষা",
+                                                    "Opinion": "মতামত", "opinion": "মতামত", "OPINION": "মতামত",
+                                                    "Bangladesh": "বাংলাদেশ", "bangladesh": "বাংলাদেশ", "BANGLADESH": "বাংলাদেশ"
+                                                };
+                                                return map[cat] || map[cat?.trim()] || cat;
+                                            })()}
+                                        </span>
                                         <span>{new Date(item.publishedAt).toLocaleDateString()}</span>
                                     </div>
                                 </div>

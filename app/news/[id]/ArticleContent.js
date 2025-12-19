@@ -95,19 +95,39 @@ export default function ArticleContent({ article, relatedNews }) {
                     <div className="lg:col-span-2">
                         <article className="bg-white dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100 transition-colors duration-300">
                             <div className="flex items-center gap-4 mb-4 text-sm">
-                                {article.categories && article.categories.length > 0 ? (
-                                    article.categories.map((cat, i) => (
-                                        <Link key={i} href={`/category/${cat}`}>
-                                            <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs hover:bg-red-200 transition-colors">
-                                                {cat}
-                                            </span>
-                                        </Link>
-                                    ))
-                                ) : (
-                                    <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
-                                        {article.category === "Auto-Imported" ? "General" : (article.category || "খবর")}
-                                    </span>
-                                )}
+                                {(() => {
+                                    const translateCategory = (cat) => {
+                                        const map = {
+                                            "National": "জাতীয়", "national": "জাতীয়", "NATIONAL": "জাতীয়",
+                                            "International": "আন্তর্জাতিক", "international": "আন্তর্জাতিক", "INTERNATIONAL": "আন্তর্জাতিক",
+                                            "Politics": "রাজনীতি", "politics": "রাজনীতি", "POLITICS": "রাজনীতি",
+                                            "Sports": "খেলা", "sports": "খেলা", "SPORTS": "খেলা",
+                                            "Health": "স্বাস্থ্য", "health": "স্বাস্থ্য", "HEALTH": "স্বাস্থ্য",
+                                            "Technology": "প্রযুক্তি", "technology": "প্রযুক্তি", "TECHNOLOGY": "প্রযুক্তি",
+                                            "Business": "বাণিজ্য", "business": "বাণিজ্য", "BUSINESS": "বাণিজ্য",
+                                            "Entertainment": "বিনোদন", "entertainment": "বিনোদন", "ENTERTAINMENT": "বিনোদন",
+                                            "Lifestyle": "জীবনযাপন", "lifestyle": "জীবনযাপন", "LIFESTYLE": "জীবনযাপন",
+                                            "Education": "শিক্ষা", "education": "শিক্ষা", "EDUCATION": "শিক্ষা",
+                                            "Opinion": "মতামত", "opinion": "মতামত", "OPINION": "মতামত",
+                                            "Bangladesh": "বাংলাদেশ", "bangladesh": "বাংলাদেশ", "BANGLADESH": "বাংলাদেশ"
+                                        };
+                                        return map[cat] || map[cat?.trim()] || cat;
+                                    };
+
+                                    return article.categories && article.categories.length > 0 ? (
+                                        article.categories.map((cat, i) => (
+                                            <Link key={i} href={`/category/${cat}`}>
+                                                <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs hover:bg-red-200 transition-colors">
+                                                    {translateCategory(cat)}
+                                                </span>
+                                            </Link>
+                                        ))
+                                    ) : (
+                                        <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
+                                            {translateCategory(article.category === "Auto-Imported" ? "General" : (article.category || "খবর"))}
+                                        </span>
+                                    );
+                                })()}
                                 <span className="flex items-center text-slate-400 gap-1" suppressHydrationWarning>
                                     <Clock size={14} />
                                     {new Date(article.publishedAt).toLocaleString('bn-BD')}
