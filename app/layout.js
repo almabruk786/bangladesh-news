@@ -7,6 +7,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import CookieConsent from "./components/CookieConsent";
 import AnalyticsTracker from "./components/AnalyticsTracker";
+import NotificationManager from "./components/NotificationManager";
 import { generateOrganizationSchema } from "./lib/schemas";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -92,6 +93,7 @@ export default function RootLayout({ children }) {
 
             <CookieConsent />
             <AnalyticsTracker />
+            <NotificationManager />
           </AuthProvider>
         </ThemeProvider>
 

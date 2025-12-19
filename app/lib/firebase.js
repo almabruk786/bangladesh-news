@@ -15,4 +15,32 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-// export const storage... এই লাইনটি মুছে ফেলা হয়েছে
+
+// Messaging (Client-side only)
+import { getMessaging, getToken, isSupported } from "firebase/messaging";
+
+export const messaging = async () => {
+  try {
+    const supported = await isSupported();
+    if (supported) {
+      return getMessaging(app);
+    }
+    return null;
+  } catch (err) {
+    return null;
+  }
+};
+
+export const getFcmToken = async (vapidKey) => {
+  try {
+    const msg = await messaging();
+    if (msg) {
+      const currentToken = await getToken(msg, { vapidKey });
+      return currentToken;
+    }
+    return null;
+  } catch (err) {
+    console.log('An error occurred while retrieving token.', err);
+    return null;
+  }
+};
