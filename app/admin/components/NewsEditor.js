@@ -7,7 +7,7 @@ import LiveBlogConsole from "./LiveBlogConsole";
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
-        title: "", content: "", imageUrls: [], category: "National", categories: ["National"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", isLive: false, authorName: ""
+        title: "", content: "", imageUrls: [], category: "বাংলাদেশ", categories: ["বাংলাদেশ"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", isLive: false, authorName: ""
     });
     const [tagInput, setTagInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -17,23 +17,23 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     const [uploading, setUploading] = useState(false);
     const [uploadingEditor, setUploadingEditor] = useState(false);
     const [generatingTags, setGeneratingTags] = useState(false);
-    const [categories, setCategories] = useState(["National", "Politics", "Sports", "International", "Entertainment", "Technology"]);
+    const [categories, setCategories] = useState(["বাংলাদেশ", "রাজনীতি", "আন্তর্জাতিক", "খেলা", "মতামত", "বাণিজ্য", "বিনোদন", "জীবনযাপন", "প্রযুক্তি", "স্বাস্থ্য", "শিক্ষা", "জাতীয়"]);
 
     const autoSaveTimerRef = useRef(null);
 
     // Determine Default Author Name
     const defaultAuthorName = user.role === "admin" ? "Md Arif Mainuddin" : user.name;
 
-    useEffect(() => {
-        // Fetch Categories Dynamically
-        import("firebase/firestore").then(({ getDocs, collection, query, orderBy }) => {
-            const q = query(collection(db, "categories"), orderBy("name"));
-            getDocs(q).then(snap => {
-                const cats = snap.docs.map(d => d.data().name);
-                if (cats.length > 0) setCategories(cats);
-            });
-        });
-    }, []);
+    // useEffect(() => {
+    //     // Fetch Categories Dynamically
+    //     import("firebase/firestore").then(({ getDocs, collection, query, orderBy }) => {
+    //         const q = query(collection(db, "categories"), orderBy("name"));
+    //         getDocs(q).then(snap => {
+    //             const cats = snap.docs.map(d => d.data().name);
+    //             if (cats.length > 0) setCategories(cats);
+    //         });
+    //     });
+    // }, []);
 
     // Helper to clean malformed AI content
     const cleanContent = (content) => {

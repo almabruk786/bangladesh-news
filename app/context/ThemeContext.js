@@ -8,7 +8,7 @@ const ThemeContext = createContext({
   lang: 'bn',
   toggleLang: () => { },
   t: {
-    home: 'প্রচ্ছদ', about: 'আমাদের সম্পর্কে', contact: 'যোগাযোগ', latest: 'সর্বশেষ',
+    home: 'সর্বশেষ', about: 'আমাদের সম্পর্কে', contact: 'যোগাযোগ', latest: 'সর্বশেষ',
     popular: 'জনপ্রিয়', breaking: 'ব্রেকিং', readMore: 'আরো পড়ুন', share: 'শেয়ার', reporter: 'প্রতিবেদক'
   }
 });
