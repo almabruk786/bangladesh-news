@@ -94,9 +94,19 @@ export default function ArticleContent({ article, relatedNews }) {
                     <div className="lg:col-span-2">
                         <article className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100">
                             <div className="flex items-center gap-4 mb-4 text-sm">
-                                <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
-                                    {article.category === "Auto-Imported" ? "General" : (article.category || "খবর")}
-                                </span>
+                                {article.categories && article.categories.length > 0 ? (
+                                    article.categories.map((cat, i) => (
+                                        <Link key={i} href={`/category/${cat}`}>
+                                            <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs hover:bg-red-200 transition-colors">
+                                                {cat}
+                                            </span>
+                                        </Link>
+                                    ))
+                                ) : (
+                                    <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
+                                        {article.category === "Auto-Imported" ? "General" : (article.category || "খবর")}
+                                    </span>
+                                )}
                                 <span className="flex items-center text-slate-400 gap-1" suppressHydrationWarning>
                                     <Clock size={14} />
                                     {new Date(article.publishedAt).toLocaleString('bn-BD')}

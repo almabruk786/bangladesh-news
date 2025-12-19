@@ -7,7 +7,7 @@ import LiveBlogConsole from "./LiveBlogConsole";
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
-        title: "", content: "", imageUrls: [], category: "National", scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", isLive: false
+        title: "", content: "", imageUrls: [], category: "National", categories: ["National"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", isLive: false, authorName: ""
     });
     const [tagInput, setTagInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -18,7 +18,11 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     const [uploadingEditor, setUploadingEditor] = useState(false);
     const [generatingTags, setGeneratingTags] = useState(false);
     const [categories, setCategories] = useState(["National", "Politics", "Sports", "International", "Entertainment", "Technology"]);
+
     const autoSaveTimerRef = useRef(null);
+
+    // Determine Default Author Name
+    const defaultAuthorName = user.role === "admin" ? "Md Arif Mainuddin" : user.name;
 
     useEffect(() => {
         // Fetch Categories Dynamically
@@ -55,12 +59,14 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 content: cleanContent(existingData.content),
                 imageUrls: existingData.imageUrls || (existingData.imageUrl ? [existingData.imageUrl] : []),
                 category: existingData.category || "National",
+                categories: existingData.categories || (existingData.category ? [existingData.category] : ["National"]),
                 scheduledAt: existingData.scheduledAt || "",
                 tags: existingData.tags || [],
                 ogImage: existingData.ogImage || "",
                 videoUrl: existingData.videoUrl || "",
                 metaDescription: existingData.metaDescription || "",
-                isLive: existingData.isLive || false
+                isLive: existingData.isLive || false,
+                authorName: existingData.authorName || ""
             });
             setDocId(existingData.id);
         }
@@ -142,8 +148,10 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 const payload = {
                     ...form,
                     imageUrl: form.imageUrls[0] || "",
-                    authorName: existingData?.authorName || user.name,
+
+                    authorName: form.authorName || defaultAuthorName,
                     authorRole: user.role,
+
                     updatedAt: new Date().toISOString(),
                     // If it's a new doc, make it draft. If existing, keep status or just update fields.
                     // We don't want to change "published" to "draft" automatically.
@@ -271,16 +279,21 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
             const payload = {
                 ...form,
                 imageUrl: form.imageUrls[0] || "",
+
                 status: existingData?.status === 'published' ? 'published' : status, // Keep published if already published
                 updatedAt: new Date().toISOString(),
                 publishedAt: form.scheduledAt ? new Date(form.scheduledAt).toISOString() : (existingData?.publishedAt || new Date().toISOString()),
-                authorName: existingData?.authorName || user.name,
+
+                authorName: form.authorName || defaultAuthorName,
                 authorRole: user.role,
+
                 tags: form.tags,
                 ogImage: form.ogImage, // Include OG Image
                 videoUrl: form.videoUrl, // Include Video URL
                 metaDescription: form.metaDescription, // Manual SEO Description
-                isLive: form.isLive // Live Blog Status
+                isLive: form.isLive, // Live Blog Status
+                categories: form.categories, // Array of categories
+                category: form.categories[0] || form.category // Primary category
             };
 
             if (docId) {
@@ -332,6 +345,20 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     </div>
                 </div>
 
+                {/* Author Name - Admin Only */}
+                {user.role === "admin" && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-slate-700">Author Name</label>
+                        <input
+                            name="authorName"
+                            placeholder={`Default: ${defaultAuthorName}`}
+                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
+                            value={form.authorName}
+                            onChange={handleChange}
+                        />
+                    </div>
+                )}
+
                 {/* Meta Description */}
                 <div className="space-y-2">
                     <div className="flex justify-between">
@@ -352,15 +379,33 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 {/* Category & Date */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-slate-700">Category</label>
-                        <select
-                            name="category"
-                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={form.category}
-                            onChange={handleChange}
-                        >
-                            {categories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
-                        </select>
+                        <label className="text-sm font-bold text-slate-700">Categories (Select Multiple)</label>
+                        <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-48 overflow-y-auto">
+                            {categories.map((cat, i) => (
+                                <label key={i} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.categories.includes(cat)}
+                                        onChange={(e) => {
+                                            const checked = e.target.checked;
+                                            setForm(prev => {
+                                                let newCats = checked
+                                                    ? [...prev.categories, cat]
+                                                    : prev.categories.filter(c => c !== cat);
+
+                                                if (newCats.length === 0 && !checked) newCats = [cat]; // Must have at least one
+
+                                                return { ...prev, categories: newCats, category: newCats[0] };
+                                            });
+                                        }}
+                                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                    />
+                                    <span className={`text-sm ${form.category === cat ? 'font-bold text-blue-700' : 'text-slate-700'}`}>
+                                        {cat} {form.category === cat && '(Primary)'}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="space-y-2">

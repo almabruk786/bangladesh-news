@@ -30,24 +30,39 @@ async function getCategoryNews(categoryName: string) {
   const searchTags = catMatch ? [catMatch.name, catMatch.bn] : [decodedName];
   if (!searchTags.includes(decodedName)) searchTags.push(decodedName);
 
-  const q = query(
+  // 1. Primary Query (Legacy + Primary Category) - Uses existing Index
+  const q1 = query(
     collection(db, "articles"),
     where("category", "in", searchTags),
     orderBy("publishedAt", "desc")
   );
 
+  // 2. Secondary Query (Multi-Category Array) - No OrderBy to avoid missing index issues
+  // We will merge and sort in memory.
+  const q2 = query(
+    collection(db, "articles"),
+    where("categories", "array-contains-any", searchTags)
+  );
+
   try {
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => {
-      const data = doc.data();
-      // Convert timestamps to serializable format (milliseconds)
-      return {
+    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+    // Merge and deduplicate
+    const allDocs = new Map();
+
+    [...snap1.docs, ...snap2.docs].forEach(doc => {
+      allDocs.set(doc.id, {
         id: doc.id,
-        ...data,
-        publishedAt: data.publishedAt?.seconds ? data.publishedAt.seconds * 1000 : Date.now(),
-        hidden: data.hidden,
-      } as any;
-    }).filter((article: any) => !article.hidden);
+        ...doc.data(),
+        publishedAt: doc.data().publishedAt?.seconds ? doc.data().publishedAt.seconds * 1000 : Date.now(),
+      });
+    });
+
+    // Convert to array and Sort by Date Descending
+    return Array.from(allDocs.values())
+      .filter((article: any) => !article.hidden && article.status === 'published')
+      .sort((a: any, b: any) => b.publishedAt - a.publishedAt);
+
   } catch (e) {
     console.error("Category Fetch Error:", e);
     return [];
