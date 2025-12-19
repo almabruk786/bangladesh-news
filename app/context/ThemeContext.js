@@ -4,11 +4,11 @@ import { createContext, useContext, useState, useEffect } from 'react';
 // ডিফল্ট ভ্যালু যোগ করা হলো (যাতে প্রোভাইডার মিস হলেও ক্র্যাশ না করে)
 const ThemeContext = createContext({
   darkMode: false,
-  toggleTheme: () => {},
+  toggleTheme: () => { },
   lang: 'bn',
-  toggleLang: () => {},
+  toggleLang: () => { },
   t: {
-    home: 'প্রচ্ছদ', about: 'আমাদের সম্পর্কে', contact: 'যোগাযোগ', latest: 'সর্বশেষ', 
+    home: 'প্রচ্ছদ', about: 'আমাদের সম্পর্কে', contact: 'যোগাযোগ', latest: 'সর্বশেষ',
     popular: 'জনপ্রিয়', breaking: 'ব্রেকিং', readMore: 'আরো পড়ুন', share: 'শেয়ার', reporter: 'প্রতিবেদক'
   }
 });
@@ -18,9 +18,10 @@ export function ThemeProvider({ children }) {
   const [lang, setLang] = useState('bn');
 
   useEffect(() => {
-    // লোড হওয়ার সাথে সাথে চেক করবে
-    const isDark = localStorage.getItem('theme') === 'dark';
-    if (isDark) {
+    // Check Local Storage OR System Preference
+    const localTheme = localStorage.getItem('theme');
+
+    if (localTheme === 'dark' || (!localTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       setDarkMode(true);
       document.documentElement.classList.add('dark');
     } else {
