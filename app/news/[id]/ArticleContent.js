@@ -71,7 +71,7 @@ export default function ArticleContent({ article, relatedNews }) {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -87,24 +87,24 @@ export default function ArticleContent({ article, relatedNews }) {
                     <span className="text-slate-300">/</span>
                     <Link href={`/category/${article.category}`} className="hover:text-red-600 transition">{article.category === "Auto-Imported" ? "General" : article.category}</Link>
                     <span className="text-slate-300">/</span>
-                    <span className="text-slate-800 line-clamp-1 max-w-[200px] md:max-w-md">{article.title}</span>
+                    <span className="text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[200px] md:max-w-md">{article.title}</span>
                 </nav>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                     <div className="lg:col-span-2">
-                        <article className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100">
+                        <article className="bg-white dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100 transition-colors duration-300">
                             <div className="flex items-center gap-4 mb-4 text-sm">
                                 {article.categories && article.categories.length > 0 ? (
                                     article.categories.map((cat, i) => (
                                         <Link key={i} href={`/category/${cat}`}>
-                                            <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs hover:bg-red-200 transition-colors">
+                                            <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs hover:bg-red-200 transition-colors">
                                                 {cat}
                                             </span>
                                         </Link>
                                     ))
                                 ) : (
-                                    <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
+                                    <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
                                         {article.category === "Auto-Imported" ? "General" : (article.category || "খবর")}
                                     </span>
                                 )}
@@ -114,7 +114,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                 </span>
                             </div>
 
-                            <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 mb-6 leading-tight">
+                            <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-6 leading-tight">
                                 {article.title}
                             </h1>
 
@@ -132,7 +132,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                 </div>
                             )}
 
-                            <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed text-justify text-base md:text-lg">
+                            <div className="prose prose-slate dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed text-justify text-base md:text-lg">
                                 {(() => {
                                     let contentToDisplay = article.content;
                                     const isShortContent = !article.content || article.content.length < 200 || article.content.includes("বিস্তারিত লিংকে");
