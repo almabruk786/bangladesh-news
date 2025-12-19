@@ -30,6 +30,9 @@ export default function NotificationManager() {
                         const { title, body, imageUrl, link, tag } = payload.data;
 
                         // Show custom UI or browser notification
+                        // Show custom UI or browser notification
+                        // Commented out to prevent double notification (Service Worker handles it too?)
+                        /*
                         const n = new Notification(title, {
                             body: body,
                             icon: imageUrl || '/bn-icon.png',
@@ -38,7 +41,9 @@ export default function NotificationManager() {
                         n.onclick = (event) => {
                             event.preventDefault();
                             window.open(link, '_blank');
+                            notification.close();
                         };
+                        */
                     });
                 }
             });

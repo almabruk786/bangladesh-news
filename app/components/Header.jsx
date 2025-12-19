@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Menu, Moon, Sun, Search, User, X, Facebook, Twitter, Youtube, Menu as MenuIcon } from 'lucide-react';
+import { Menu, Moon, Sun, Search, User, X, Facebook, Twitter, Youtube, Menu as MenuIcon, Download } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -14,7 +14,26 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const handleInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   const handleSearch = (e) => {
     if (e.key === 'Enter') {
@@ -106,6 +125,14 @@ export default function Header() {
             <button onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500">
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+            {deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="hidden md:flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200"
+              >
+                <Download size={14} /> Install App
+              </button>
+            )}
           </div>
         </div>
 
