@@ -71,10 +71,14 @@ export default function Header() {
   }, []);
 
   const categories = [
+    { name: "National", bn: "জাতীয়", link: "/category/National" },
     { name: "Bangladesh", bn: "বাংলাদেশ", link: "/category/Bangladesh" },
     { name: "Politics", bn: "রাজনীতি", link: "/category/Politics", hot: true },
     { name: "International", bn: "আন্তর্জাতিক", link: "/category/International" },
     { name: "Sports", bn: "খেলা", link: "/category/Sports", hot: true },
+    { name: "Health", bn: "স্বাস্থ্য", link: "/category/Health" },
+    { name: "Technology", bn: "প্রযুক্তি", link: "/category/Technology" },
+    { name: "Education", bn: "শিক্ষা", link: "/category/Education" },
     { name: "Opinion", bn: "মতামত", link: "/category/Opinion" },
     { name: "Business", bn: "বাণিজ্য", link: "/category/Business" },
     { name: "Entertainment", bn: "বিনোদন", link: "/category/Entertainment" },
@@ -160,7 +164,7 @@ export default function Header() {
               aria-label="Home"
               className="px-1 md:px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0"
             >
-              {lang === 'bn' ? 'প্রচ্ছদ' : 'Home'}
+              {lang === 'bn' ? 'সর্বশেষ' : 'Home'}
             </Link>
 
             {/* GLOWING E-PAPER BUTTON */}
