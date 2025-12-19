@@ -128,7 +128,7 @@ export default function Header() {
             {deferredPrompt && (
               <button
                 onClick={handleInstallClick}
-                className="flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200"
+                className="md:hidden flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200"
               >
                 <Download size={14} /> Install App
               </button>
