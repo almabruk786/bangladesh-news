@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminMessaging, adminDb } from '../../../lib/firebaseAdmin';
+import admin from 'firebase-admin';
 
 export async function POST(req) {
     try {
@@ -14,7 +15,7 @@ export async function POST(req) {
             // This detects if it is the Mock DB
         }
 
-        import admin from 'firebase-admin'; // Ensure we can check admin.apps
+
 
         if (!admin.apps.length) {
             return NextResponse.json({ success: false, error: 'CRITICAL: Firebase Admin Service is NOT initialized. Check server logs/credentials.' });
