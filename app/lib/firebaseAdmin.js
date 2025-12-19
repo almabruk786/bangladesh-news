@@ -17,10 +17,17 @@ if (!admin.apps.length) {
         // 2. Fallback to File (Best for Localhost)
         if (!serviceAccount) {
             try {
-                serviceAccount = require('../../service-account.json');
-                console.log("Using local service-account.json file.");
+                // Use fs to avoid Webpack trying to bundle the missing file in production
+                const fs = require('fs');
+                const path = require('path');
+                const filePath = path.join(process.cwd(), 'service-account.json');
+
+                if (fs.existsSync(filePath)) {
+                    serviceAccount = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                    console.log("Using local service-account.json file.");
+                }
             } catch (e) {
-                console.warn("Local service-account.json not found.");
+                console.warn("Local service-account.json not found or unreadable.");
             }
         }
 
