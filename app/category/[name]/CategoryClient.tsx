@@ -17,7 +17,7 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
             />
-            <h1 className="text-2xl font-black mb-4 capitalize border-b pb-2 border-red-600 inline-block">{decodeURIComponent(name)} News</h1>
+            <h1 className="text-2xl font-black mb-4 capitalize border-b pb-2 border-red-600 inline-block text-slate-900 dark:text-white">{decodeURIComponent(name)} News</h1>
 
             <div className="mb-8">
                 {/* Auto Ads Active */}
@@ -29,8 +29,8 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
                     const plainText = content.replace(/<[^>]+>/g, '').substring(0, 150) + "...";
 
                     return (
-                        <a href={`/news/${item.id}`} key={item.id} className="block group bg-white border border-slate-100 p-4 rounded-xl hover:shadow-lg transition">
-                            <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden mb-3 relative">
+                        <a href={`/news/${item.id}`} key={item.id} className="block group bg-white dark:bg-slate-900 dark:border-slate-800 border border-slate-100 p-4 rounded-xl hover:shadow-lg transition">
+                            <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden mb-3 relative">
                                 {item.imageUrl ? (
                                     <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                                 ) : (
@@ -38,8 +38,8 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
                                 )}
                                 <span className="absolute bottom-2 left-2 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase">{item.category}</span>
                             </div>
-                            <h2 className="font-bold text-lg leading-tight text-slate-900 group-hover:text-red-600 transition-colors mb-2">{item.title}</h2>
-                            <p className="text-sm text-slate-500 line-clamp-3">{plainText}</p>
+                            <h2 className="font-bold text-lg leading-tight text-slate-900 dark:text-slate-100 group-hover:text-red-600 transition-colors mb-2">{item.title}</h2>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">{plainText}</p>
                             <p className="text-xs text-slate-400 mt-2 font-medium">{new Date(item.publishedAt).toLocaleDateString()}</p>
                         </a>
                     );

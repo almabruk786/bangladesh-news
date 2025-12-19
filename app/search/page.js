@@ -76,9 +76,9 @@ function SearchResults() {
             ) : news.length > 0 ? (
                 <div className="grid gap-6">
                     {news.map((item) => (
-                        <Link href={`/news/${item.id}`} key={item.id} className="block group bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-md transition p-4">
+                        <Link href={`/news/${item.id}`} key={item.id} className="block group bg-white dark:bg-slate-900 dark:border-slate-800 border border-slate-100 rounded-xl overflow-hidden hover:shadow-md transition p-4">
                             <div className="flex flex-col md:flex-row gap-4">
-                                <div className="w-full md:w-48 h-32 bg-slate-100 rounded-lg overflow-hidden shrink-0">
+                                <div className="w-full md:w-48 h-32 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0">
                                     <img
                                         src={item.imageUrl || item.imageUrls?.[0] || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=300'}
                                         alt={item.title}
@@ -86,17 +86,17 @@ function SearchResults() {
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <h2 className="text-lg md:text-xl font-bold text-slate-800 group-hover:text-red-600 mb-2 leading-tight">
+                                    <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-red-600 mb-2 leading-tight">
                                         {item.title}
                                     </h2>
-                                    <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">
                                         {(() => {
                                             const plain = stripHtml(parseNewsContent(item.content));
                                             return plain.substring(0, 150) + "...";
                                         })()}
                                     </p>
                                     <div className="flex items-center gap-3 text-xs text-slate-400 font-medium">
-                                        <span className="bg-slate-100 px-2 py-1 rounded text-slate-600 uppercase">{item.category}</span>
+                                        <span className="bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2 py-1 rounded text-slate-600 uppercase">{item.category}</span>
                                         <span>{new Date(item.publishedAt).toLocaleDateString()}</span>
                                     </div>
                                 </div>
@@ -105,8 +105,8 @@ function SearchResults() {
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-12 bg-slate-50 rounded-lg border border-dashed border-slate-200">
-                    <p className="text-slate-500">No results found for "{q}". Try a different keyword.</p>
+                <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-lg border border-dashed border-slate-200 dark:border-slate-800">
+                    <p className="text-slate-500 dark:text-slate-400">No results found for "{q}". Try a different keyword.</p>
                 </div>
             )}
         </div>

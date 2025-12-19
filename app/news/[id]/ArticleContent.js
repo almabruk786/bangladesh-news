@@ -211,14 +211,14 @@ export default function ArticleContent({ article, relatedNews }) {
                     </div>
 
                     <div className="lg:col-span-1">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 sticky top-24">
-                            <h3 className="font-bold text-lg border-b pb-2 mb-4 flex items-center gap-2 text-slate-800">
+                        <div className="bg-white dark:bg-slate-900 dark:border-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 sticky top-24 transition-colors duration-300">
+                            <h3 className="font-bold text-lg border-b dark:border-slate-800 pb-2 mb-4 flex items-center gap-2 text-slate-800 dark:text-white">
                                 <TrendingUp size={20} className="text-red-600" /> আরো পড়ুন
                             </h3>
                             <div className="flex flex-col gap-5">
                                 {relatedNews.map(item => (
                                     <Link href={`/news/${item.id}`} key={item.id} className="group flex gap-3 items-start">
-                                        <div className="w-24 h-20 bg-slate-200 rounded-lg overflow-hidden shrink-0 relative">
+                                        <div className="w-24 h-20 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 relative">
                                             <img
                                                 src={item.imageUrl || (item.imageUrls && item.imageUrls[0]) || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=200"}
                                                 alt={item.title}
@@ -228,12 +228,12 @@ export default function ArticleContent({ article, relatedNews }) {
                                             />
                                         </div>
                                         <div>
-                                            <h4 className="font-semibold text-sm text-slate-800 group-hover:text-red-600 leading-snug line-clamp-3">
+                                            <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200 group-hover:text-red-600 leading-snug line-clamp-3">
                                                 {item.title}
                                             </h4>
                                             <p className="text-xs text-slate-400 mt-1">
                                                 <span suppressHydrationWarning>
-                                                    {new Date(article.publishedAt).toLocaleString('bn-BD')}
+                                                    {new Date(item.publishedAt).toLocaleString('bn-BD')}
                                                 </span>
                                             </p>
                                         </div>
