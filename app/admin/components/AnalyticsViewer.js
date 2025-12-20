@@ -120,7 +120,11 @@ export default function AnalyticsViewer() {
         // Core Counts
         const todayCount = data.filter(v => v.timestampObj >= startOfDay).length;
         const monthCount = data.filter(v => v.timestampObj >= startOfMonth).length;
-        const activeCount = data.filter(v => v.timestampObj >= fiveMinutesAgo).length;
+
+        // Active Users (Unique IPs in last 5 mins)
+        const recentLogs = data.filter(v => v.timestampObj >= fiveMinutesAgo);
+        const uniqueActiveIPs = new Set(recentLogs.map(l => l.ip)).size;
+        const activeCount = uniqueActiveIPs;
 
         // Device Breakdown
         const devMap = { Mobile: 0, Desktop: 0 };
