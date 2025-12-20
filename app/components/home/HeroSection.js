@@ -38,18 +38,19 @@ export default function HeroSection({ heroNews, sideNews }) {
                                 <span className="bg-red-600 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">Top Story</span>
                             </div>
 
-                            {/* Gradient Overlay for Text Readability */}
-                            <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black via-black/80 to-transparent z-10"></div>
+                            {/* Gradient Overlay for Text Readability - Reduced height */}
+                            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/60 to-transparent z-10"></div>
 
                             {/* Text Content Overlay */}
-                            <div className="absolute bottom-0 left-0 right-0 p-5 z-20 text-white flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-slate-300 text-xs font-medium">
-                                    <Clock size={12} /> {getBanglaRelativeTime(heroNews.publishedAt)}
+                            <div className="absolute bottom-0 left-0 right-0 p-4 z-20 text-white flex flex-col gap-1">
+                                <div className="flex items-center gap-2 text-slate-300 text-[10px] font-medium">
+                                    <Clock size={10} /> {getBanglaRelativeTime(heroNews.publishedAt)}
                                 </div>
-                                <h1 className="text-2xl font-black leading-tight text-white mb-1 shadow-black drop-shadow-md">
+                                <h1 className="text-xl font-black leading-tight text-white mb-1 shadow-black drop-shadow-md">
                                     {heroNews.title}
                                 </h1>
-                                <p className="text-slate-200 text-xs line-clamp-2 leading-relaxed opacity-90">
+                                {/* Hide Excerpt on Mobile to show more image */}
+                                <p className="hidden md:block text-slate-200 text-xs line-clamp-2 leading-relaxed opacity-90">
                                     {getSmartExcerpt(heroNews.content, 20)}
                                 </p>
                             </div>
