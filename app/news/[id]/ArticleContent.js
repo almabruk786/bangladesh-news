@@ -142,7 +142,7 @@ export default function ArticleContent({ article, relatedNews }) {
 
                             {/* Main Image Caption */}
                             {article.imageCaption && (
-                                <p className="text-sm text-slate-500 bg-slate-50 py-2 px-3 rounded-lg border border-slate-100 text-center mt-1.5 italic">
+                                <p className="text-sm text-slate-700 bg-slate-50 py-2 px-3 rounded-lg border border-slate-200 text-center mt-1.5 italic font-medium">
                                     {article.imageCaption}
                                 </p>
                             )}
