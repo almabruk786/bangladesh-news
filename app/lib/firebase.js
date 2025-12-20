@@ -35,12 +35,21 @@ export const getFcmToken = async (vapidKey) => {
   try {
     const msg = await messaging();
     if (msg) {
-      const currentToken = await getToken(msg, { vapidKey });
+      let registration;
+      if ('serviceWorker' in navigator) {
+        // Explicitly register the service worker to ensure it's found
+        registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
+      }
+
+      const currentToken = await getToken(msg, {
+        vapidKey,
+        serviceWorkerRegistration: registration
+      });
       return currentToken;
     }
     return null;
   } catch (err) {
-    console.log('An error occurred while retrieving token.', err);
+    console.error('An error occurred while retrieving token.', err);
     return null;
   }
 };
