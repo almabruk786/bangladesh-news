@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Clock } from "lucide-react";
+import { getBanglaRelativeTime } from "../../lib/utils";
 
 export default function LatestSidebar({ news }) {
     if (!news || news.length === 0) return null;
@@ -23,7 +24,7 @@ export default function LatestSidebar({ news }) {
                                 {item.title}
                             </h4>
                             <span className="text-xs text-slate-400 flex items-center gap-1">
-                                <Clock size={12} /> {new Date(item.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                <Clock size={12} /> {getBanglaRelativeTime(item.publishedAt)}
                             </span>
                         </div>
                         {/* Thumbnail */}
