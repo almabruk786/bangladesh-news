@@ -142,10 +142,13 @@ export default function ArticleContent({ article, relatedNews }) {
 
                             {/* Main Image Caption */}
                             {article.imageCaption && (
-                                <p className="text-sm text-slate-500 bg-slate-50 py-2 px-3 rounded-lg border border-slate-100 text-center mt-2 italic">
+                                <p className="text-sm text-slate-500 bg-slate-50 py-2 px-3 rounded-lg border border-slate-100 text-center mt-1.5 italic">
                                     {article.imageCaption}
                                 </p>
                             )}
+
+                            {/* Spacing after image section */}
+                            <div className="mb-8"></div>
 
                             {/* Social Share Buttons */}
                             <div className="my-6">

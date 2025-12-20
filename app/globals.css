@@ -56,6 +56,16 @@ h6 {
 /* Article Content Links */
 .prose a {
   @apply text-blue-600 dark:text-blue-400 underline decoration-blue-600/30 hover:decoration-blue-600 transition-colors font-medium;
+  @apply text-blue-600 dark:text-blue-400 underline decoration-blue-600/30 hover:decoration-blue-600 transition-colors font-medium;
+}
+
+/* Reduce image margin in prose to allow closer captions */
+.prose img {
+  @apply mb-1 rounded-xl shadow-sm;
+}
+
+.prose figcaption {
+  @apply mt-1 text-center text-sm text-slate-500 italic bg-slate-50 py-1 px-2 rounded border border-slate-100 inline-block;
 }
 
 .container-custom {
