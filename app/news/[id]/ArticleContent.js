@@ -115,10 +115,10 @@ export default function ArticleContent({ article, relatedNews }) {
                                     };
 
                                     return article.categories && article.categories.length > 0 ? (
-                                        [...new Set(article.categories)].map((cat, i) => (
-                                            <Link key={i} href={`/category/${cat}`}>
+                                        [...new Set(article.categories.map(cat => translateCategory(cat)))].map((translatedCat, i) => (
+                                            <Link key={i} href={`/category/${translatedCat}`}>
                                                 <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs hover:bg-red-200 transition-colors">
-                                                    {translateCategory(cat)}
+                                                    {translatedCat}
                                                 </span>
                                             </Link>
                                         ))
