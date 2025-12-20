@@ -390,7 +390,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                                             const checked = e.target.checked;
                                             setForm(prev => {
                                                 let newCats = checked
-                                                    ? [...prev.categories, cat]
+                                                    ? [...new Set([...prev.categories, cat])]
                                                     : prev.categories.filter(c => c !== cat);
 
                                                 if (newCats.length === 0 && !checked) newCats = [cat]; // Must have at least one
