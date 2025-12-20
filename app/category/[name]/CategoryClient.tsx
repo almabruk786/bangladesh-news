@@ -1,4 +1,4 @@
-```javascript
+
 "use client";
 
 import { generateBreadcrumbSchema } from "../../lib/schemas";
@@ -11,7 +11,7 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
 
     const breadcrumbSchema = generateBreadcrumbSchema([
         { name: 'Home', url: '/' },
-        { name: decodeURIComponent(name), url: `/ category / ${ name } ` }
+        { name: decodeURIComponent(name), url: `/category/${name}` }
     ]);
 
     return (
@@ -32,7 +32,7 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
                     const plainText = content.replace(/<[^>]+>/g, '').substring(0, 150) + "...";
 
                     return (
-                        <a href={`/ news / ${ item.id } `} key={item.id} className="block group bg-white dark:bg-slate-900 dark:border-slate-800 border border-slate-100 p-4 rounded-xl hover:shadow-lg transition">
+                        <a href={`/ news / ${item.id} `} key={item.id} className="block group bg-white dark:bg-slate-900 dark:border-slate-800 border border-slate-100 p-4 rounded-xl hover:shadow-lg transition">
                             <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden mb-3 relative">
                                 {item.imageUrl ? (
                                     <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
