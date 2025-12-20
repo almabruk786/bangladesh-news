@@ -27,7 +27,7 @@ export default function NewsSlider({ images, title }) {
   // যদি মাত্র ১টি ছবি থাকে, তবে স্লাইডার হবে না
   if (images.length === 1) {
     return (
-      <div className="relative w-full aspect-video md:aspect-auto md:h-[500px] rounded-xl mb-8 overflow-hidden shadow-lg border border-slate-100">
+      <div className="relative w-full aspect-video rounded-xl mb-8 overflow-hidden shadow-lg border border-slate-100">
         <Image
           src={images[0]}
           alt={title}
@@ -41,7 +41,7 @@ export default function NewsSlider({ images, title }) {
   }
 
   return (
-    <div className="relative w-full aspect-video md:aspect-auto md:h-[500px] bg-slate-100 rounded-xl mb-8 overflow-hidden shadow-lg border border-slate-100 group">
+    <div className="relative w-full aspect-video bg-slate-100 rounded-xl mb-8 overflow-hidden shadow-lg border border-slate-100 group">
       {/* ছবি */}
       {images.map((img, index) => (
         <div
