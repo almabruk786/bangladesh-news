@@ -167,7 +167,7 @@ export default function Header() {
         {/* 2. Navigation Bar (Centered & Scrollable) */}
         <div className="border-t border-slate-100 dark:border-slate-800 block">
           <div className="max-w-7xl mx-auto px-4">
-            <nav aria-label="Main Navigation" className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar md:gap-5 py-2">
+            <nav aria-label="Main Navigation" className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto md:overflow-hidden no-scrollbar md:gap-5 py-2">
               <Link
                 href="/"
                 aria-label="Home"
@@ -180,7 +180,7 @@ export default function Header() {
               <Link
                 href="/newspapers"
                 aria-label="NewsPapers"
-                className="py-1 px-3 rounded text-xs md:text-sm font-black uppercase tracking-tight text-white transition shrink-0 flex items-center gap-1 animate-pulse bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_auto] hover:bg-right duration-500 shadow-md shadow-red-500/30"
+                className="py-1 px-3 rounded text-xs md:text-sm font-black uppercase tracking-tight text-white transition shrink-0 flex items-center gap-1 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_auto] hover:bg-right duration-500 shadow-md shadow-red-500/30"
               >
                 NewsPapers 📰
               </Link>
