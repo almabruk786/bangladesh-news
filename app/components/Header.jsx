@@ -172,7 +172,7 @@ export default function Header() {
         </div>
 
         {/* 2. Navigation Bar (Centered & Scrollable) */}
-        <div className="border-t border-slate-100 dark:border-slate-800 hidden lg:block">
+        <div className="border-t border-slate-100 dark:border-slate-800 block">
           <div className="max-w-7xl mx-auto px-4">
             <nav aria-label="Main Navigation" className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar md:gap-5 py-2">
               <Link
@@ -183,11 +183,11 @@ export default function Header() {
                 {lang === 'bn' ? 'সর্বশেষ' : 'Home'}
               </Link>
 
-              {/* GLOWING E-PAPER BUTTON */}
+              {/* GLOWING E-PAPER BUTTON (DAZZLING) */}
               <Link
                 href="/newspapers"
                 aria-label="NewsPapers"
-                className="py-2 px-1 border-b-2 border-transparent text-xs md:text-sm font-black uppercase tracking-tight text-red-600 hover:text-red-700 transition shrink-0 flex items-center gap-1 animate-pulse"
+                className="py-1 px-3 rounded text-xs md:text-sm font-black uppercase tracking-tight text-white transition shrink-0 flex items-center gap-1 animate-pulse bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_auto] hover:bg-right duration-500 shadow-md shadow-red-500/30"
               >
                 NewsPapers 📰
               </Link>
