@@ -13,11 +13,11 @@ export const generateSeoUrl = (title, id) => {
 
 export const extractIdFromUrl = (slugId) => {
     if (!slugId) return null;
-    // ID is always the last part after the last hyphen
-    // Assuming standard IDs don't have hyphens or we split loosely.
-    // If ID is Firestore ID (alphanumeric approx 20 chars), we can try to extract.
 
-    // Strategy: Split by hyphen, take the last part.
-    const parts = slugId.split('-');
+    // Decode first to handle percent-encoded Bangla URLs
+    const decoded = decodeURIComponent(slugId);
+
+    // ID is always the last part after the last hyphen
+    const parts = decoded.split('-');
     return parts[parts.length - 1];
 };
