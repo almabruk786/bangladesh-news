@@ -66,7 +66,13 @@ async function getCategoryNews(categoryName: string) {
       allDocs.set(doc.id, {
         id: doc.id,
         ...doc.data(),
-        publishedAt: doc.data().publishedAt?.seconds ? doc.data().publishedAt.seconds * 1000 : Date.now(),
+        publishedAt: (() => {
+          const p = doc.data().publishedAt;
+          if (p?.seconds) return p.seconds * 1000; // Firestore Timestamp
+          if (typeof p === 'number') return p;      // Milliseconds
+          if (typeof p === 'string') return new Date(p).getTime(); // ISO String
+          return Date.now(); // Fallback
+        })(),
       });
     });
 

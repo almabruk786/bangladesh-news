@@ -45,7 +45,11 @@ h6 {
   @apply bg-slate-300 rounded-full hover:bg-slate-400;
 }
 
-/* Utilities */
+/* Article Content Links */
+.prose a {
+  @apply text-blue-600 dark:text-blue-400 underline decoration-blue-600/30 hover:decoration-blue-600 transition-colors font-medium;
+}
+
 .container-custom {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
