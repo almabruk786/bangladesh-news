@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { db } from '../../lib/firebase';
+import { db } from '../lib/firebase';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import Link from 'next/link';
 import { Search, Filter, Clock } from 'lucide-react';
