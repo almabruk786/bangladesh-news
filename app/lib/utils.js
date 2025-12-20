@@ -79,3 +79,35 @@ export function getSmartExcerpt(content, wordLimit = 25) {
     // 4. Truncate and add ellipsis
     return words.slice(0, wordLimit).join(" ") + "...";
 }
+
+export function getBanglaRelativeTime(dateInput) {
+    if (!dateInput) return "";
+
+    const now = new Date();
+    const date = new Date(dateInput);
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    const toBanglaDigit = (num) => num.toString().replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
+
+    if (diffInSeconds < 60) {
+        return "এইমাত্র";
+    }
+
+    const minutes = Math.floor(diffInSeconds / 60);
+    if (minutes < 60) {
+        return `${toBanglaDigit(minutes)} মিনিট আগে`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+        return `${toBanglaDigit(hours)} ঘণ্টা আগে`;
+    }
+
+    const days = Math.floor(hours / 24);
+    if (days < 7) {
+        return `${toBanglaDigit(days)} দিন আগে`;
+    }
+
+    // Default to full date if older than 7 days
+    return date.toLocaleDateString("bn-BD", { day: 'numeric', month: 'long', year: 'numeric' });
+}

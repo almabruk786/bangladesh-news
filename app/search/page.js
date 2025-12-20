@@ -1,11 +1,11 @@
 "use client";
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { db } from '../../lib/firebase';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import Link from 'next/link';
-import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { Search } from 'lucide-react';
-import { parseNewsContent, stripHtml } from '../lib/utils';
+import { Search, Filter, Clock } from 'lucide-react';
+import { parseNewsContent, stripHtml, getBanglaRelativeTime } from '../../lib/utils';
 import Image from 'next/image';
 
 function SearchResults() {
@@ -116,7 +116,10 @@ function SearchResults() {
                                                 return map[cat] || map[cat?.trim()] || cat;
                                             })()}
                                         </span>
-                                        <span>{new Date(item.publishedAt).toLocaleDateString()}</span>
+                                        <span className="flex items-center gap-1">
+                                            <Clock size={12} />
+                                            {getBanglaRelativeTime(item.publishedAt)}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

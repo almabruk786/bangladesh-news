@@ -1,6 +1,9 @@
+```javascript
 "use client";
 
 import { generateBreadcrumbSchema } from "../../lib/schemas";
+import { parseNewsContent, stripHtml, getBanglaRelativeTime } from "../../lib/utils";
+import { Clock } from "lucide-react";
 
 
 export default function CategoryClient({ name, initialNews }: { name: string, initialNews: any[] }) {
@@ -8,7 +11,7 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
 
     const breadcrumbSchema = generateBreadcrumbSchema([
         { name: 'Home', url: '/' },
-        { name: decodeURIComponent(name), url: `/category/${name}` }
+        { name: decodeURIComponent(name), url: `/ category / ${ name } ` }
     ]);
 
     return (
@@ -29,7 +32,7 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
                     const plainText = content.replace(/<[^>]+>/g, '').substring(0, 150) + "...";
 
                     return (
-                        <a href={`/news/${item.id}`} key={item.id} className="block group bg-white dark:bg-slate-900 dark:border-slate-800 border border-slate-100 p-4 rounded-xl hover:shadow-lg transition">
+                        <a href={`/ news / ${ item.id } `} key={item.id} className="block group bg-white dark:bg-slate-900 dark:border-slate-800 border border-slate-100 p-4 rounded-xl hover:shadow-lg transition">
                             <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden mb-3 relative">
                                 {item.imageUrl ? (
                                     <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
@@ -59,7 +62,10 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
                             </div>
                             <h2 className="font-bold text-lg leading-tight text-slate-900 dark:text-slate-100 group-hover:text-red-600 transition-colors mb-2">{item.title}</h2>
                             <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">{plainText}</p>
-                            <p className="text-xs text-slate-400 mt-2 font-medium">{new Date(item.publishedAt).toLocaleDateString()}</p>
+                            <p className="text-xs text-slate-400 mt-2 font-medium flex items-center gap-1">
+                                <Clock size={12} />
+                                {getBanglaRelativeTime(item.publishedAt)}
+                            </p>
                         </a>
                     );
                 })}
