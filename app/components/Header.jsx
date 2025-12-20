@@ -159,14 +159,7 @@ export default function Header() {
               <button onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500">
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-              {deferredPrompt && (
-                <button
-                  onClick={handleInstallClick}
-                  className="md:hidden flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-200"
-                >
-                  <Download size={14} /> Install App
-                </button>
-              )}
+              {/* Install App button removed as per user request (redundant with sidebar) */}
             </div>
           </div>
         </div>

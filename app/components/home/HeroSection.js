@@ -15,7 +15,7 @@ export default function HeroSection({ heroNews, sideNews }) {
 
                     {/* MOBILE LAYOUT: Immersive (TikTok/Insta Style) */}
                     <div className="md:hidden block">
-                        <Link href={`/news/${heroNews.id}`} className="relative block w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform">
+                        <Link href={`/news/${heroNews.id}`} className="relative block w-full aspect-video rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform">
                             {/* Full Image */}
                             <Image
                                 src={heroNews.imageUrl || heroNews.imageUrls?.[0] || '/placeholder.png'}
