@@ -44,3 +44,16 @@ export const getFcmToken = async (vapidKey) => {
     return null;
   }
 };
+
+export const getNews = async () => {
+  try {
+    const { collection, getDocs, query, where, orderBy, limit } = await import("firebase/firestore");
+    const articlesRef = collection(db, "articles");
+    const q = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(50));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(doc => !doc.hidden);
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    return [];
+  }
+};

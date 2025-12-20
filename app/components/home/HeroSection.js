@@ -7,12 +7,57 @@ export default function HeroSection({ heroNews, sideNews }) {
     if (!heroNews) return null;
 
     return (
-        <section className="py-6 border-b border-slate-100">
+        <section className="py-4 md:py-6 border-b border-slate-100">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
 
-                {/* Main Hero Story - Side by Side Layout for Compactness */}
-                <div className="lg:col-span-8 group">
-                    <div className="flex flex-col gap-3 h-full">
+                {/* Main Hero Story */}
+                <div className="lg:col-span-8 group relative">
+
+                    {/* MOBILE LAYOUT: Immersive (TikTok/Insta Style) */}
+                    <div className="md:hidden block">
+                        <Link href={`/news/${heroNews.id}`} className="relative block w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform">
+                            {/* Full Image */}
+                            <Image
+                                src={heroNews.imageUrl || heroNews.imageUrls?.[0] || '/placeholder.png'}
+                                alt={heroNews.title}
+                                fill
+                                priority
+                                sizes="100vw"
+                                className="object-cover"
+                            />
+
+                            {/* Video Icon */}
+                            {heroNews.isVideo && (
+                                <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-sm rounded-full p-2 text-white z-20">
+                                    <PlayCircle size={24} />
+                                </div>
+                            )}
+
+                            {/* Badge */}
+                            <div className="absolute top-4 left-4 z-20">
+                                <span className="bg-red-600 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">Top Story</span>
+                            </div>
+
+                            {/* Gradient Overlay for Text Readability */}
+                            <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black via-black/80 to-transparent z-10"></div>
+
+                            {/* Text Content Overlay */}
+                            <div className="absolute bottom-0 left-0 right-0 p-5 z-20 text-white flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-slate-300 text-xs font-medium">
+                                    <Clock size={12} /> {getBanglaRelativeTime(heroNews.publishedAt)}
+                                </div>
+                                <h1 className="text-2xl font-black leading-tight text-white mb-1 shadow-black drop-shadow-md">
+                                    {heroNews.title}
+                                </h1>
+                                <p className="text-slate-200 text-xs line-clamp-2 leading-relaxed opacity-90">
+                                    {getSmartExcerpt(heroNews.content, 20)}
+                                </p>
+                            </div>
+                        </Link>
+                    </div>
+
+                    {/* DESKTOP LAYOUT: Standard (Side by Side) */}
+                    <div className="hidden md:flex flex-col gap-3 h-full">
                         {/* 1. Headline at Top */}
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -62,24 +107,16 @@ export default function HeroSection({ heroNews, sideNews }) {
                 </div>
 
                 {/* Side Stories (Ultra Compact) */}
-                <div className="lg:col-span-4 flex flex-col">
+                <div className="lg:col-span-4 flex flex-col pt-4 md:pt-0">
                     <div className="flex items-center justify-between mb-3 border-b-2 border-slate-100 pb-2">
                         <h3 className="text-xs font-bold uppercase text-red-600 tracking-widest">Latest Updates</h3>
                         <Link href="/latest" className="text-[10px] font-bold text-slate-400 hover:text-red-600">View All</Link>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-4 md:gap-3">
                         {sideNews.slice(0, 5).map((item) => (
-                            <Link key={item.id} href={`/news/${item.id}`} className="group flex gap-3 items-start">
-                                <div className="flex-1">
-                                    <h3 className="text-sm font-bold text-slate-900 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">
-                                        {item.title}
-                                    </h3>
-                                    <span className="text-[10px] text-slate-400 font-medium">
-                                        {getBanglaRelativeTime(item.publishedAt)}
-                                    </span>
-                                </div>
-                                <div className="w-16 h-12 bg-slate-100 overflow-hidden rounded shrink-0 border border-slate-100 relative">
+                            <Link key={item.id} href={`/news/${item.id}`} className="group flex gap-3 items-start active:scale-[0.99] transition-transform">
+                                <div className="w-24 md:w-16 h-16 md:h-12 bg-slate-100 overflow-hidden rounded-lg md:rounded shrink-0 border border-slate-100 relative">
                                     <Image
                                         src={item.imageUrl || item.imageUrls?.[0] || '/placeholder.png'}
                                         alt={item.title}
@@ -87,6 +124,14 @@ export default function HeroSection({ heroNews, sideNews }) {
                                         sizes="64px"
                                         className="object-cover group-hover:scale-105 transition duration-500"
                                     />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-sm font-bold text-slate-900 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">
+                                        {item.title}
+                                    </h3>
+                                    <span className="text-[10px] text-slate-400 font-medium mt-1 block">
+                                        {getBanglaRelativeTime(item.publishedAt)}
+                                    </span>
                                 </div>
                             </Link>
                         ))}
