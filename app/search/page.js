@@ -5,7 +5,7 @@ import { db } from '../../lib/firebase';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import Link from 'next/link';
 import { Search, Filter, Clock } from 'lucide-react';
-import { parseNewsContent, stripHtml, getBanglaRelativeTime } from '../../lib/utils';
+import { parseNewsContent, stripHtml, getBanglaRelativeTime } from '../lib/utils';
 import Image from 'next/image';
 
 function SearchResults() {
