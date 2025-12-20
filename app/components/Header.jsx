@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Menu, Moon, Sun, Search, User, X, Facebook, Twitter, Youtube, Menu as MenuIcon, Download } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -16,6 +16,19 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const router = useRouter();
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const handleInstallPrompt = (e) => {
@@ -120,9 +133,26 @@ export default function Header() {
 
         {/* Right: Actions */}
         <div className="flex items-center justify-end gap-2 lg:gap-4">
-          <button onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition">
-            <Search size={20} />
-          </button>
+          <div className="relative" ref={searchRef}>
+            <button onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition">
+              <Search size={20} />
+            </button>
+
+            {/* Search Bar Dropdown */}
+            {isSearchOpen && (
+              <div className="absolute top-full right-0 w-64 md:w-80 bg-white shadow-xl border border-slate-100 p-2 z-50 rounded mt-2 animate-in fade-in slide-in-from-top-2">
+                <input
+                  type="text"
+                  autoFocus
+                  aria-label="Search Query"
+                  placeholder="Search news..."
+                  className="w-full px-3 py-2 border rounded focus:outline-none focus:border-red-500 text-sm"
+                  onKeyDown={handleSearch}
+                />
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
             <button onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500">
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
@@ -137,20 +167,6 @@ export default function Header() {
             )}
           </div>
         </div>
-
-        {/* Search Bar Dropdown */}
-        {isSearchOpen && (
-          <div className="absolute top-full right-4 w-64 md:w-80 bg-white shadow-xl border border-slate-100 p-2 z-50 rounded mt-2">
-            <input
-              type="text"
-              autoFocus
-              aria-label="Search Query"
-              placeholder="Search news..."
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:border-red-500 text-sm"
-              onKeyDown={handleSearch}
-            />
-          </div>
-        )}
       </div>
 
       {/* 2. Navigation Bar (Centered & Sticky) */}
