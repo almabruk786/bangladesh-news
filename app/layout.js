@@ -110,14 +110,6 @@ export default function RootLayout({ children }) {
           crossOrigin="anonymous"
         />
 
-        {/* ✅ Google AdSense Script 2 (Verification) */}
-        <Script
-          id="adsense-init-2"
-          strategy="afterInteractive"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988830947581327"
-          crossOrigin="anonymous"
-        />
-
         <ThemeProvider>
           <AuthProvider>
             <Header />
