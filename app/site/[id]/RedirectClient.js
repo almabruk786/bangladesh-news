@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { ExternalLink, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { ExternalLink, Loader2, X } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function RedirectClient({ paper }) {
     const [seconds, setSeconds] = useState(8);
+    const router = useRouter();
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -13,7 +15,8 @@ export default function RedirectClient({ paper }) {
                     clearInterval(timer);
                     // Check if window exists to prevent SSR errors
                     if (typeof window !== 'undefined') {
-                        window.location.href = paper.url;
+                        // Use replace to prevent history loop when clicking Back/Close
+                        window.location.replace(paper.url);
                     }
                     return 0;
                 }
@@ -25,7 +28,15 @@ export default function RedirectClient({ paper }) {
     }, [paper.url]);
 
     return (
-        <div className="bg-white dark:bg-slate-950 rounded-2xl p-8 shadow-xl border border-slate-100 dark:border-slate-800 text-center">
+        <div className="bg-white dark:bg-slate-950 rounded-2xl p-8 shadow-xl border border-slate-100 dark:border-slate-800 text-center relative">
+            {/* Close Button */}
+            <button
+                onClick={() => router.push('/newspapers')}
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                aria-label="Close"
+            >
+                <X size={24} />
+            </button>
             {/* Header */}
             <div className="mb-8">
                 <div className="w-24 h-24 mx-auto bg-slate-50 rounded-full flex items-center justify-center mb-4 p-4 border border-slate-100">
