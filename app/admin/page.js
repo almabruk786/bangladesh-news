@@ -147,6 +147,24 @@ export default function AdminDashboard() {
 
 
 
+  // Live Analytics Listener
+  useEffect(() => {
+    if (!user) return;
+
+    // Listen for last 5 minutes of logs for active users count
+    // Note: limit(50) is a safety cap for the header. Real analytics view has more.
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60000);
+    const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(100));
+
+    const unsub = onSnapshot(q, (snap) => {
+      const recentLogs = snap.docs.map(d => d.data()).filter(d => d.timestamp?.toDate() >= fiveMinutesAgo);
+      const uniqueActiveIPs = new Set(recentLogs.map(l => l.ip)).size;
+      setStats(prev => ({ ...prev, activeUsers: uniqueActiveIPs }));
+    });
+
+    return () => unsub();
+  }, [user]);
+
   // Fetch Data based on User & Tab
   const fetchData = async () => {
     if (!user) return;
@@ -163,11 +181,12 @@ export default function AdminDashboard() {
 
       const statsSnap = await getDocs(statsQ);
       const allDocs = statsSnap.docs.map(d => d.data());
-      setStats({
+      setStats(prev => ({ // PRESERVE ACTIVE USERS from realtime listener
+        ...prev,
         total: allDocs.length,
         published: allDocs.filter(d => d.status === "published").length,
         pending: allDocs.filter(d => d.status === "pending").length
-      });
+      }));
 
       // Fetch specific table data
       // For Admin "Manage" -> Fetch all

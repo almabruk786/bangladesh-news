@@ -2,7 +2,7 @@ import { TrendingUp, Users, FileText, Eye } from "lucide-react";
 
 export default function DashboardStats({ stats }) {
     const cards = [
-        { title: "Total Users", value: "Active", icon: Users, color: "bg-blue-500", count: "3" }, // Dummy count for now
+        { title: "Live Visitors", value: stats.activeUsers || 0, icon: Users, color: "bg-blue-500", count: "3" }, // Live count
         { title: "Total News", value: stats.total, icon: FileText, color: "bg-purple-500" },
         { title: "Published", value: stats.published, icon: TrendingUp, color: "bg-green-500" },
         { title: "Pending", value: stats.pending, icon: Eye, color: "bg-amber-500" },
