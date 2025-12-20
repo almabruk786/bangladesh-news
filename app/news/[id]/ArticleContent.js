@@ -40,7 +40,7 @@ export default function ArticleContent({ article, relatedNews }) {
         }],
         "publisher": {
             "@type": "Organization",
-            "name": "Bangladesh News",
+            "name": "Bakalia News",
             "logo": {
                 "@type": "ImageObject",
                 "url": "https://bakalia.xyz/icon.png"

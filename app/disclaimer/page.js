@@ -9,9 +9,10 @@ export default function Disclaimer() {
             <h1>Disclaimer</h1>
 
             <h3>1. General Information</h3>
-            <p>The information provided by Bangladesh News on bakalia.xyz is for general informational purposes only. All information on the Site is provided in good faith, however we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability or completeness of any information on the Site.</p>
-
-            <h3>2. External Links</h3>
+            <p>
+                The information provided by Bakalia News ("we," "us," or "our") on this website is for general informational purposes only.
+                All information on the site is provided in good faith, however we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information on the site.
+            </p>    <h3>2. External Links</h3>
             <p>The Site may contain (or you may be sent through the Site) links to other websites or content belonging to or originating from third parties. Such external links are not investigated, monitored, or checked for accuracy, adequacy, validity, reliability, availability or completeness by us.</p>
 
             <h3>3. Professional Advice</h3>

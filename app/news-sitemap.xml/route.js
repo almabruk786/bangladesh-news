@@ -48,7 +48,7 @@ export async function GET() {
       <loc>${baseUrl}/news/${generateSeoUrl(item.title, item.id)}</loc>
       <news:news>
         <news:publication>
-          <news:name>Bangladesh News</news:name>
+          <news:name>Bakalia News</news:name>
           <news:language>bn</news:language>
         </news:publication>
         <news:publication_date>${formatIsoDate(item.publishedAt)}</news:publication_date>

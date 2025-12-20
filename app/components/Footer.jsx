@@ -98,8 +98,8 @@ export default function Footer() {
       <div className="bg-slate-950/50 py-6">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
           <div className="text-center md:text-left">
-            <p>&copy; {currentYear} <strong>Bakalia News</strong>. All rights reserved.</p>
-            <p className="mt-1">Content gathered via AI-assisted monitoring, verified by human editors.</p>
+            <p className="text-gray-400 text-sm">© {currentYear} Bakalia News. All rights reserved.</p>
+            <p className="mt-1">Breaking news and in-depth updates from Bangladesh and around the world.</p>
           </div>
           <div className="flex gap-6">
             {/* Additional bottom links if needed */}

@@ -1,5 +1,6 @@
 export const metadata = {
-    title: 'Advertise with Us | Bakalia News',
+    title: 'Advertising | Bakalia News',
+    description: 'Advertise with Bakalia News. Reach a wider audience.',
 };
 
 export default function Advertising() {

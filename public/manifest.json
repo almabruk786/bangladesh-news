@@ -1,6 +1,6 @@
 {
-    "name": "Bangladesh News",
-    "short_name": "BD News",
+    "name": "Bakalia News",
+    "short_name": "Bakalia News",
     "description": "Latest news from Bangladesh",
     "start_url": "/",
     "display": "standalone",

@@ -2,7 +2,7 @@ import { formatIsoDate } from './dateUtils';
 import { generateSeoUrl } from './urlUtils';
 
 const BASE_URL = 'https://bakalia.xyz';
-const PUBLISHER_NAME = 'Bangladesh News';
+const PUBLISHER_NAME = 'Bakalia News';
 const PUBLISHER_LOGO = `${BASE_URL}/icon.png`; // Ensure this exists, or use a specific logo URL
 
 // 1. NewsArticle Schema
@@ -73,8 +73,8 @@ export const generateOrganizationSchema = () => {
             'height': 512
         },
         'sameAs': [
-            'https://www.facebook.com/bangladeshnews',
-            'https://twitter.com/bangladeshnews'
+            'https://www.facebook.com/bakalia.xyz',
+            'https://twitter.com/bakalianews'
         ],
         'contactPoint': {
             '@type': 'ContactPoint',

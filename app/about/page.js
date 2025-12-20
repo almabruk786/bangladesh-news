@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'About Us - Bangladesh News (Bakalia News)',
-  description: 'Learn about Bakalia News (bakalia.xyz) - An independent digital news platform in Bangladesh delivering fast and accurate news.',
+  title: 'About Us | Bakalia News',
+  description: 'Learn about Bakalia News, our mission, and our team.',
   alternates: {
     canonical: 'https://bakalia.xyz/about',
   },
@@ -24,7 +24,7 @@ export default function AboutPage() {
             <strong>Bakalia News (bakalia.xyz)</strong> হলো বাংলাদেশের একটি স্বাধীন, ডিজিটাল সংবাদমাধ্যম, যা সমসাময়িক বাংলাদেশ ও বিশ্বের গুরুত্বপূর্ণ সংবাদ দ্রুত, নির্ভুল এবং দায়িত্বশীলভাবে পাঠকের কাছে পৌঁছে দিতে প্রতিশ্রুতিবদ্ধ।
           </p>
           <p className="mt-4">
-            আমাদের সংবাদকক্ষ আধুনিক প্রযুক্তি ও মানবসম্পাদনার সমন্বয়ে পরিচালিত। কৃত্রিম বুদ্ধিমত্তা (AI) ও অটোমেশন প্রযুক্তি আমরা তথ্য সংগ্রহ, ট্রেন্ড বিশ্লেষণ এবং প্রাথমিক খসড়া তৈরিতে ব্যবহার করি; তবে প্রতিটি সংবাদ প্রকাশের আগে মানব সম্পাদক দ্বারা যাচাই, সম্পাদনা ও সত্যতা নিশ্চিত করা হয়।
+            আমাদের সংবাদকক্ষ আধুনিক প্রযুক্তি ও মানবসম্পাদনার সমন্বয়ে পরিচালিত। আধুনিক প্রযুক্তি ও অটোমেশন আমরা তথ্য সংগ্রহ, ট্রেন্ড বিশ্লেষণ এবং প্রাথমিক খসড়া তৈরিতে সহায়তা নিতে ব্যবহার করি; তবে প্রতিটি সংবাদ প্রকাশের আগে মানব সম্পাদক দ্বারা যাচাই, সম্পাদনা ও সত্যতা নিশ্চিত করা হয়।
           </p>
         </section>
 

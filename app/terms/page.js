@@ -1,6 +1,8 @@
 export const metadata = {
     title: 'Terms of Service | Bangladesh News',
     description: 'Terms and conditions for using propert of Bangladesh News portal.',
+    title: 'Terms of Service | Bakalia News',
+    description: 'Terms and conditions for using propert of Bakalia News portal.',
 };
 
 export default function Terms() {
@@ -10,7 +12,7 @@ export default function Terms() {
             <p className="lead">Last Updated: December 2025</p>
 
             <h3>1. Acceptance of Terms</h3>
-            <p>By accessing and using Bangladesh News (bakalia.xyz), you accept and agree to be bound by the terms and provision of this agreement.</p>
+            <p>By accessing and using Bakalia News (bakalia.xyz), you accept and agree to be bound by the terms and provision of this agreement.</p>
 
             <h3>2. Content Usage</h3>
             <p>All content provided on this website is for informational purposes only. The owner of this blog makes no representations as to the accuracy or completeness of any information on this site or found by following any link on this site.</p>

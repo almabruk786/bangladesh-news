@@ -1,5 +1,6 @@
 export const metadata = {
     title: 'Careers | Bakalia News',
+    description: 'Join our team at Bakalia News. View current job openings.',
 };
 
 export default function Careers() {

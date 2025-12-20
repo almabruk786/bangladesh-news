@@ -20,7 +20,7 @@ export async function generateMetadata({ params }) {
     const seoUrl = `https://bakalia.xyz/news/${generateSeoUrl(article.title, article.id)}`;
 
     return {
-      title: `${article.title} - ${article.category || 'News'} | Bangladesh News`,
+      title: `${article.title} - ${article.category || 'News'} | Bakalia News`,
       description: description,
       alternates: {
         canonical: seoUrl, // Force SEO URL as canonical

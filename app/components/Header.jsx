@@ -103,10 +103,8 @@ export default function Header() {
           <Link href="/" className="flex flex-col">
             {/* Logo Image */}
             <div className="flex items-center gap-2">
-              <img src="/favicon.png" alt="Bangladesh News" className="w-8 h-8 md:w-10 md:h-10 object-contain" />
-              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-none">
-                BAKALIA <span className="text-red-600">NEWS</span>
-              </h1>
+              <img src="/favicon.png" alt="Bakalia News" className="w-8 h-8 md:w-10 md:h-10 object-contain" />
+              <span className="text-xl md:text-2xl font-bold text-red-600">Bakalia News</span>
             </div>
             {/* Mobile Date (Visible below logo) */}
             <span className="lg:hidden text-[10px] text-slate-500 font-bold mt-0.5 ml-10">

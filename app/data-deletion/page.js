@@ -20,7 +20,7 @@ export default function DataDeletion() {
             </ul>
 
             <h2>How to Request Data Deletion:</h2>
-            <p>If you want to delete your account information or personal data collected by Bangladesh News, please follow the steps below:</p>
+            <p>If you want to delete your account information or personal data collected by Bakalia News, please follow the steps below:</p>
 
             <ol>
                 <li>Send us an email at: <strong>almabruk786@gmail.com</strong></li>
