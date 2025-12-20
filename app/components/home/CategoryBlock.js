@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { parseNewsContent, stripHtml } from "../../lib/utils";
+import { parseNewsContent, stripHtml, getBanglaRelativeTime } from "../../lib/utils";
 
 export default function CategoryBlock({ title, news, color = "border-slate-800" }) {
     if (!news || news.length === 0) return null;
@@ -62,7 +62,7 @@ export default function CategoryBlock({ title, news, color = "border-slate-800" 
                             <h4 className="font-bold text-sm text-slate-800 leading-snug group-hover:text-red-600 line-clamp-3">
                                 {item.title}
                             </h4>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase">{new Date(item.publishedAt).toLocaleDateString()}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase">{getBanglaRelativeTime(item.publishedAt)}</span>
                         </Link>
                     ))}
                 </div>

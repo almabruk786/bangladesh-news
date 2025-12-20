@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, PlayCircle } from "lucide-react";
-import { parseNewsContent, stripHtml, getSmartExcerpt } from "../../lib/utils";
+import { parseNewsContent, stripHtml, getSmartExcerpt, getBanglaRelativeTime } from "../../lib/utils";
 
 export default function HeroSection({ heroNews, sideNews }) {
     if (!heroNews) return null;
@@ -76,7 +76,7 @@ export default function HeroSection({ heroNews, sideNews }) {
                                         {item.title}
                                     </h3>
                                     <span className="text-[10px] text-slate-400 font-medium">
-                                        {new Date(item.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {getBanglaRelativeTime(item.publishedAt)}
                                     </span>
                                 </div>
                                 <div className="w-16 h-12 bg-slate-100 overflow-hidden rounded shrink-0 border border-slate-100 relative">

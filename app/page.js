@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { db } from './lib/firebase';
 import { collection, getDocs, orderBy, query, limit, where, doc, getDoc } from 'firebase/firestore';
 import { Loader2, X } from 'lucide-react';
+import { getBanglaRelativeTime } from './lib/utils';
 
 // Modern Components
 import BreakingTicker from './components/home/BreakingTicker';
@@ -113,7 +114,7 @@ export default function Home() {
                     <h3 className="font-bold leading-tight group-hover:text-red-600 transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-slate-400 mt-1">{new Date(item.publishedAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-slate-400 mt-1">{getBanglaRelativeTime(item.publishedAt)}</p>
                   </Link>
                 ))}
               </div>
