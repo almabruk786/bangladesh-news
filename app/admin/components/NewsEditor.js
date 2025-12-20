@@ -7,7 +7,7 @@ import LiveBlogConsole from "./LiveBlogConsole";
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
-        title: "", content: "", imageUrls: [], category: "বাংলাদেশ", categories: ["বাংলাদেশ"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", isLive: false, authorName: ""
+        title: "", content: "", imageUrls: [], category: "বাংলাদেশ", categories: ["বাংলাদেশ"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", isLive: false, authorName: "", imageCaption: ""
     });
     const [tagInput, setTagInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -66,7 +66,8 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 videoUrl: existingData.videoUrl || "",
                 metaDescription: existingData.metaDescription || "",
                 isLive: existingData.isLive || false,
-                authorName: existingData.authorName || ""
+                authorName: existingData.authorName || "",
+                imageCaption: existingData.imageCaption || ""
             });
             setDocId(existingData.id);
         }
@@ -293,7 +294,8 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 metaDescription: form.metaDescription, // Manual SEO Description
                 isLive: form.isLive, // Live Blog Status
                 categories: form.categories, // Array of categories
-                category: form.categories[0] || form.category // Primary category
+                category: form.categories[0] || form.category, // Primary category
+                imageCaption: form.imageCaption // Main Image Caption
             };
 
             if (docId) {
@@ -561,77 +563,90 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     )}
                 </div>
 
-                {/* Video URL Option */}
-                <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Video URL (YouTube/Vimeo - Optional)</label>
-                    <div className="flex gap-2">
-                        <input
-                            name="videoUrl"
-                            placeholder="https://www.youtube.com/watch?v=..."
-                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={form.videoUrl}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <p className="text-xs text-slate-400">If provided, this video might be shown effectively instead of the cover image.</p>
-                </div>
-
-                {/* SEO Image (OG Image) */}
-                <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">SEO / OG Image</label>
-                    <div className="flex gap-2">
-                        <input
-                            name="ogImage"
-                            placeholder="https://... (Leave empty to use cover image)"
-                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={form.ogImage}
-                            onChange={handleChange}
-                        />
-                        <label className="flex items-center justify-center p-3 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer transition-colors" title="Upload OG Image">
-                            {uploading ? <Loader2 className="animate-spin text-slate-600" size={20} /> : <Upload className="text-slate-600" size={20} />}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={async (e) => {
-                                    if (e.target.files[0]) {
-                                        setUploading(true);
-                                        try {
-                                            const url = await uploadToCloudinary(e.target.files[0]);
-                                            if (url) setForm(p => ({ ...p, ogImage: url }));
-                                        } catch (err) { console.error(err); }
-                                        setUploading(false);
-                                    }
-                                }}
-                            />
-                        </label>
-                    </div>
-                </div>
-
-                {/* Content */}
-                <div className="space-y-2">
-                    <div className="flex justify-between items-end">
-                        <label className="text-sm font-bold text-slate-700">Story Content</label>
-                        {uploadingEditor && <span className="text-xs text-blue-500 animate-pulse">Uploading image...</span>}
-                    </div>
-
-                    <TiptapEditor
-                        content={form.content}
-                        onChange={handleEditorChange}
-                        onImageUpload={handleEditorImageUpload}
+                {/* Image Caption */}
+                <div className="space-y-2 mt-4">
+                    <label className="text-sm font-bold text-slate-700">Image Caption (Main Image)</label>
+                    <input
+                        name="imageCaption"
+                        placeholder="e.g. ছবি: সংগৃহীত or Photo Credit..."
+                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                        value={form.imageCaption || ""}
+                        onChange={handleChange}
                     />
                 </div>
+        </div>
 
-                {/* Submit */}
-                <div className="pt-4 border-t border-slate-100">
-                    <button
-                        disabled={loading || uploading}
-                        className="w-full bg-slate-900 hover:bg-slate-800 text-white p-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 transition-all shadow-lg shadow-slate-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                        {loading ? <RefreshCw className="animate-spin" /> : <Save />}
-                        {loading ? "Saving..." : existingData ? "Update Story" : "Publish Story"}
-                    </button>
-                </div>
+                {/* Video URL Option */ }
+    <div className="space-y-2">
+        <label className="text-sm font-bold text-slate-700">Video URL (YouTube/Vimeo - Optional)</label>
+        <div className="flex gap-2">
+            <input
+                name="videoUrl"
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                value={form.videoUrl}
+                onChange={handleChange}
+            />
+        </div>
+        <p className="text-xs text-slate-400">If provided, this video might be shown effectively instead of the cover image.</p>
+    </div>
+
+    {/* SEO Image (OG Image) */ }
+    <div className="space-y-2">
+        <label className="text-sm font-bold text-slate-700">SEO / OG Image</label>
+        <div className="flex gap-2">
+            <input
+                name="ogImage"
+                placeholder="https://... (Leave empty to use cover image)"
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                value={form.ogImage}
+                onChange={handleChange}
+            />
+            <label className="flex items-center justify-center p-3 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer transition-colors" title="Upload OG Image">
+                {uploading ? <Loader2 className="animate-spin text-slate-600" size={20} /> : <Upload className="text-slate-600" size={20} />}
+                <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                        if (e.target.files[0]) {
+                            setUploading(true);
+                            try {
+                                const url = await uploadToCloudinary(e.target.files[0]);
+                                if (url) setForm(p => ({ ...p, ogImage: url }));
+                            } catch (err) { console.error(err); }
+                            setUploading(false);
+                        }
+                    }}
+                />
+            </label>
+        </div>
+    </div>
+
+    {/* Content */ }
+    <div className="space-y-2">
+        <div className="flex justify-between items-end">
+            <label className="text-sm font-bold text-slate-700">Story Content</label>
+            {uploadingEditor && <span className="text-xs text-blue-500 animate-pulse">Uploading image...</span>}
+        </div>
+
+        <TiptapEditor
+            content={form.content}
+            onChange={handleEditorChange}
+            onImageUpload={handleEditorImageUpload}
+        />
+    </div>
+
+    {/* Submit */ }
+    <div className="pt-4 border-t border-slate-100">
+        <button
+            disabled={loading || uploading}
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white p-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 transition-all shadow-lg shadow-slate-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+            {loading ? <RefreshCw className="animate-spin" /> : <Save />}
+            {loading ? "Saving..." : existingData ? "Update Story" : "Publish Story"}
+        </button>
+    </div>
 
             </form >
         </div >

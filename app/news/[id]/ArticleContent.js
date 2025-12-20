@@ -140,6 +140,13 @@ export default function ArticleContent({ article, relatedNews }) {
 
                             <NewsSlider images={imageList} title={article.title} />
 
+                            {/* Main Image Caption */}
+                            {article.imageCaption && (
+                                <p className="text-sm text-slate-500 bg-slate-50 py-2 px-3 rounded-lg border border-slate-100 text-center mt-2 italic">
+                                    {article.imageCaption}
+                                </p>
+                            )}
+
                             {/* Social Share Buttons */}
                             <div className="my-6">
                                 <ShareButtons title={article.title} />
