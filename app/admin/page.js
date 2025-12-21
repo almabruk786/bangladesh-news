@@ -154,7 +154,7 @@ export default function AdminDashboard() {
     // Listen for last 5 minutes of logs for active users count
     // Note: limit(50) is a safety cap for the header. Real analytics view has more.
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60000);
-    const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(100));
+    const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(500));
 
     const unsub = onSnapshot(q, (snap) => {
       const recentLogs = snap.docs.map(d => d.data()).filter(d => d.timestamp?.toDate() >= fiveMinutesAgo);

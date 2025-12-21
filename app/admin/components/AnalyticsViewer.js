@@ -83,9 +83,9 @@ export default function AnalyticsViewer() {
     const [selectedVisit, setSelectedVisit] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // 1. Fetch Real-time Logs (Last 200 for broader calculations)
+    // 1. Fetch Real-time Logs (Last 500 for broader calculations)
     useEffect(() => {
-        const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(200));
+        const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(500));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -261,7 +261,7 @@ export default function AnalyticsViewer() {
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm overflow-hidden">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                <Users size={18} className="text-blue-500" /> Recent Visitors
+                                <Users size={18} className="text-blue-500" /> Recent Activity (Live Log)
                             </h2>
                             <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded font-bold animate-pulse">Live</span>
                         </div>
