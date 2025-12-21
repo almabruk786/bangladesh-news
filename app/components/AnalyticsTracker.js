@@ -34,7 +34,10 @@ export default function AnalyticsTracker() {
                 const fetchGeo = async () => {
                     // Provider 1: ipapi.co (Primary)
                     try {
-                        const res = await fetch('https://ipapi.co/json/');
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5s timeout
+                        const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+                        clearTimeout(timeoutId);
                         if (res.ok) {
                             const data = await res.json();
                             if (data.city) return {
@@ -55,7 +58,7 @@ export default function AnalyticsTracker() {
                                 ip: data.ip,
                                 city: data.city,
                                 country: data.country,
-                                isp: data.connection?.isp
+                                isp: (data.connection && data.connection.isp)
                             };
                         }
                     } catch (e) { }

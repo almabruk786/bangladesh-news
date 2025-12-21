@@ -8,28 +8,42 @@ export default function GoogleAd({ slotId, format = "auto", responsive = "true",
     useEffect(() => {
         if (!adRef.current || adPushed) return;
 
-        const observer = new ResizeObserver((entries) => {
-            // Check if we have valid width
-            const entry = entries[0];
-            if (entry.contentRect.width > 0) {
-                try {
-                    // Double check if innerHTML is empty to avoid duplicates
-                    if (adRef.current && adRef.current.innerHTML === "") {
-                        console.log("AdSense: Push (Width: " + entry.contentRect.width + ")");
-                        (window.adsbygoogle = window.adsbygoogle || []).push({});
-                        setAdPushed(true); // Mark as pushed so we don't push again
-                    }
-                } catch (e) {
-                    console.error("AdSense Push Error:", e);
-                }
-                // Stop observing once pushed
-                observer.disconnect();
+        try {
+            if (typeof ResizeObserver === 'undefined') {
+                // Fallback for older browsers (iOS 12): Just push the ad without checking width
+                console.log("AdSense: Legacy Push (No ResizeObserver)");
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+                setAdPushed(true);
+                return;
             }
-        });
 
-        observer.observe(adRef.current);
+            const observer = new ResizeObserver((entries) => {
+                const entry = entries[0];
+                if (entry.contentRect.width > 0) {
+                    try {
+                        if (adRef.current && adRef.current.innerHTML === "") {
+                            console.log("AdSense: Push (Width: " + entry.contentRect.width + ")");
+                            (window.adsbygoogle = window.adsbygoogle || []).push({});
+                            setAdPushed(true);
+                        }
+                    } catch (e) {
+                        // Ignore push errors
+                    }
+                    observer.disconnect();
+                }
+            });
 
-        return () => observer.disconnect();
+            observer.observe(adRef.current);
+            return () => observer.disconnect();
+
+        } catch (e) {
+            console.warn("AdSense Safety Catch", e);
+            // Fallback attempt
+            if (!adPushed) {
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+                setAdPushed(true);
+            }
+        }
     }, [adPushed]);
 
     return (

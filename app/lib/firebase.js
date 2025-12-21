@@ -68,8 +68,8 @@ export const getNews = async () => {
         id: doc.id,
         ...data,
         // serialize timestamps if they exist and are not already strings
-        publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : data.publishedAt,
-        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+        publishedAt: (data.publishedAt && data.publishedAt.toDate) ? data.publishedAt.toDate().toISOString() : data.publishedAt,
+        updatedAt: (data.updatedAt && data.updatedAt.toDate) ? data.updatedAt.toDate().toISOString() : data.updatedAt,
       };
     }).filter(doc => !doc.hidden);
   } catch (error) {

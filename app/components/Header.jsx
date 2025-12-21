@@ -104,7 +104,7 @@ export default function Header() {
 
   return (
     <>
-      <header className={`bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 font-sans sticky top-0 z-50 transition-all duration-300 shadow-sm`}>
+      <header className={`bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-sans sticky top-0 z-50 transition-all duration-300 shadow-sm`}>
 
         {/* 1. Main Header Area (Logo + Utilities) */}
         <div className={`transition-all duration-300 ${isScrolled ? 'py-2' : 'py-3'} max-w-7xl mx-auto px-4 flex justify-between items-center relative`}>
@@ -113,7 +113,7 @@ export default function Header() {
           <div className="flex items-center space-x-3 lg:space-x-4 flex-1 lg:flex-none">
             {/* Mobile Menu Trigger */}
             <div className="lg:hidden">
-              <button className="p-2 -ml-2 text-slate-800 dark:text-white hover:bg-slate-100 rounded-full transition" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <button type="button" className="p-2 -ml-2 text-slate-800 dark:text-white hover:bg-slate-100 rounded-full transition cursor-pointer" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                 <MenuIcon size={24} />
               </button>
             </div>
@@ -140,13 +140,13 @@ export default function Header() {
           {/* RIGHT: Actions */}
           <div className="flex items-center justify-end space-x-1 flex-1 lg:flex-none">
             <div className="relative" ref={searchRef}>
-              <button onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition">
+              <button type="button" onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition cursor-pointer">
                 <Search size={20} />
               </button>
 
               {/* Search Bar Dropdown */}
               {isSearchOpen && (
-                <div className="absolute top-full right-0 w-64 md:w-80 bg-white shadow-xl border border-slate-100 p-2 z-50 rounded mt-2 animate-in fade-in slide-in-from-top-2">
+                <div className="absolute top-full right-0 w-64 md:w-80 bg-white shadow-xl border border-slate-100 p-2 z-50 rounded mt-2">
                   <input
                     type="text"
                     autoFocus
@@ -160,7 +160,7 @@ export default function Header() {
             </div>
 
             <div className="flex items-center space-x-2 border-l border-slate-200 pl-3">
-              <button onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500">
+              <button type="button" onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500 cursor-pointer">
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
               {/* Install App button removed as per user request (redundant with sidebar) */}
@@ -184,7 +184,7 @@ export default function Header() {
               <Link
                 href="/newspapers"
                 aria-label="NewsPapers"
-                className="py-1 px-3 rounded text-xs md:text-sm font-bold uppercase text-white transition shrink-0 flex items-center space-x-1 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_auto] hover:bg-right duration-500 shadow-md shadow-red-500/30"
+                className="py-1 px-3 rounded text-xs md:text-sm font-bold uppercase text-white transition shrink-0 flex items-center space-x-1 bg-red-600 shadow-md shadow-red-500/30"
               >
                 <span>NewsPapers</span> <span>📰</span>
               </Link>
@@ -207,8 +207,8 @@ export default function Header() {
       {/* Mobile Drawer - Moved outside Header to avoid stacking context issues due to backdrop-blur */}
       {
         isMobileMenuOpen && (
-          <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm animate-in fade-in" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="bg-white dark:bg-slate-900 w-[280px] h-full shadow-2xl flex flex-col transform transition-transform animate-in slide-in-from-left duration-300" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="bg-white dark:bg-slate-900 w-[280px] h-full shadow-2xl flex flex-col transform transition-transform duration-300" onClick={e => e.stopPropagation()}>
               <div className="p-4 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
                 <h2 className="font-black text-xl text-slate-900 dark:text-white">MENU</h2>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500"><X size={24} /></button>

@@ -35,64 +35,67 @@ export default async function Home() {
 
 
   return (
-    <div className="min-h-screen">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(generateItemListSchema(realLatestNews)) }}
+        suppressHydrationWarning
       />
-      <AdPopup />
+      <div className="min-h-screen">
+        <AdPopup />
 
-      {/* 1. Breaking Ticker */}
-      <BreakingTicker news={realLatestNews.slice(0, 5)} />
+        {/* 1. Breaking Ticker */}
+        <BreakingTicker news={realLatestNews.slice(0, 5)} />
 
-      <main className="container-custom py-8">
-        {/* 2. Hero Section */}
-        <HeroSection heroNews={heroNews} sideNews={realLatestNews.slice(0, 4)} />
+        <main className="container-custom py-8">
+          {/* 2. Hero Section */}
+          <HeroSection heroNews={heroNews} sideNews={realLatestNews.slice(0, 4)} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Main Content Area */}
-          <div className="lg:col-span-9">
-            {/* 3. Category Blocks */}
-            <CategoryBlock title="Politics" news={politicsNews} color="border-red-600" />
-            <CategoryBlock title="Sports" news={sportsNews} color="border-green-600" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Main Content Area */}
+            <div className="lg:col-span-9">
+              {/* 3. Category Blocks */}
+              <CategoryBlock title="Politics" news={politicsNews} color="border-red-600" />
+              <CategoryBlock title="Sports" news={sportsNews} color="border-green-600" />
 
-            {/* 4. More News Grid */}
-            <div className="mt-12">
-              <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-6 border-l-4 border-slate-900 pl-4">
-                More Top Stories
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {allNews.slice(10, 19).map(item => (
-                  <Link href={`/news/${item.id}`} key={item.id} className="group block">
-                    <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden mb-3 relative">
-                      <Image
-                        src={item.imageUrl || item.imageUrls?.[0] || '/placeholder.png'}
-                        alt={item.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-105 transition duration-500"
-                      />
-                    </div>
-                    <h3 className="font-bold leading-tight group-hover:text-red-600 transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1">{getBanglaRelativeTime(item.publishedAt)}</p>
-                  </Link>
-                ))}
+              {/* 4. More News Grid */}
+              <div className="mt-12">
+                <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-6 border-l-4 border-slate-900 pl-4">
+                  More Top Stories
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {allNews.slice(10, 19).map(item => (
+                    <Link href={`/news/${item.id}`} key={item.id} className="group block">
+                      <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden mb-3 relative">
+                        <Image
+                          src={item.imageUrl || (item.imageUrls && item.imageUrls[0]) || '/placeholder.png'}
+                          alt={item.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover group-hover:scale-105 transition duration-500"
+                        />
+                      </div>
+                      <h3 className="font-bold leading-tight group-hover:text-red-600 transition-colors">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1">{getBanglaRelativeTime(item.publishedAt)}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Sidebar */}
+            <div className="lg:col-span-3">
+              <LatestSidebar news={latestNews} />
+              {/* Sticky Ad Placeholder */}
+              <div className="sticky top-24 mt-8">
+                {/* Auto Ads will fill here if needed */}
               </div>
             </div>
           </div>
-
-          {/* Right Sidebar */}
-          <div className="lg:col-span-3">
-            <LatestSidebar news={latestNews} />
-            {/* Sticky Ad Placeholder */}
-            <div className="sticky top-24 mt-8">
-              {/* Auto Ads will fill here if needed */}
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }
