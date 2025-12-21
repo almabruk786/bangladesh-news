@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Search, AlertTriangle, CheckCircle, BarChart3, Smartphone, Zap, TrendingUp } from "lucide-react";
+import { X, Search, AlertTriangle, CheckCircle, BarChart3, Smartphone, Zap, TrendingUp, ShieldAlert } from "lucide-react";
 import { analyzeContent } from "../utils/seoLogic";
 
 export default function SeoSidebar({ form, visible, onClose }) {
@@ -80,6 +80,15 @@ export default function SeoSidebar({ form, visible, onClose }) {
                         <div className="text-[10px] uppercase text-slate-500 font-bold">Readability</div>
                         <div className={`text-sm font-bold ${report.readability.score === 'Hard' ? 'text-red-500' : 'text-slate-800'}`}>
                             {report.readability.score}
+                        </div>
+                    </div>
+                    <div className="bg-slate-100 rounded-lg p-2 text-center col-span-2">
+                        <div className="text-[10px] uppercase text-slate-500 font-bold mb-1">AdSense Security</div>
+                        <div className={`text-sm font-bold flex items-center justify-center gap-1
+                            ${report.adSenseRisk.level === 'safe' ? 'text-green-600' : report.adSenseRisk.level === 'warning' ? 'text-yellow-600' : 'text-red-600'}
+                        `}>
+                            {report.adSenseRisk.level === 'safe' ? <CheckCircle size={14} /> : <ShieldAlert size={14} />}
+                            {report.adSenseRisk.label}
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye, Wand2, BarChart3 } from "lucide-react";
+import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye, Wand2, BarChart3, AlertTriangle } from "lucide-react";
 import { addDoc, collection, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import TiptapEditor from "./TiptapEditor";
@@ -23,21 +23,16 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     const [showImageTool, setShowImageTool] = useState(false); // State for modal
     const [showSeo, setShowSeo] = useState(false); // State for SEO sidebar
 
+    const [showRecoveryAlert, setShowRecoveryAlert] = useState(false);
+
+    // 🛡️ Local Storage Key (Crash-Proof)
+    const DRAFT_KEY = "news_draft_autosave";
+
     const autoSaveTimerRef = useRef(null);
+    const localSaveTimerRef = useRef(null); // Separate timer for local storage
 
     // Determine Default Author Name
     const defaultAuthorName = user.role === "admin" ? "Md Arif Mainuddin" : user.name;
-
-    // useEffect(() => {
-    //     // Fetch Categories Dynamically
-    //     import("firebase/firestore").then(({ getDocs, collection, query, orderBy }) => {
-    //         const q = query(collection(db, "categories"), orderBy("name"));
-    //         getDocs(q).then(snap => {
-    //             const cats = snap.docs.map(d => d.data().name);
-    //             if (cats.length > 0) setCategories(cats);
-    //         });
-    //     });
-    // }, []);
 
     // Helper to clean malformed AI content
     const cleanContent = (content) => {
@@ -54,6 +49,38 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
             } catch (e) { }
         }
         return content;
+    };
+
+    // 🛡️ Mount Check: Look for crash data
+    useEffect(() => {
+        const saved = localStorage.getItem(DRAFT_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                // Only prompt if data is substantial and different from initial empty state
+                if (parsed.title || parsed.content.length > 20) {
+                    setShowRecoveryAlert(true);
+                }
+            } catch (e) { }
+        }
+    }, []);
+
+    // 🛡️ Recovery Actions
+    const restoreDraft = () => {
+        const saved = localStorage.getItem(DRAFT_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            setForm(prev => ({ ...prev, ...parsed }));
+            alert("Draft Restored Successfully! 🛡️");
+        }
+        setShowRecoveryAlert(false);
+    };
+
+    const discardDraft = () => {
+        if (confirm("Are you sure? This will delete the unsaved draft permanently.")) {
+            localStorage.removeItem(DRAFT_KEY);
+            setShowRecoveryAlert(false);
+        }
     };
 
     useEffect(() => {
@@ -85,6 +112,24 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     const handleEditorChange = (html) => {
         setForm(prev => ({ ...prev, content: html }));
     };
+
+    // 🛡️ Local Auto-Save Logic (Every time form changes)
+    useEffect(() => {
+        if (localSaveTimerRef.current) clearTimeout(localSaveTimerRef.current);
+
+        localSaveTimerRef.current = setTimeout(() => {
+            // Don't save if empty
+            if (!form.title && !form.content) return;
+
+            // Don't save large images to LS (quota safety)
+            const safeForm = { ...form, imageUrls: form.imageUrls.map(u => u.length > 500 ? '' : u) };
+
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(safeForm));
+        }, 1000); // Save to device every 1 second of inactivity
+
+        return () => clearTimeout(localSaveTimerRef.current);
+    }, [form]);
+
 
     // Reusable Upload Helper (Image/Video/Audio)
     const uploadToCloudinary = async (file) => {
@@ -126,10 +171,12 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
         });
     }, []);
 
-    // Auto Save Logic
+    // Auto Save Logic (Firestore)
     useEffect(() => {
         // Don't auto-save if untitled or empty content (optional)
         if (!form.title && !form.content) return;
+        // Don't autosave to firestore if recovering
+        if (showRecoveryAlert) return;
 
         // Clear previous timer
         if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
@@ -153,14 +200,9 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 const payload = {
                     ...form,
                     imageUrl: form.imageUrls[0] || "",
-
                     authorName: form.authorName || defaultAuthorName,
                     authorRole: user.role,
-
                     updatedAt: new Date().toISOString(),
-                    // If it's a new doc, make it draft. If existing, keep status or just update fields.
-                    // We don't want to change "published" to "draft" automatically.
-                    // We only save changes.
                 };
 
                 // If it's a new entry and we have enough data to be worth saving
@@ -182,7 +224,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
         }, 3000);
 
         return () => clearTimeout(autoSaveTimerRef.current);
-    }, [form, docId]); // Depend on form changes
+    }, [form, docId, showRecoveryAlert]); // Depend on form changes
 
     // Handle Tag Input
     const handleTagKeyDown = (e) => {
@@ -308,6 +350,10 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 const ref = await addDoc(collection(db, "articles"), payload);
                 setDocId(ref.id);
             }
+
+            // 🛡️ Clear Local Storage on Success
+            localStorage.removeItem(DRAFT_KEY);
+
             onSuccess();
         } catch (error) {
             alert("Error saving news: " + error.message);
@@ -317,6 +363,37 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
 
     return (
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden max-w-4xl mx-auto relative">
+
+            {/* 🛡️ Crash Recovery Alert */}
+            {showRecoveryAlert && (
+                <div className="absolute top-0 left-0 w-full z-50 bg-red-50 border-b border-red-200 p-4 flex items-center justify-between animate-in slide-in-from-top-4">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-red-100 p-2 rounded-full text-red-600">
+                            <AlertTriangle size={20} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-red-800 text-sm">Found Unsaved Draft!</h3>
+                            <p className="text-xs text-red-600">It seems your last session crashed. Do you want to restore it?</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={discardDraft}
+                            className="px-3 py-1.5 bg-white border border-red-200 text-red-600 text-xs font-bold rounded-lg hover:bg-red-50"
+                        >
+                            Discard
+                        </button>
+                        <button
+                            type="button"
+                            onClick={restoreDraft}
+                            className="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 shadow-sm"
+                        >
+                            Yes, Restore
+                        </button>
+                    </div>
+                </div>
+            )}
 
 
             {/* Modal for Image Tool */}
@@ -343,7 +420,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     <PenTool size={20} className="text-blue-600" />
                     {existingData || docId ? "Edit Story" : "Write New Story"}
                     {savingDraft && <span className="text-xs font-normal text-slate-500 animate-pulse ml-2">Saving draft...</span>}
-                    {!savingDraft && lastSaved && <span className="text-xs font-normal text-slate-400 ml-2">Saved {lastSaved.toLocaleTimeString()}</span>}
+                    {!savingDraft && !showRecoveryAlert && <span className="text-xs font-normal text-green-500 ml-2">Saved to Device 🛡️</span>}
                 </h2>
                 {onCancel && (
                     <button onClick={onCancel} className="text-slate-500 hover:text-slate-800 flex items-center gap-1 text-sm font-medium">

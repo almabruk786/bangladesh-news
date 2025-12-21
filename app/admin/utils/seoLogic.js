@@ -30,6 +30,13 @@ const PASSIVE_PATTERNS = [
     /করা হয়েছে/g, /দেখা গিয়েছে/g, /বলা হয়েছে/g, /নেওয়া হয়েছে/g, /জানানো হয়েছে/g, /পাওয়া গেছে/g
 ];
 
+// ⚠️ AdSense Risk Dictionaries (Prohibited Content)
+const ADSENSE_RISK_WORDS = {
+    gambling: ['বাজি', 'ক্যাসিনো', 'লটারি', 'জুয়া', 'বেটিং', 'Betting', 'Casino'],
+    adult: ['১৮+', 'নীল ছবি', 'রগরগে', 'অশ্লীল', 'সেক্স', 'পর্ণ'],
+    violence: ['বোমা', 'জঙ্গি', 'খুন', 'হত্যা', 'আত্মহত্যা', 'রক্তপাত'], // Context warning
+};
+
 /**
  * 🕵️ Primary Analysis Function
  */
@@ -44,6 +51,38 @@ export const analyzeContent = (data) => {
     let problems = [];
     let criticals = [];
     let goodPoints = [];
+
+    // --- 0. ADSENSE SAFETY GUARD 🛡️ (New) ---
+    let adSenseRisk = { label: 'Safe ✅', level: 'safe', warnings: [] };
+
+    // Check Gambling
+    const gamblingMatches = ADSENSE_RISK_WORDS.gambling.filter(w => plainText.includes(w));
+    if (gamblingMatches.length > 0) {
+        adSenseRisk.level = 'danger';
+        adSenseRisk.label = 'Policy Violation';
+        criticals.push(`Gambling words detected (${gamblingMatches.join(', ')}). Strict AdSense Violation!`);
+    }
+
+    // Check Adult
+    const adultMatches = ADSENSE_RISK_WORDS.adult.filter(w => plainText.includes(w));
+    if (adultMatches.length > 0) {
+        adSenseRisk.level = 'danger';
+        adSenseRisk.label = 'Adult Content';
+        criticals.push(`Restricted content words detected (${adultMatches.join(', ')}). AdSense may block this page.`);
+    }
+
+    // Check Violence (Allow minor usage for news, warn on excess)
+    const violenceCount = ADSENSE_RISK_WORDS.violence.reduce((acc, w) => acc + (plainText.match(new RegExp(w, 'g')) || []).length, 0);
+    if (violenceCount > 5) {
+        if (adSenseRisk.level === 'safe') adSenseRisk.level = 'warning';
+        adSenseRisk.label = 'Sensitive/Violence';
+        problems.push(`High violence keywords (${violenceCount}+). Ensure this is news reporting, not glorification.`);
+    }
+
+    if (adSenseRisk.level === 'safe') {
+        score += 10;
+        goodPoints.push('AdSense Safety Check Passed');
+    }
 
     // --- 1. READABILITY & SENTIMENT (New Power Up ⚡) ---
 
@@ -172,6 +211,7 @@ export const analyzeContent = (data) => {
         problems,
         criticals,
         goodPoints,
+        adSenseRisk,
         readability: {
             score: readabilityScore,
             passiveCount,
