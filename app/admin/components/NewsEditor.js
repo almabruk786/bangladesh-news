@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye } from "lucide-react";
+import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye, Wand2 } from "lucide-react";
 import { addDoc, collection, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import TiptapEditor from "./TiptapEditor";
 import LiveBlogConsole from "./LiveBlogConsole";
+import ImageConverter from "./ImageConverter"; // Import the tool
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
@@ -18,6 +19,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     const [uploadingEditor, setUploadingEditor] = useState(false);
     const [generatingTags, setGeneratingTags] = useState(false);
     const [categories, setCategories] = useState(["বাংলাদেশ", "রাজনীতি", "আন্তর্জাতিক", "খেলা", "মতামত", "বাণিজ্য", "বিনোদন", "জীবনযাপন", "প্রযুক্তি", "স্বাস্থ্য", "শিক্ষা", "জাতীয়"]);
+    const [showImageTool, setShowImageTool] = useState(false); // State for modal
 
     const autoSaveTimerRef = useRef(null);
 
@@ -312,7 +314,19 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden max-w-4xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden max-w-4xl mx-auto relative">
+
+            {/* Modal for Image Tool */}
+            {showImageTool && (
+                <ImageConverter
+                    onClose={() => setShowImageTool(false)}
+                    onProcessed={(url) => {
+                        // Add to images (at start if primary)
+                        setForm(prev => ({ ...prev, imageUrls: [url, ...prev.imageUrls] }));
+                    }}
+                />
+            )}
+
             {/* Header */}
             <div className="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -510,7 +524,16 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
 
                 {/* Media Upload */}
                 <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Cover Image & Gallery (Images/Videos/Audio)</label>
+                    <div className="flex justify-between items-center">
+                        <label className="text-sm font-bold text-slate-700">Cover Image & Gallery</label>
+                        <button
+                            type="button"
+                            onClick={() => setShowImageTool(true)}
+                            className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg hover:shadow-pink-500/30 hover:scale-105 transition-all"
+                        >
+                            <Wand2 size={14} /> Magic Create
+                        </button>
+                    </div>
                     <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center transition-colors hover:bg-slate-50">
                         <input type="file" multiple onChange={handleImageUpload} className="hidden" id="file-upload" accept="image/*,video/*,audio/*" />
                         <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2">
