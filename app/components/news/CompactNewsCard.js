@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getBanglaRelativeTime } from "../../lib/utils";
 
 export default function CompactNewsCard({ news, showImage = false }) {
@@ -9,7 +10,13 @@ export default function CompactNewsCard({ news, showImage = false }) {
             <div className="flex gap-3 items-start">
                 {showImage && news.imageUrl && (
                     <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden shrink-0 relative">
-                        <img src={news.imageUrl} alt={news.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                        <Image
+                            src={news.imageUrl}
+                            alt={news.title}
+                            fill
+                            sizes="64px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
                     </div>
                 )}
                 <div className="flex-1 min-w-0">

@@ -60,7 +60,18 @@ export const getNews = async () => {
     const articlesRef = collection(db, "articles");
     const q = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(50));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(doc => !doc.hidden);
+
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      // Ensure specific fields are serializable for Next.js Server Components
+      return {
+        id: doc.id,
+        ...data,
+        // serialize timestamps if they exist and are not already strings
+        publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : data.publishedAt,
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+      };
+    }).filter(doc => !doc.hidden);
   } catch (error) {
     console.error("Error fetching news:", error);
     return [];

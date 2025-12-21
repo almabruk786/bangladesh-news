@@ -18,9 +18,9 @@ const nextConfig = {
 
   // Suppress cross-origin warning for local network development
   experimental: {
-    turbopack: {
-      root: __dirname,
-    },
+    // turbopack: {
+    //   root: __dirname,
+    // },
   },
 };
 

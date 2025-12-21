@@ -1,99 +1,60 @@
-"use client";
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { db } from './lib/firebase';
-import { collection, getDocs, orderBy, query, limit, where, doc, getDoc } from 'firebase/firestore';
-import { Loader2, X } from 'lucide-react';
+import { getNews } from './lib/firebase';
 import { getBanglaRelativeTime } from './lib/utils';
+import { generateItemListSchema } from './lib/schemas';
 
 // Modern Components
 import BreakingTicker from './components/home/BreakingTicker';
 import HeroSection from './components/home/HeroSection';
 import CategoryBlock from './components/home/CategoryBlock';
 import LatestSidebar from './components/home/LatestSidebar';
-import { generateItemListSchema } from './lib/schemas';
 import AdPopup from './components/AdPopup';
 
-export default function Home() {
-  const [data, setData] = useState({
-    heroNews: null,
-    latestNews: [],
-    realLatestNews: [],
-    politicsNews: [],
-    sportsNews: [],
-    allNews: [],
-  });
-  const [loading, setLoading] = useState(true);
+// Force revalidation every 5 minutes (300 seconds)
+export const revalidate = 300;
 
-  useEffect(() => {
-    async function fetchNews() {
-      try {
-        const articlesRef = collection(db, "articles");
+export default async function Home() {
+  // 1. Fetch Data on Server
+  const allDocs = await getNews();
 
-        // 1. Fetch Latest & Pinned for Hero
-        const qLatest = query(articlesRef, where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(50));
-        const snapLatest = await getDocs(qLatest);
-        // Filter hidden news (client-side for compatibility with missing fields)
-        const allDocs = snapLatest.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(doc => !doc.hidden);
+  // 2. Logic for Categorization (Moved from Client to Server)
+  const pinned = allDocs.filter(n => n.isPinned);
+  const heroNews = pinned.length > 0 ? pinned[0] : allDocs[0];
 
-        // Categorize Data
-        // Slider: Show Pinned (Breaking) First, else recent
-        const pinned = allDocs.filter(n => n.isPinned);
-        const hero = pinned.length > 0 ? pinned[0] : allDocs[0];
-        const sliderNews = pinned.length > 0 ? pinned.slice(0, 5) : allDocs.slice(0, 5);
+  // Sidebar: Most Read (Sort by Views) - Create a copy to sort
+  // Note: views might be undefined, handle gracefully
+  const latestNews = [...allDocs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
 
-        // Sidebar: Most Read (Sort by Views)
-        const mostRead = [...allDocs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+  const realLatestNews = allDocs.filter(n => n.id !== heroNews?.id).slice(0, 10);
 
-        const others = allDocs.filter(n => n.id !== hero?.id);
+  const others = allDocs.filter(n => n.id !== heroNews?.id);
+  const politicsNews = others.filter(n => n.category === "Politics" || n.category === "রাজনীতি").slice(0, 5);
+  const sportsNews = others.filter(n => n.category === "Sports" || n.category === "খেলাধুলা").slice(0, 5);
+  const allNews = others;
 
-        setData({
-          heroNews: hero,
-          latestNews: mostRead, // Keep key for Sidebar (which expects Most Read)
-          realLatestNews: allDocs.filter(n => n.id !== hero?.id).slice(0, 10), // True Latest for Hero Side
-          politicsNews: others.filter(n => n.category === "Politics" || n.category === "রাজনীতি").slice(0, 5),
-          sportsNews: others.filter(n => n.category === "Sports" || n.category === "খেলাধুলা").slice(0, 5),
-          allNews: others,
-        });
-
-      } catch (e) { console.error(e); } finally { setLoading(false); }
-    }
-    fetchNews();
-  }, []);
-
-  if (loading) return (
-    <div className="flex flex-col h-screen justify-center items-center bg-white">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-slate-200 border-t-red-600 rounded-full animate-spin"></div>
-        <div className="absolute inset-0 flex items-center justify-center font-bold text-xs text-slate-400">NEWS</div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateItemListSchema(data.realLatestNews)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateItemListSchema(realLatestNews)) }}
       />
       <AdPopup />
 
       {/* 1. Breaking Ticker */}
-      <BreakingTicker news={data.realLatestNews.slice(0, 5)} />
+      <BreakingTicker news={realLatestNews.slice(0, 5)} />
 
       <main className="container-custom py-8">
         {/* 2. Hero Section */}
-        <HeroSection heroNews={data.heroNews} sideNews={data.realLatestNews.slice(0, 4)} />
+        <HeroSection heroNews={heroNews} sideNews={realLatestNews.slice(0, 4)} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Main Content Area */}
           <div className="lg:col-span-9">
             {/* 3. Category Blocks */}
-            <CategoryBlock title="Politics" news={data.politicsNews} color="border-red-600" />
-            <CategoryBlock title="Sports" news={data.sportsNews} color="border-green-600" />
+            <CategoryBlock title="Politics" news={politicsNews} color="border-red-600" />
+            <CategoryBlock title="Sports" news={sportsNews} color="border-green-600" />
 
             {/* 4. More News Grid */}
             <div className="mt-12">
@@ -101,7 +62,7 @@ export default function Home() {
                 More Top Stories
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {data.allNews.slice(10, 19).map(item => (
+                {allNews.slice(10, 19).map(item => (
                   <Link href={`/news/${item.id}`} key={item.id} className="group block">
                     <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden mb-3 relative">
                       <Image
@@ -124,8 +85,8 @@ export default function Home() {
 
           {/* Right Sidebar */}
           <div className="lg:col-span-3">
-            <LatestSidebar news={data.latestNews} />
-            {/* Sticky Ad Placeholder Removed */}
+            <LatestSidebar news={latestNews} />
+            {/* Sticky Ad Placeholder */}
             <div className="sticky top-24 mt-8">
               {/* Auto Ads will fill here if needed */}
             </div>

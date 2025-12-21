@@ -57,7 +57,13 @@ export default async function NewsDetails({ params }) {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      article = { id: docSnap.id, ...docSnap.data() };
+      const data = docSnap.data();
+      article = {
+        id: docSnap.id,
+        ...data,
+        publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : data.publishedAt,
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+      };
 
       // Fetch related news (Sidebar)
       // Note: Firestore structured queries might need composite indexes. 
@@ -67,7 +73,14 @@ export default async function NewsDetails({ params }) {
         const snap = await getDocs(q);
         // Filter out current article and serialize data
         relatedNews = snap.docs
-          .map(d => ({ id: d.id, ...d.data(), publishedAt: d.data().publishedAt })) // Ensure needed fields are present
+          .map(d => {
+            const dData = d.data();
+            return {
+              id: d.id,
+              ...dData,
+              publishedAt: dData.publishedAt?.toDate ? dData.publishedAt.toDate().toISOString() : dData.publishedAt
+            };
+          })
           .filter(n => n.id !== id && !n.hidden);
       } catch (e) {
         console.error("Error fetching related news:", e);
