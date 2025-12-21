@@ -100,7 +100,7 @@ const PaperGrid = ({ papers }) => (
                 href={`/site/${paper.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:shadow-xl hover:border-red-200 transition-all duration-300 flex flex-col items-center justify-between gap-4 text-center h-40 relative"
+                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:shadow-xl hover:border-red-200 transition-all duration-300 flex flex-col items-center justify-between h-40 relative"
             >
                 <div className="flex-1 w-full flex items-center justify-center relative">
                     {paper.logo ? (
@@ -117,7 +117,7 @@ const PaperGrid = ({ papers }) => (
                     ) : null}
                     <span
                         style={{ display: paper.logo ? 'none' : 'block' }}
-                        className="text-xl font-bold font-serif text-blue-600 dark:text-blue-400 group-hover:text-red-500 transition-colors"
+                        className="text-xl font-bold font-serif text-blue-600 dark:text-blue-400 group-hover:text-red-500 transition-colors mt-2"
                     >
                         {paper.bn || paper.name}
                     </span>

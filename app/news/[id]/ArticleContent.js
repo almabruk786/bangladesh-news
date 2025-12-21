@@ -94,7 +94,7 @@ export default function ArticleContent({ article, relatedNews }) {
 
                     <div className="lg:col-span-2">
                         <article className="bg-white dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100 transition-colors duration-300">
-                            <div className="flex items-center gap-4 mb-4 text-sm">
+                            <div className="flex items-center space-x-4 mb-4 text-sm">
                                 {(() => {
                                     const translateCategory = (cat) => {
                                         const map = {
@@ -111,7 +111,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                             "Opinion": "মতামত", "opinion": "মতামত", "OPINION": "মতামত",
                                             "Bangladesh": "বাংলাদেশ", "bangladesh": "বাংলাদেশ", "BANGLADESH": "বাংলাদেশ"
                                         };
-                                        return map[cat] || map[cat?.trim()] || cat;
+                                        return map[cat] || (cat && map[cat.trim()]) || cat;
                                     };
 
                                     return article.categories && article.categories.length > 0 ? (
@@ -128,7 +128,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                         </span>
                                     );
                                 })()}
-                                <span className="flex items-center text-slate-400 gap-1" suppressHydrationWarning>
+                                <span className="flex items-center text-slate-400 space-x-1" suppressHydrationWarning>
                                     <Clock size={14} />
                                     {new Date(article.publishedAt).toLocaleString('bn-BD')}
                                 </span>
@@ -204,9 +204,9 @@ export default function ArticleContent({ article, relatedNews }) {
                             {/* Tags Display */}
                             {article.tags && article.tags.length > 0 && (
                                 <div className="mt-8 pt-4 border-t border-slate-100">
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap">
                                         {article.tags.map((tag, idx) => (
-                                            <span key={idx} className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-slate-200 cursor-pointer transition-colors">
+                                            <span key={idx} className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-slate-200 cursor-pointer transition-colors mr-2 mb-2">
                                                 #{tag}
                                             </span>
                                         ))}
@@ -214,8 +214,8 @@ export default function ArticleContent({ article, relatedNews }) {
                                 </div>
                             )}
 
-                            <div className="mt-10 pt-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                                <div className="flex items-center gap-3">
+                            <div className="mt-10 pt-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+                                <div className="flex items-center space-x-3">
                                     <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500">
                                         <User size={20} />
                                     </div>
@@ -227,8 +227,8 @@ export default function ArticleContent({ article, relatedNews }) {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-2">
-                                    <button onClick={handleCopyLink} className="flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2.5 rounded-lg transition font-medium">
+                                <div className="flex space-x-2">
+                                    <button onClick={handleCopyLink} className="flex items-center space-x-2 bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2.5 rounded-lg transition font-medium">
                                         <Copy size={18} /> লিংক কপি
                                     </button>
 
@@ -242,12 +242,12 @@ export default function ArticleContent({ article, relatedNews }) {
 
                     <div className="lg:col-span-1">
                         <div className="bg-white dark:bg-slate-900 dark:border-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 sticky top-24 transition-colors duration-300">
-                            <h3 className="font-bold text-lg border-b dark:border-slate-800 pb-2 mb-4 flex items-center gap-2 text-slate-800 dark:text-white">
+                            <h3 className="font-bold text-lg border-b dark:border-slate-800 pb-2 mb-4 flex items-center space-x-2 text-slate-800 dark:text-white">
                                 <TrendingUp size={20} className="text-red-600" /> আরো পড়ুন
                             </h3>
-                            <div className="flex flex-col gap-5">
+                            <div className="flex flex-col space-y-5">
                                 {relatedNews.map(item => (
-                                    <Link href={`/news/${item.id}`} key={item.id} className="group flex gap-3 items-start">
+                                    <Link href={`/news/${item.id}`} key={item.id} className="group flex space-x-3 items-start">
                                         <div className="w-24 h-20 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 relative">
                                             <img
                                                 src={item.imageUrl || (item.imageUrls && item.imageUrls[0]) || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=200"}

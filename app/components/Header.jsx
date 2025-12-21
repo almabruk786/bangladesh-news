@@ -60,7 +60,7 @@ export default function Header() {
 
 
   // Hide Header on Admin Dashboard
-  if (pathname?.startsWith("/admin")) return null;
+  if (pathname && pathname.startsWith("/admin")) return null;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -110,7 +110,7 @@ export default function Header() {
         <div className={`transition-all duration-300 ${isScrolled ? 'py-2' : 'py-3'} max-w-7xl mx-auto px-4 flex justify-between items-center relative`}>
 
           {/* LEFT: Logo & Menu */}
-          <div className="flex items-center gap-3 lg:gap-4 flex-1 lg:flex-none">
+          <div className="flex items-center space-x-3 lg:space-x-4 flex-1 lg:flex-none">
             {/* Mobile Menu Trigger */}
             <div className="lg:hidden">
               <button className="p-2 -ml-2 text-slate-800 dark:text-white hover:bg-slate-100 rounded-full transition" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -119,7 +119,7 @@ export default function Header() {
             </div>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link href="/" className="flex items-center space-x-2 group">
               <img src="/favicon.png" alt="Bakalia News" className={`transition-all duration-300 object-contain ${isScrolled ? 'w-8 h-8' : 'w-9 h-9 md:w-10 md:h-10'}`} />
               <div className="flex flex-col justify-center">
                 <span className={`font-black text-red-600 tracking-tighter leading-none transition-all duration-300 whitespace-nowrap ${isScrolled ? 'text-xl' : 'text-2xl'}`}>
@@ -138,7 +138,7 @@ export default function Header() {
           </div>
 
           {/* RIGHT: Actions */}
-          <div className="flex items-center justify-end gap-1 flex-1 lg:flex-none">
+          <div className="flex items-center justify-end space-x-1 flex-1 lg:flex-none">
             <div className="relative" ref={searchRef}>
               <button onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition">
                 <Search size={20} />
@@ -159,7 +159,7 @@ export default function Header() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+            <div className="flex items-center space-x-2 border-l border-slate-200 pl-3">
               <button onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500">
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
@@ -171,7 +171,7 @@ export default function Header() {
         {/* 2. Navigation Bar (Centered & Scrollable) */}
         <div className="border-t border-slate-100 dark:border-slate-800 block">
           <div className="max-w-7xl mx-auto px-4">
-            <nav aria-label="Main Navigation" className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto md:overflow-hidden no-scrollbar md:gap-5 py-2">
+            <nav aria-label="Main Navigation" className="flex items-center justify-start md:justify-center overflow-x-auto md:overflow-hidden no-scrollbar py-2 space-x-2 md:space-x-5">
               <Link
                 href="/"
                 aria-label="Home"
@@ -184,7 +184,7 @@ export default function Header() {
               <Link
                 href="/newspapers"
                 aria-label="NewsPapers"
-                className="py-1 px-3 rounded text-xs md:text-sm font-black uppercase tracking-tight text-white transition shrink-0 flex items-center gap-1 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_auto] hover:bg-right duration-500 shadow-md shadow-red-500/30"
+                className="py-1 px-3 rounded text-xs md:text-sm font-black uppercase tracking-tight text-white transition shrink-0 flex items-center space-x-1 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_auto] hover:bg-right duration-500 shadow-md shadow-red-500/30"
               >
                 NewsPapers 📰
               </Link>
@@ -237,16 +237,16 @@ export default function Header() {
                     </Link>
                   ))}
                 </nav>
-                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-3">
+                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col space-y-3">
                   <Link href="/newspapers" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-2 bg-red-600 text-white font-bold rounded text-center block shadow-lg shadow-red-600/20">
                     NewsPapers 📰
                   </Link>
                   {deferredPrompt && (
-                    <button onClick={handleInstallClick} className="w-full py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold rounded text-center flex items-center justify-center gap-2">
+                    <button onClick={handleInstallClick} className="w-full py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold rounded text-center flex items-center justify-center space-x-2">
                       <Download size={18} /> Install App
                     </button>
                   )}
-                  <button onClick={toggleTheme} className="flex items-center gap-2 font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition p-2">
+                  <button onClick={toggleTheme} className="flex items-center space-x-2 font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition p-2">
                     {darkMode ? <><Sun size={18} /> Light Mode</> : <><Moon size={18} /> Dark Mode</>}
                   </button>
                 </div>

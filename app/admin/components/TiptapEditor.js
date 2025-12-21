@@ -1,5 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { TextStyle } from '@tiptap/extension-text-style';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Link from '@tiptap/extension-link';
@@ -85,6 +86,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
     const editor = useEditor({
         extensions: [
             StarterKit,
+            TextStyle,
             Image,
             Youtube.configure({
                 controls: true,
