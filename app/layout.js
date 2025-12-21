@@ -16,8 +16,25 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   metadataBase: new URL('https://bakalia.xyz'),
   alternates: { canonical: './' },
-  title: { template: '%s | বাকলিয়া নিউজ', default: 'বাকলিয়া নিউজ | সর্বশেষ বাংলা খবর ও ব্রেকিং নিউজ আপডেট' },
-  description: "বাংলাদেশ ও বিশ্বের সর্বশেষ বাংলা খবর, রাজনীতি, খেলাধুলা, বিনোদন ও লাইভ আপডেট পড়ুন বাকলিয়া নিউজে। সত্য ও বস্তুনিষ্ঠ সংবাদের বিশ্বস্ত অনলাইন ঠিকানা।",
+  title: {
+    template: '%s | বাকলিয়া নিউজ | BD All Newspaper',
+    default: 'All Bangla Newspaper | বাকলিয়া নিউজ | BD News & Breaking Headlines'
+  },
+  description: "Read the latest BD News and All Bangla Newspaper updates. বাকলিয়া নিউজ provides 24/7 coverage of politics, sports, and entertainment from the top Bangladesh newspaper list.",
+  keywords: [
+    "Bangla Newspaper",
+    "BD News",
+    "All Bangla Newspaper",
+    "Bangladesh Newspaper",
+    "Online Bangla Newspaper",
+    "BD All Newspaper",
+    "Newspaper List",
+    "Bangla News 24",
+    "Daily Bangla Newspaper",
+    "Breaking News BD",
+    "বাকলিয়া নিউজ",
+    "খবর"
+  ],
   verification: { google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk" },
   manifest: '/manifest.json',
   icons: {
@@ -37,7 +54,9 @@ export const metadata = {
     type: 'website',
     locale: 'bn_BD',
     url: 'https://bakalia.xyz',
-    siteName: 'বাকলিয়া নিউজ'
+    siteName: 'বাকলিয়া নিউজ',
+    title: 'All Bangla Newspaper | বাকলিয়া নিউজ | BD News',
+    description: "Your trusted source for All Bangla Newspaper and latest BD News. Live updates on politics, sports, and more."
   },
   robots: {
     index: true,

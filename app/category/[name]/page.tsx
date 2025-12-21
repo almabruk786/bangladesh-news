@@ -87,15 +87,71 @@ async function getCategoryNews(categoryName: string) {
   }
 }
 
+const SEO_DATA: Record<string, { title: string; description: string; keywords: string[] }> = {
+  "Politics": {
+    title: "Bangladesh Politics News | Election 2026, BNP, Awami League Updates",
+    description: "Latest Bangladesh politics news: Analysis on Election 2026, Interim Government, BNP, and Awami League. Read in-depth political reports and breaking updates.",
+    keywords: ["Bangladesh Politics", "Election 2026", "BNP", "Awami League", "Sheikh Hasina", "Interim Government", "Political News BD"]
+  },
+  "Sports": {
+    title: "Bangladesh Sports News | Cricket, Football & BPL Live Scores",
+    description: "Get the latest Bangladesh sports news. Live cricket scores, BPL updates, Tigers cricket team news, and Football headlines. Exclusive match reports.",
+    keywords: ["Bangladesh Cricket", "BPL 2025", "Tigers Cricket", "Shakib Al Hasan", "Bangladesh Football", "Sports News BD", "Live Cricket Score"]
+  },
+  "International": {
+    title: "World News Today | Global Politics, Middle East & International Affairs",
+    description: "Stay updated with World News. Comprehensive coverage of global politics, Middle East crisis, US elections, and international relations impacting Bangladesh.",
+    keywords: ["World News", "International News", "Global Politics", "Middle East Crisis", "US Politics", "Foreign Affairs", "World Updates"]
+  },
+  "Entertainment": {
+    title: "Dhallywood Entertainment News | Shakib Khan, Cinema & Drama Updates",
+    description: "Latest Dhallywood and Bangla entertainment news. Updates on Shakib Khan, Pori Moni, new Bangla cinema releases, and trending TV dramas.",
+    keywords: ["Dhallywood News", "Bangla Cinema", "Shakib Khan", "Pori Moni", "Bangla Natok", "Entertainment News BD", "Celebrity Gossip"]
+  },
+  "Business": {
+    title: "Bangladesh Business News | Economy, Remittance & Share Market",
+    description: "Breaking Bangladesh business and economy news. Updates on Stock Market, Remittance, RMG sector, Inflation, and Banking sector analysis.",
+    keywords: ["Bangladesh Economy", "Business News BD", "Remittance", "RMG Sector", "Dhaka Stock Exchange", "Inflation BD", "Banking News"]
+  },
+  "Technology": {
+    title: "Tech News Bangladesh | Digital BD, Startups & Freelancing",
+    description: "Latest Technology news from Bangladesh. Updates on Digital Bangladesh, Freelancing tips, Startups, and Gadget reviews.",
+    keywords: ["Tech News BD", "Digital Bangladesh", "Freelancing BD", "Startup News", "Bangla Tech", "Gadget Review"]
+  },
+  "Lifestyle": {
+    title: "Lifestyle News Bangladesh | Health, Fashion & Travel Tips",
+    description: "Discover the best Lifestyle tips. Health advice, Fashion trends in Bangladesh, Travel guides, and Food recipes.",
+    keywords: ["Lifestyle BD", "Health Tips Bangla", "Fashion BD", "Travel Bangladesh", "Food Recipes", "Wellness"]
+  }
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ name: string }> }) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
+
+  // Normalize category name for lookup (First letter uppercase)
+  const normalizedName = decodedName.charAt(0).toUpperCase() + decodedName.slice(1).toLowerCase();
+
+  const seoInfo = SEO_DATA[normalizedName] || {
+    title: `${decodedName} News Bangladesh | Latest Updates & Headlines`,
+    description: `Read the latest ${decodedName} news from Bangladesh. Breaking headlines, in-depth analysis, and updates on ${decodedName} topics. Trusted source.`,
+    keywords: [`${decodedName} News`, "Bangladesh News", "Latest Updates", "Bakalia News"]
+  };
+
   return {
-    title: `${decodedName} খবর - সর্বশেষ আপডেট | বাকলিয়া নিউজ`,
-    description: `${decodedName} সংক্রান্ত সর্বশেষ খবর, ছবি ও ভিডিও পড়ুন বাকলিয়া নিউজে। সত্য ও বস্তুনিষ্ঠ সংবাদের বিশ্বস্ত অনলাইন ঠিকানা।`,
+    title: `${seoInfo.title} | Bakalia News`,
+    description: seoInfo.description,
+    keywords: seoInfo.keywords,
     openGraph: {
-      title: `${decodedName} খবর - বাকলিয়া নিউজ`,
-      description: `${decodedName} সংক্রান্ত সর্বশেষ আপডেট।`,
+      title: `${seoInfo.title} | Bakalia News`,
+      description: seoInfo.description,
+      type: 'website',
+      siteName: 'Bakalia News'
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${seoInfo.title} | Bakalia News`,
+      description: seoInfo.description,
     }
   };
 }

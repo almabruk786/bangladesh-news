@@ -65,6 +65,7 @@ export const generateOrganizationSchema = () => {
         '@context': 'https://schema.org',
         '@type': 'NewsMediaOrganization',
         'name': PUBLISHER_NAME,
+        'alternateName': ['Bangla Newspaper', 'BD News', 'All Bangla Newspaper', 'Bakalia News'],
         'url': BASE_URL,
         'logo': {
             '@type': 'ImageObject',
