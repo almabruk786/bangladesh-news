@@ -12,6 +12,8 @@ import { generateOrganizationSchema } from "./lib/schemas";
 import { Inter, Frank_Ruhl_Libre, Noto_Serif_Bengali } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
+const frankRuhlLibre = Frank_Ruhl_Libre({ subsets: ["latin"], variable: "--font-frank" });
+const notoserifBengali = Noto_Serif_Bengali({ subsets: ["bengali"], variable: "--font-bengali" });
 
 export const metadata = {
   metadataBase: new URL('https://bakalia.xyz'),
@@ -73,8 +75,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable}`}>
-      <body className={`${inter.className} flex flex-col min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${frankRuhlLibre.variable} ${notoserifBengali.variable}`}>
+      <body className={`${inter.className} font-sans flex flex-col min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300`}>
         <script
           dangerouslySetInnerHTML={{
             __html: `
