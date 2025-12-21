@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye, Wand2 } from "lucide-react";
+import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye, Wand2, BarChart3 } from "lucide-react";
 import { addDoc, collection, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import TiptapEditor from "./TiptapEditor";
 import LiveBlogConsole from "./LiveBlogConsole";
 import ImageConverter from "./ImageConverter"; // Import the tool
+import SeoSidebar from "./SeoSidebar"; // Import SEO Sidebar
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
@@ -20,6 +21,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     const [generatingTags, setGeneratingTags] = useState(false);
     const [categories, setCategories] = useState(["বাংলাদেশ", "রাজনীতি", "আন্তর্জাতিক", "খেলা", "মতামত", "বাণিজ্য", "বিনোদন", "জীবনযাপন", "প্রযুক্তি", "স্বাস্থ্য", "শিক্ষা", "জাতীয়"]);
     const [showImageTool, setShowImageTool] = useState(false); // State for modal
+    const [showSeo, setShowSeo] = useState(false); // State for SEO sidebar
 
     const autoSaveTimerRef = useRef(null);
 
@@ -316,6 +318,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     return (
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden max-w-4xl mx-auto relative">
 
+
             {/* Modal for Image Tool */}
             {showImageTool && (
                 <ImageConverter
@@ -326,6 +329,13 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     }}
                 />
             )}
+
+            {/* SEO Sidebar */}
+            <SeoSidebar
+                form={form}
+                visible={showSeo}
+                onClose={() => setShowSeo(false)}
+            />
 
             {/* Header */}
             <div className="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
@@ -340,6 +350,15 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                         <ArrowLeft size={16} /> Back
                     </button>
                 )}
+
+                {/* SEO Toggle */}
+                <button
+                    type="button"
+                    onClick={() => setShowSeo(!showSeo)}
+                    className={`ml-auto mr-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${showSeo ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                >
+                    <BarChart3 size={14} /> SEO Check
+                </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
