@@ -51,7 +51,7 @@ export default function NewspapersList({ initialPapers = [] }) {
                     {ePapers.length > 0 && (
                         <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-4 md:p-6 border border-slate-100 dark:border-slate-800 h-full">
                             <div className="mb-6 border-l-4 border-blue-600 pl-4">
-                                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase">
                                     E-Newspaper (E-Paper)
                                 </h2>
                                 <p className="text-slate-500 text-xs mt-1">
@@ -66,7 +66,7 @@ export default function NewspapersList({ initialPapers = [] }) {
                     {onlinePapers.length > 0 && (
                         <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-4 md:p-6 border border-slate-100 dark:border-slate-800 h-full">
                             <div className="mb-6 border-l-4 border-green-600 pl-4">
-                                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase">
                                     Online Newspaper
                                 </h2>
                                 <p className="text-slate-500 text-xs mt-1">
