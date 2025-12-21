@@ -37,7 +37,12 @@ export const metadata = {
     "বাকলিয়া নিউজ",
     "খবর"
   ],
-  verification: { google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk" },
+  verification: {
+    google: "fSzBPa1r8RzGTT3hcA5DFQYPiODOYlJ-rmGPOY_8qZk",
+    other: {
+      "fb:pages": "914852471714207"
+    }
+  },
   manifest: '/manifest.json',
   icons: {
     icon: '/bn-icon.png',

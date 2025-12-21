@@ -74,8 +74,8 @@ export const generateOrganizationSchema = () => {
             'height': 512
         },
         'sameAs': [
-            'https://www.facebook.com/bakalia.xyz',
-            'https://twitter.com/bakalianews'
+            'https://www.facebook.com/profile.php?id=914852471714207',
+            // 'https://twitter.com/bakalianews'
         ],
         'contactPoint': {
             '@type': 'ContactPoint',
