@@ -184,9 +184,9 @@ export default function Header() {
               <Link
                 href="/newspapers"
                 aria-label="NewsPapers"
-                className="py-1 px-3 rounded text-xs md:text-sm font-black uppercase tracking-tight text-white transition shrink-0 flex items-center space-x-1 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_auto] hover:bg-right duration-500 shadow-md shadow-red-500/30"
+                className="py-1 px-3 rounded text-xs md:text-sm font-bold uppercase text-white transition shrink-0 flex items-center space-x-1 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_auto] hover:bg-right duration-500 shadow-md shadow-red-500/30"
               >
-                NewsPapers 📰
+                <span>NewsPapers</span> <span>📰</span>
               </Link>
 
               {categories.map((cat) => (

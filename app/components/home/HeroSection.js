@@ -15,10 +15,10 @@ export default function HeroSection({ heroNews, sideNews }) {
 
                     {/* MOBILE LAYOUT: Immersive (TikTok/Insta Style) */}
                     <div className="md:hidden block">
-                        <Link href={`/news/${heroNews.id}`} className="relative block w-full aspect-video rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform">
+                        <Link href={`/news/${heroNews.id}`} className="relative block w-full h-0 pb-[56.25%] rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform">
                             {/* Full Image */}
                             <Image
-                                src={heroNews.imageUrl || heroNews.imageUrls?.[0] || '/placeholder.png'}
+                                src={heroNews.imageUrl || (heroNews.imageUrls && heroNews.imageUrls[0]) || '/placeholder.png'}
                                 alt={heroNews.title}
                                 fill
                                 priority
@@ -42,8 +42,8 @@ export default function HeroSection({ heroNews, sideNews }) {
                             <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/60 to-transparent z-10"></div>
 
                             {/* Text Content Overlay */}
-                            <div className="absolute bottom-0 left-0 right-0 p-4 z-20 text-white flex flex-col gap-1">
-                                <div className="flex items-center gap-2 text-slate-300 text-[10px] font-medium">
+                            <div className="absolute bottom-0 left-0 right-0 p-4 z-20 text-white flex flex-col space-y-1">
+                                <div className="flex items-center space-x-2 text-slate-300 text-[10px] font-medium">
                                     <Clock size={10} /> {getBanglaRelativeTime(heroNews.publishedAt)}
                                 </div>
                                 <h1 className="text-xl font-black leading-tight text-white mb-1 shadow-black drop-shadow-md">
@@ -61,9 +61,9 @@ export default function HeroSection({ heroNews, sideNews }) {
                     <div className="hidden md:flex flex-col gap-3 h-full">
                         {/* 1. Headline at Top */}
                         <div>
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center space-x-2 mb-2">
                                 <span className="bg-red-600 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-sm">Top Story</span>
-                                <span className="text-slate-400 text-xs font-semibold flex items-center gap-1">
+                                <span className="text-slate-400 text-xs font-semibold flex items-center space-x-1">
                                     <Clock size={12} /> {new Date(heroNews.publishedAt).toLocaleDateString()}
                                 </span>
                             </div>
@@ -76,9 +76,9 @@ export default function HeroSection({ heroNews, sideNews }) {
 
                         {/* 2. Split: Image (Left) + Excerpt (Right) */}
                         <div className="grid md:grid-cols-12 gap-6 items-start">
-                            <Link href={`/news/${heroNews.id}`} className="md:col-span-7 relative overflow-hidden rounded-xl aspect-video bg-slate-100 shadow-sm block">
+                            <Link href={`/news/${heroNews.id}`} className="md:col-span-7 relative overflow-hidden rounded-xl h-0 pb-[56.25%] bg-slate-100 shadow-sm block">
                                 <Image
-                                    src={heroNews.imageUrl || heroNews.imageUrls?.[0] || '/placeholder.png'}
+                                    src={heroNews.imageUrl || (heroNews.imageUrls && heroNews.imageUrls[0]) || '/placeholder.png'}
                                     alt={heroNews.title}
                                     fill
                                     priority
@@ -116,10 +116,10 @@ export default function HeroSection({ heroNews, sideNews }) {
 
                     <div className="flex flex-col gap-4 md:gap-3">
                         {sideNews.slice(0, 5).map((item) => (
-                            <Link key={item.id} href={`/news/${item.id}`} className="group flex gap-3 items-start active:scale-[0.99] transition-transform">
+                            <Link key={item.id} href={`/news/${item.id}`} className="group flex space-x-3 items-start active:scale-[0.99] transition-transform">
                                 <div className="w-24 md:w-16 h-16 md:h-12 bg-slate-100 overflow-hidden rounded-lg md:rounded shrink-0 border border-slate-100 relative">
                                     <Image
-                                        src={item.imageUrl || item.imageUrls?.[0] || '/placeholder.png'}
+                                        src={item.imageUrl || (item.imageUrls && item.imageUrls[0]) || '/placeholder.png'}
                                         alt={item.title}
                                         fill
                                         sizes="64px"
