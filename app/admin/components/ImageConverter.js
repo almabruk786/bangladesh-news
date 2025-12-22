@@ -200,7 +200,7 @@ const ImageConverter = ({ onClose, onProcessed }) => {
 
         img.onerror = () => {
             setIsProcessing(false);
-            setError('Unable to load image (CORS). Please download and upload it manually.');
+            setError('Unable to load image. The website hosting this image may restrict access (CORS). Please save the image to your computer and upload it instead.');
         };
     };
 
@@ -292,6 +292,14 @@ const ImageConverter = ({ onClose, onProcessed }) => {
                     {/* LEFT: Controls */}
                     <div className="lg:col-span-4 space-y-4">
 
+                        {/* ERROR ALERT */}
+                        {error && (
+                            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm flex items-start gap-3 border border-red-100 animate-in slide-in-from-top-2">
+                                <AlertCircle className="shrink-0 mt-0.5" size={18} />
+                                <div>{error}</div>
+                            </div>
+                        )}
+
                         {/* 1. UPLOAD */}
                         {!previewUrl && (
                             <div className="bg-white p-6 rounded-2xl border border-dashed border-indigo-200 text-center hover:bg-indigo-50 transition-colors cursor-pointer relative">
@@ -301,14 +309,25 @@ const ImageConverter = ({ onClose, onProcessed }) => {
                                 </div>
                                 <h3 className="font-semibold text-indigo-900">Upload Image</h3>
                                 <p className="text-xs text-indigo-500 mt-1">or paste URL below</p>
-                                <form onSubmit={handleUrlSubmit} className="mt-4 relative z-20">
-                                    <input
-                                        value={urlInput}
-                                        onChange={e => setUrlInput(e.target.value)}
-                                        placeholder="https://..."
-                                        className="w-full text-xs p-2 border rounded"
+                                <form onSubmit={handleUrlSubmit} className="mt-4 relative z-20 flex items-center gap-2">
+                                    <div className="relative flex-1">
+                                        <input
+                                            value={urlInput}
+                                            onChange={e => setUrlInput(e.target.value)}
+                                            placeholder="https://..."
+                                            className="w-full text-xs p-2 pr-8 border rounded outline-none focus:border-indigo-500"
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={!urlInput}
+                                        className="p-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        title="Load Image"
                                         onClick={e => e.stopPropagation()}
-                                    />
+                                    >
+                                        <ArrowRight size={14} />
+                                    </button>
                                 </form>
                             </div>
                         )}
