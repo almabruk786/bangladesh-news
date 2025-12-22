@@ -1,23 +1,22 @@
 "use client";
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, Moon, Sun, Search, User, X, Facebook, Twitter, Youtube, Menu as MenuIcon, Download } from 'lucide-react';
+import { Moon, Sun, Search, X, Menu as MenuIcon, Download } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { usePathname, useRouter } from 'next/navigation';
 
-
 export default function Header() {
-  const { darkMode, toggleTheme, lang, toggleLang } = useTheme();
+  const { darkMode, toggleTheme, lang } = useTheme();
   const pathname = usePathname();
   const [currentDate, setCurrentDate] = useState("");
   const [currentIso, setCurrentIso] = useState("");
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const router = useRouter();
   const searchRef = useRef(null);
 
+  // Close search on click outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -30,6 +29,7 @@ export default function Header() {
     };
   }, []);
 
+  // PWA Install Prompt
   useEffect(() => {
     const handleInstallPrompt = (e) => {
       e.preventDefault();
@@ -58,34 +58,21 @@ export default function Header() {
     }
   };
 
-
   // Hide Header on Admin Dashboard
   if (pathname && pathname.startsWith("/admin")) return null;
 
+  // Set Date Only (Run once on mount)
   useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' };
-      const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'Asia/Dhaka' };
+    const now = new Date();
+    const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' };
 
-      const dateStr = now.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', dateOptions);
-      const timeStr = now.toLocaleTimeString(lang === 'bn' ? 'bn-BD' : 'en-US', timeOptions);
+    // Format: "Monday, 1 January, 2024" (No Time)
+    // Format: "Monday, 1 January, 2024" (No Time)
+    const dateStr = now.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', dateOptions);
 
-      setCurrentDate(`${dateStr} | ${timeStr}`);
-      setCurrentIso(now.toISOString());
-    }, 1000);
-    return () => clearInterval(timer);
+    setCurrentDate(dateStr);
+    setCurrentIso(now.toISOString());
   }, [lang]);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 120);
-
-    // Initial check
-    handleScroll();
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const categories = [
     { name: "National", bn: "জাতীয়", link: "/category/National" },
@@ -104,36 +91,37 @@ export default function Header() {
 
   return (
     <>
-      <header className={`bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-sans sticky top-0 z-50 transition-all duration-300 shadow-sm`}>
+      <header className={`bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-sans sticky top-0 z-50 shadow-sm`}>
 
         {/* 1. Main Header Area (Logo + Utilities) */}
-        <div className={`transition-all duration-300 ${isScrolled ? 'py-2' : 'py-3'} max-w-7xl mx-auto px-4 flex justify-between items-center relative`}>
+        <div className="py-3 max-w-7xl mx-auto px-4 flex justify-between items-center relative">
 
           {/* LEFT: Logo & Menu */}
           <div className="flex items-center space-x-3 lg:space-x-4 flex-1 lg:flex-none">
             {/* Mobile Menu Trigger */}
             <div className="lg:hidden">
-              <button type="button" className="p-2 -ml-2 text-slate-800 dark:text-white hover:bg-slate-100 rounded-full transition cursor-pointer" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <button type="button" aria-label="Open Main Menu" className="p-2 -ml-2 text-slate-800 dark:text-white hover:bg-slate-100 rounded-full transition cursor-pointer" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                 <MenuIcon size={24} />
               </button>
             </div>
 
-            {/* Logo */}
+            {/* Logo - Fixed Size */}
             <Link href="/" className="flex items-center space-x-2 group">
-              <img src="/favicon.png" alt="Bakalia News" className={`transition-all duration-300 object-contain ${isScrolled ? 'w-8 h-8' : 'w-9 h-9 md:w-10 md:h-10'}`} />
+              <img src="/favicon.png" alt="Bakalia News" className="transition-all duration-300 object-contain w-9 h-9 md:w-10 md:h-10" />
               <div className="flex flex-col justify-center">
-                <span className={`font-black text-red-600 tracking-tighter leading-none transition-all duration-300 whitespace-nowrap ${isScrolled ? 'text-xl' : 'text-2xl'}`}>
+                <span className="font-black text-red-600 tracking-tighter leading-none whitespace-nowrap text-2xl">
                   Bakalia
                 </span>
-                <span className={`font-bold text-slate-700 dark:text-slate-300 text-[10px] tracking-widest uppercase leading-none -mt-0.5 ${isScrolled ? 'hidden' : 'block'}`}>
+                <span className="font-bold text-slate-700 dark:text-slate-300 text-[10px] tracking-widest uppercase leading-none -mt-0.5 block">
                   News
                 </span>
               </div>
             </Link>
           </div>
 
-          {/* CENTER (LG): Date */}
+          {/* CENTER (LG): Date Only (Static) */}
           <div className="hidden lg:flex flex-col text-xs text-slate-600 font-bold text-center absolute left-1/2 transform -translate-x-1/2 min-w-[250px]">
+            {/* dateTime helps search engines understand readability */}
             <time dateTime={currentIso}>{currentDate}</time>
           </div>
 
@@ -163,12 +151,11 @@ export default function Header() {
               <button type="button" onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500 cursor-pointer">
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-              {/* Install App button removed as per user request (redundant with sidebar) */}
             </div>
           </div>
         </div>
 
-        {/* 2. Navigation Bar (Centered & Scrollable) */}
+        {/* 2. Navigation Bar (Scrollable) */}
         <div className="border-t border-slate-100 dark:border-slate-800 block">
           <div className="max-w-7xl mx-auto px-4">
             <nav aria-label="Main Navigation" className="flex items-center justify-start md:justify-center overflow-x-auto md:overflow-hidden no-scrollbar py-2 space-x-2 md:space-x-5">
@@ -180,7 +167,7 @@ export default function Header() {
                 {lang === 'bn' ? 'সর্বশেষ' : 'Home'}
               </Link>
 
-              {/* GLOWING E-PAPER BUTTON (DAZZLING) */}
+              {/* E-PAPER BUTTON */}
               <Link
                 href="/newspapers"
                 aria-label="NewsPapers"
@@ -204,7 +191,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Drawer - Moved outside Header to avoid stacking context issues due to backdrop-blur */}
+      {/* Mobile Drawer */}
       {
         isMobileMenuOpen && (
           <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>

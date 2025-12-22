@@ -1,6 +1,7 @@
 
 "use client";
 
+import Image from "next/image"; // Optimization: next/image
 import { generateBreadcrumbSchema } from "../../lib/schemas";
 import { parseNewsContent, stripHtml, getBanglaRelativeTime } from "../../lib/utils";
 import { Clock } from "lucide-react";
@@ -35,7 +36,13 @@ export default function CategoryClient({ name, initialNews }: { name: string, in
                         <a href={`/news/${item.id}`} key={item.id} className="block group bg-white dark:bg-slate-900 dark:border-slate-800 border border-slate-100 p-4 rounded-xl hover:shadow-lg transition">
                             <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden mb-3 relative">
                                 {item.imageUrl ? (
-                                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                                    <Image
+                                        src={item.imageUrl}
+                                        alt={item.title}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        className="object-cover group-hover:scale-105 transition duration-500"
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-slate-300">No Image</div>
                                 )}
