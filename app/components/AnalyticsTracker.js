@@ -15,6 +15,14 @@ export default function AnalyticsTracker() {
             try {
                 // 1. Basic Info
                 const userAgent = navigator.userAgent;
+
+                // 0. Filter Bots (Crowlers)
+                const isBot = /bot|googlebot|crawler|spider|robot|crawling|facebookexternalhit/i.test(userAgent);
+                if (isBot) {
+                    console.log("Analytics: Bot detected, ignoring.");
+                    return;
+                }
+
                 const platform = navigator.platform;
                 const timestamp = serverTimestamp();
 
