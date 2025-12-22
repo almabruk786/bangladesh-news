@@ -143,21 +143,11 @@ export default function ArticleContent({ article, relatedNews }) {
 
                             <NewsSlider images={imageList} title={article.title} />
 
-                            {/* --- High-Performance Manual Ad Unit (CLS Protected) --- */}
-                            <div className="my-6 min-h-[280px] bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                <span className="text-xs text-slate-400">Advertisement</span>
-                                {/* 
-                                   TODO: Replace data-ad-slot="YOUR_SLOT_ID" with your actual Ad unit ID from AdSense.
-                                   This unit is placed for High RPM (Below Image).
-                                */}
-                                <ins className="adsbygoogle"
-                                    style={{ display: 'block', textAlign: 'center' }}
-                                    data-ad-layout="in-article"
-                                    data-ad-format="fluid"
-                                    data-ad-client="ca-pub-2257905734584691"
-                                    data-ad-slot="YOUR_SLOT_ID_HERE"></ins>
-                                <script dangerouslySetInnerHTML={{ __html: '(adsbygoogle = window.adsbygoogle || []).push({});' }}></script>
-                            </div>
+                            {/* --- High-Performance Manual Ad Unit (CLS Protected) - REMOVED for Auto Ads --- */}
+                            {/* 
+                               Manual ad unit removed as Auto Ads are enabled and the slot ID was missing.
+                               To re-enable, add a valid slot ID or use the GoogleAd component.
+                            */}
                             {/* ------------------------------------------------------- */}
 
                             {/* Main Image Caption */}
