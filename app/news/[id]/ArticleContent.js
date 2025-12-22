@@ -95,7 +95,7 @@ export default function ArticleContent({ article, relatedNews }) {
 
                     <div className="lg:col-span-2">
                         <article className="bg-white dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100 transition-colors duration-300">
-                            <div className="flex items-center space-x-4 mb-4 text-sm">
+                            <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4 text-sm">
                                 {(() => {
                                     const translateCategory = (cat) => {
                                         const map = {
