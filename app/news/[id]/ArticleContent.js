@@ -280,10 +280,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                     </Link>
                                 ))}
                             </div>
-                            <div className="mt-8">
-                                <span className="text-xs text-slate-400 uppercase tracking-widest block text-center mb-1">Advertisement</span>
-                                {/* Manual Ad Removed - Auto Ads Active */}
-                            </div>
+
                         </div>
                     </div>
                 </div>

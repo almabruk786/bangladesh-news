@@ -138,10 +138,7 @@ export default function HeroSection({ heroNews, sideNews }) {
                         ))}
                     </div>
 
-                    {/* Advertisement Placeholder */}
-                    <div className="mt-4 p-2 bg-slate-50 border border-dashed border-slate-200 rounded text-center text-[10px] text-slate-400">
-                        Advertisement Space
-                    </div>
+
                 </div>
             </div>
         </section>
