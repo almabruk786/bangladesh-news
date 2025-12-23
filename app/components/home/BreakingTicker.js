@@ -3,19 +3,14 @@ import Link from "next/link";
 import { Zap } from "lucide-react";
 
 export default function BreakingTicker({ news }) {
-    // SEO FIX: Strictly filter for news from the last 24 hours
-    const recentNews = news?.filter(item => {
-        if (!item.publishedAt) return false;
-        const pubDate = new Date(item.publishedAt);
-        const twentyFourHoursAgo = new Date();
-        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-        return pubDate > twentyFourHoursAgo;
-    }) || [];
+    const recentNews = news || [];
 
+    // Use a mounted check to ensure client/server consistency if needed, 
+    // but simply checking the prop length should be deterministic if props are deterministic.
     if (recentNews.length === 0) return null;
 
     return (
-        <div className="bg-slate-900 border-b border-slate-800 text-white relative z-30">
+        <div className="bg-slate-900 border-b border-slate-800 text-white relative z-30" suppressHydrationWarning>
             <div className="container-custom flex items-center h-10">
                 <div className="bg-red-600 h-full flex items-center px-4 font-bold text-xs uppercase tracking-wider shrink-0 gap-2 relative z-10">
                     <Zap size={14} className="animate-pulse" /> Breaking
@@ -42,19 +37,7 @@ export default function BreakingTicker({ news }) {
                 </div>
             </div>
 
-            {/* Marquee Animation CSS added via style jsx or globals normally, ensuring inline here for portability */}
-            <style jsx>{`
-        .animate-marquee {
-          animation: marquee 40s linear infinite;
-        }
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
+
         </div>
     );
 }

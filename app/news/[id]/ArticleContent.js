@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Clock, User, TrendingUp, Copy, Share2 } from 'lucide-react';
 import NewsSlider from '../../components/NewsSlider'; // Corrected path
-import LiveBlogFeed from '../../components/LiveBlogFeed'; // Live Blog Component
 import CommentSection from '../../components/comments/CommentSection'; // Comment Component
+import GoogleAd from '../../components/GoogleAd'; // Manual Ad Unit
 import { parseNewsContent, stripHtml } from '../../lib/utils';
 import FollowButtons from '../../components/FollowButtons';
 
@@ -73,14 +73,7 @@ export default function ArticleContent({ article, relatedNews }) {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300">
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-            />
+
             <main className="max-w-6xl mx-auto px-4 py-8">
 
                 <nav className="flex items-center text-sm font-medium text-slate-500 mb-6 flex-wrap gap-2">
@@ -143,11 +136,10 @@ export default function ArticleContent({ article, relatedNews }) {
 
                             <NewsSlider images={imageList} title={article.title} />
 
-                            {/* --- High-Performance Manual Ad Unit (CLS Protected) - REMOVED for Auto Ads --- */}
-                            {/* 
-                               Manual ad unit removed as Auto Ads are enabled and the slot ID was missing.
-                               To re-enable, add a valid slot ID or use the GoogleAd component.
-                            */}
+                            {/* --- Manual Ad Unit (Disabled: AdSense Getting Ready) --- */}
+                            {/* <div className="my-8">
+                                <GoogleAd slotId="3652013893" format="auto" responsive="true" />
+                            </div> */}
                             {/* ------------------------------------------------------- */}
 
                             {/* Main Image Caption */}
@@ -164,13 +156,6 @@ export default function ArticleContent({ article, relatedNews }) {
                             <div className="my-6">
                                 <ShareButtons title={article.title} />
                             </div>
-
-                            {/* Live Blog Feed Integration */}
-                            {article.isLive && (
-                                <div className="my-8">
-                                    <LiveBlogFeed articleId={article.id} />
-                                </div>
-                            )}
 
                             <div className="prose prose-slate dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed text-justify text-base md:text-lg">
                                 {(() => {

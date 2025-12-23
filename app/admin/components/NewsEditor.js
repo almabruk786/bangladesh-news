@@ -3,13 +3,12 @@ import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshC
 import { addDoc, collection, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import TiptapEditor from "./TiptapEditor";
-import LiveBlogConsole from "./LiveBlogConsole";
 import ImageConverter from "./ImageConverter"; // Import the tool
 import SeoSidebar from "./SeoSidebar"; // Import SEO Sidebar
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
-        title: "", content: "", imageUrls: [], category: "বাংলাদেশ", categories: ["বাংলাদেশ"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", isLive: false, authorName: "", imageCaption: ""
+        title: "", content: "", imageUrls: [], category: "বাংলাদেশ", categories: ["বাংলাদেশ"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", authorName: "", imageCaption: ""
     });
     const [tagInput, setTagInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -338,7 +337,6 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 ogImage: form.ogImage, // Include OG Image
                 videoUrl: form.videoUrl, // Include Video URL
                 metaDescription: form.metaDescription, // Manual SEO Description
-                isLive: form.isLive, // Live Blog Status
                 categories: form.categories, // Array of categories
                 category: form.categories[0] || form.category, // Primary category
                 imageCaption: form.imageCaption // Main Image Caption
@@ -535,37 +533,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     </div>
                 </div>
 
-                {/* Live Blog Toggle */}
-                <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-center justify-between">
-                    <div>
-                        <h3 className="font-bold text-red-700 flex items-center gap-2">
-                            <span className="relative flex h-3 w-3">
-                                {form.isLive && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>}
-                                <span className={`relative inline-flex rounded-full h-3 w-3 ${form.isLive ? 'bg-red-500' : 'bg-slate-400'}`}></span>
-                            </span>
-                            Live Blog Mode
-                        </h3>
-                        <p className="text-xs text-red-600 mt-1">Enable for real-time coverage (Sports, Election, Breaking News).</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={form.isLive}
-                            onChange={(e) => setForm(p => ({ ...p, isLive: e.target.checked }))}
-                        />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-                    </label>
-                </div>
 
-                {/* Live Blog Console (Only if Saved & Live) */}
-                {
-                    form.isLive && docId && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <LiveBlogConsole articleId={docId} user={user} />
-                        </div>
-                    )
-                }
 
                 {/* Tags Section */}
                 <div className="space-y-2">

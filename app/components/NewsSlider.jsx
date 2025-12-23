@@ -43,22 +43,17 @@ export default function NewsSlider({ images, title }) {
   return (
     <div className="relative w-full h-0 pb-[56.25%] bg-slate-100 rounded-xl overflow-hidden shadow-lg border border-slate-100 group">
       {/* ছবি */}
-      {images.map((img, index) => (
-        <div
-          key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
-        >
-          <Image
-            src={img}
-            alt={`${title} - image ${index + 1}`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
-            priority={index === 0}
-          />
-        </div>
-      ))}
+      {/* ছবি (Only render active image for performance) */}
+      <div className="absolute inset-0 z-10">
+        <Image
+          src={images[currentIndex]}
+          alt={`${title} - image ${currentIndex + 1}`}
+          fill
+          className="object-cover transition-opacity duration-300"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
+          priority={true}
+        />
+      </div>
 
       {/* নেভিগেশন বাটন (অপশনাল) */}
       <button

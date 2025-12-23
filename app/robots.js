@@ -7,6 +7,6 @@ export default function robots() {
         disallow: ['/admin/', '/api/', '/private/'],
       },
     ],
-    sitemap: 'https://bakalia.xyz/sitemap.xml',
+    sitemap: 'https://bakalia.xyz/sitemap-index.xml',
   }
 }

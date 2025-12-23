@@ -32,7 +32,7 @@ export const generateNewsArticleSchema = (article) => {
                 'url': PUBLISHER_LOGO
             }
         },
-        'description': article.content ? article.content.substring(0, 160).replace(/<[^>]*>?/gm, "") : "",
+        'description': article.metaDescription || (article.content ? article.content.substring(0, 160).replace(/<[^>]*>?/gm, "") : ""),
         'mainEntityOfPage': {
             '@type': 'WebPage',
             '@id': url
