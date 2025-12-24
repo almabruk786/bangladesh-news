@@ -12,7 +12,7 @@ import LatestSidebar from './components/home/LatestSidebar';
 import AdPopup from './components/AdPopup';
 
 // Force revalidation every 5 minutes (300 seconds)
-export const revalidate = 300;
+export const revalidate = 60;
 
 export default async function Home() {
   // 1. Fetch Data on Server

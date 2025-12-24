@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { db } from "../lib/firebase";
-import { collection, query, where, getDocs, orderBy, limit, onSnapshot, updateDoc, doc, arrayUnion } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, limit, onSnapshot, updateDoc, doc, arrayUnion, getCountFromServer } from "firebase/firestore";
 import { Menu, Bell, X } from "lucide-react";
 
 // New Components
@@ -170,22 +170,44 @@ export default function AdminDashboard() {
     if (!user) return;
     try {
       let q;
-      // Fetch stats (simplified for now)
-      // Fetch stats (simplified for now)
-      let statsQ = collection(db, "articles");
+      // Optimized Stats Fetching using Aggregation (Prevent full DB download)
+      const coll = collection(db, "articles");
+      let total = 0, published = 0, pending = 0;
+
       if (user.role === "publisher") {
-        statsQ = query(collection(db, "articles"), where("authorName", "==", user.name));
+        const totalQ = query(coll, where("authorName", "==", user.name));
+        const pubQ = query(coll, where("authorName", "==", user.name), where("status", "==", "published"));
+        const penQ = query(coll, where("authorName", "==", user.name), where("status", "==", "pending"));
+
+        const [tSnap, pSnap, penSnap] = await Promise.all([
+          getCountFromServer(totalQ),
+          getCountFromServer(pubQ),
+          getCountFromServer(penQ)
+        ]);
+        total = tSnap.data().count;
+        published = pSnap.data().count;
+        pending = penSnap.data().count;
       } else {
-        statsQ = query(collection(db, "articles"));
+        const pubQ = query(coll, where("status", "==", "published"));
+        const penQ = query(coll, where("status", "==", "pending"));
+
+        // Admin sees all
+        const [tSnap, pSnap, penSnap] = await Promise.all([
+          getCountFromServer(coll),
+          getCountFromServer(pubQ),
+          getCountFromServer(penQ)
+        ]);
+
+        total = tSnap.data().count;
+        published = pSnap.data().count;
+        pending = penSnap.data().count;
       }
 
-      const statsSnap = await getDocs(statsQ);
-      const allDocs = statsSnap.docs.map(d => d.data());
-      setStats(prev => ({ // PRESERVE ACTIVE USERS from realtime listener
+      setStats(prev => ({
         ...prev,
-        total: allDocs.length,
-        published: allDocs.filter(d => d.status === "published").length,
-        pending: allDocs.filter(d => d.status === "pending").length
+        total,
+        published,
+        pending
       }));
 
       // Fetch specific table data
