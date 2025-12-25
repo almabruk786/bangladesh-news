@@ -111,3 +111,13 @@ export function getBanglaRelativeTime(dateInput) {
     // Default to full date if older than 7 days
     return date.toLocaleDateString("bn-BD", { day: 'numeric', month: 'long', year: 'numeric' });
 }
+
+export function extractYoutubeVideoId(content) {
+    if (!content) return null;
+    // Match youtube.com/embed/VIDEO_ID or youtu.be/VIDEO_ID
+    const regex = /(?:youtube\.com\/embed\/|youtu\.be\/|youtube\.com\/watch\?v=)([\w-]{11})/;
+    const match = content.match(regex);
+    return match ? match[1] : null;
+}
+
+

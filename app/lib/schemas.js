@@ -1,5 +1,6 @@
 import { formatIsoDate } from './dateUtils';
 import { generateSeoUrl } from './urlUtils';
+import { extractYoutubeVideoId, parseNewsContent } from './utils';
 
 const BASE_URL = 'https://bakalia.xyz';
 const PUBLISHER_NAME = 'Bakalia News';
@@ -12,7 +13,7 @@ export const generateNewsArticleSchema = (article) => {
     const url = `${BASE_URL}/news/${generateSeoUrl(article.title, article.id)}`;
     const imageUrls = article.imageUrl ? [article.imageUrl] : (article.imageUrls || []);
 
-    return {
+    const schema = {
         '@context': 'https://schema.org',
         '@type': 'NewsArticle',
         'headline': article.title,
@@ -38,6 +39,25 @@ export const generateNewsArticleSchema = (article) => {
             '@id': url
         }
     };
+
+    // Check for embedded video
+    // Use parseNewsContent just in case content is JSON stringified text
+    const cleanContent = parseNewsContent(article.content);
+    const videoId = extractYoutubeVideoId(cleanContent);
+
+    if (videoId) {
+        schema['video'] = {
+            '@type': 'VideoObject',
+            'name': article.title,
+            'description': schema.description,
+            'thumbnailUrl': `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+            'uploadDate': formatIsoDate(article.publishedAt),
+            'embedUrl': `https://www.youtube.com/embed/${videoId}`,
+            'contentUrl': `https://www.youtube.com/watch?v=${videoId}`
+        };
+    }
+
+    return schema;
 };
 
 // 2. BreadcrumbList Schema
