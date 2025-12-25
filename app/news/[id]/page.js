@@ -45,6 +45,8 @@ export async function generateMetadata({ params }) {
   };
 }
 
+import { notFound } from 'next/navigation';
+
 export default async function NewsDetails({ params }) {
   const { id: slugId } = await params;
   const id = extractIdFromUrl(slugId) || slugId;
@@ -92,15 +94,7 @@ export default async function NewsDetails({ params }) {
   }
 
   if (!article || article.hidden) {
-    return (
-      <div className="min-h-[60vh] flex flex-col justify-center items-center text-center p-8">
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">News Not Available</h1>
-        <p className="text-slate-500">The news article you are looking for is currently unavailable or has been removed.</p>
-        <Link href="/" className="mt-6 px-6 py-2 bg-slate-900 text-white rounded-full hover:bg-slate-800 transition">
-          Back to Home
-        </Link>
-      </div>
-    );
+    notFound();
   }
 
   const newsSchema = generateNewsArticleSchema({ ...article, updatedAt: null }); // Pass updatedAt if available in db

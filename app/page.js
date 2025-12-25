@@ -14,6 +14,13 @@ import AdPopup from './components/AdPopup';
 // Force revalidation every 5 minutes (300 seconds)
 export const revalidate = 60;
 
+export const metadata = {
+  alternates: {
+    canonical: '/',
+  },
+};
+
+
 export default async function Home() {
   // 1. Fetch Data on Server
   const allDocs = await getNews();
@@ -36,11 +43,7 @@ export default async function Home() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateItemListSchema(realLatestNews)) }}
-        suppressHydrationWarning
-      />
+
       <div className="min-h-screen">
         <AdPopup />
 
@@ -95,6 +98,12 @@ export default async function Home() {
             </div>
           </div>
         </main>
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateItemListSchema(realLatestNews)) }}
+          suppressHydrationWarning
+        />
       </div>
     </>
   );

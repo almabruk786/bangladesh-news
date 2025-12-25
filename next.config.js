@@ -22,6 +22,21 @@ const nextConfig = {
     //   root: __dirname,
     // },
   },
+
+  async redirects() {
+    return [
+      {
+        source: '/index',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 // এই লাইনটি .js ফাইলের জন্য জরুরি
