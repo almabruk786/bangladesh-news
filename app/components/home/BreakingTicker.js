@@ -10,7 +10,7 @@ export default function BreakingTicker({ news }) {
     if (recentNews.length === 0) return null;
 
     return (
-        <div className="bg-slate-900 border-b border-slate-800 text-white relative z-30">
+        <div className="bg-slate-900 border-b border-slate-800 text-white relative z-30" suppressHydrationWarning>
             <div className="max-w-7xl mx-auto px-4 flex items-center h-10">
                 <div className="bg-red-600 h-full flex items-center px-4 font-bold text-xs uppercase tracking-wider shrink-0 gap-2 relative z-10">
                     <Zap size={14} className="animate-pulse" /> Breaking

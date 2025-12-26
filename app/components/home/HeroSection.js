@@ -22,7 +22,7 @@ export default function HeroSection({ heroNews, sideNews }) {
                                 alt={heroNews.title}
                                 fill
                                 priority
-                                sizes="100vw"
+                                sizes="(max-width: 768px) 100vw, 0vw"
                                 className="object-cover"
                             />
 
@@ -46,9 +46,11 @@ export default function HeroSection({ heroNews, sideNews }) {
                                 <div className="flex items-center space-x-2 text-slate-300 text-[10px] font-medium">
                                     <Clock size={10} /> {getBanglaRelativeTime(heroNews.publishedAt)}
                                 </div>
-                                <h1 className="text-xl font-black leading-tight text-white mb-1 shadow-black drop-shadow-md">
+                                {/* SEMANTIC CHANGE: Use div/h2 for mobile duplicate to avoid SEO "Multiple H1" error. 
+                                    The Desktop H1 below serves as the canonical H1 for the page. */}
+                                <div className="text-xl font-black leading-tight text-white mb-1 shadow-black drop-shadow-md" role="heading" aria-level="2">
                                     {heroNews.title}
-                                </h1>
+                                </div>
                                 {/* Hide Excerpt on Mobile to show more image */}
                                 <p className="hidden md:block text-slate-200 text-xs line-clamp-2 leading-relaxed opacity-90">
                                     {getSmartExcerpt(heroNews.content, 20)}
@@ -82,7 +84,7 @@ export default function HeroSection({ heroNews, sideNews }) {
                                     alt={heroNews.title}
                                     fill
                                     priority
-                                    sizes="(max-width: 768px) 100vw, 60vw"
+                                    sizes="(max-width: 768px) 0vw, 60vw"
                                     className="object-cover transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
                                 />
                                 {heroNews.isVideo && (
@@ -107,7 +109,7 @@ export default function HeroSection({ heroNews, sideNews }) {
                     </div>
                 </div>
 
-                {/* Side Stories (Ultra Compact) */}
+                {/* SideStories (Ultra Compact) */}
                 <div className="lg:col-span-4 flex flex-col pt-4 md:pt-0">
                     <div className="flex items-center justify-between mb-3 border-b-2 border-slate-100 pb-2">
                         <h3 className="text-xs font-bold uppercase text-red-600 tracking-widest">Latest Updates</h3>
@@ -122,7 +124,7 @@ export default function HeroSection({ heroNews, sideNews }) {
                                         src={item.imageUrl || (item.imageUrls && item.imageUrls[0]) || '/placeholder.png'}
                                         alt={item.title}
                                         fill
-                                        sizes="64px"
+                                        sizes="(max-width: 768px) 33vw, 15vw"
                                         className="object-cover group-hover:scale-105 transition duration-500"
                                     />
                                 </div>

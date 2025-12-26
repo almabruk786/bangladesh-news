@@ -16,8 +16,11 @@ const frankRuhlLibre = Frank_Ruhl_Libre({ subsets: ["latin"], variable: "--font-
 const notoserifBengali = Noto_Serif_Bengali({ subsets: ["bengali"], variable: "--font-bengali" });
 
 export const metadata = {
+  // Ensure strict canonical
   metadataBase: new URL('https://bakalia.xyz'),
-  alternates: { canonical: './' },
+  alternates: {
+    canonical: '/',
+  },
   title: {
     template: '%s | বাকলিয়া নিউজ | BD All Newspaper',
     default: 'All Bangla Newspaper | বাকলিয়া নিউজ | BD News & Breaking Headlines'
