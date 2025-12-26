@@ -126,7 +126,18 @@ export default function Header() {
           </div>
 
           {/* RIGHT: Actions */}
-          <div className="flex items-center justify-end space-x-1 flex-1 lg:flex-none">
+          <div className="flex items-center justify-end space-x-2 flex-1 lg:flex-none">
+            {/* Install App Button (Visible if PWA ready - Mobile Only) */}
+            {deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="md:hidden p-1.5 text-red-600 hover:bg-red-50 rounded-full transition-colors animate-pulse"
+                aria-label="Install App"
+              >
+                <Download size={20} />
+              </button>
+            )}
+
             <div className="relative" ref={searchRef}>
               <button type="button" onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition cursor-pointer">
                 <Search size={20} />
