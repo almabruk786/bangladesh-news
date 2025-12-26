@@ -1,15 +1,16 @@
-import { TrendingUp, Users, FileText, Eye } from "lucide-react";
+import { TrendingUp, Users, FileText, Eye, Smartphone } from "lucide-react";
 
 export default function DashboardStats({ stats }) {
     const cards = [
         { title: "Live Visitors", value: stats.activeUsers || 0, icon: Users, color: "bg-blue-500", count: "3" }, // Live count
+        { title: "App Users", value: stats.activePWA || 0, icon: Smartphone, color: "bg-rose-500", isLive: true }, // PWA Live count
         { title: "Total News", value: stats.total, icon: FileText, color: "bg-purple-500" },
         { title: "Published", value: stats.published, icon: TrendingUp, color: "bg-green-500" },
         { title: "Pending", value: stats.pending, icon: Eye, color: "bg-amber-500" },
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             {cards.map((card, idx) => (
                 <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start">

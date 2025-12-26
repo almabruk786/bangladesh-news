@@ -93,7 +93,13 @@ export default function AnalyticsTracker() {
                 // 4. Source & Referrer
                 const referrer = document.referrer || '';
                 let source = 'Direct';
-                if (referrer) {
+
+                // PWA Detection
+                const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.location.search.includes('source=pwa');
+
+                if (isPWA) {
+                    source = 'PWA';
+                } else if (referrer) {
                     const domain = new URL(referrer).hostname;
                     if (domain.includes('facebook') || domain.includes('t.co') || domain.includes('twitter') || domain.includes('instagram') || domain.includes('linkedin')) {
                         source = 'Social';
@@ -112,6 +118,7 @@ export default function AnalyticsTracker() {
                     mobile: /iPhone|iPad|iPod|Android/i.test(userAgent),
                     referrer: referrer,
                     source: source,
+                    isPWA: isPWA,
                     ...locationData,
                     timestamp: timestamp
                 });

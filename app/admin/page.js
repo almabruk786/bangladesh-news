@@ -159,7 +159,12 @@ export default function AdminDashboard() {
     const unsub = onSnapshot(q, (snap) => {
       const recentLogs = snap.docs.map(d => d.data()).filter(d => d.timestamp?.toDate() >= fiveMinutesAgo);
       const uniqueActiveIPs = new Set(recentLogs.map(l => l.ip)).size;
-      setStats(prev => ({ ...prev, activeUsers: uniqueActiveIPs }));
+
+      // Calculate Active PWA Users
+      const pwaLogs = recentLogs.filter(l => l.isPWA || l.source === 'PWA');
+      const uniquePWA = new Set(pwaLogs.map(l => l.ip)).size;
+
+      setStats(prev => ({ ...prev, activeUsers: uniqueActiveIPs, activePWA: uniquePWA }));
     });
 
     return () => unsub();
