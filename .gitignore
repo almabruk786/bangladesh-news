@@ -46,6 +46,6 @@ formatted_output.txt
 service-account.json  
  
 # PWA
-public/sw.js
-public/workbox-*
-public/worker-*.js
+# public/sw.js
+# public/workbox-*
+# public/worker-*.js

@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SubscriptionBox from './SubscriptionBox';
 import { usePathname } from 'next/navigation';
@@ -86,28 +87,32 @@ export default function Footer() {
           </nav>
         </div>
 
-        {/* 3. Subscription & Tools */}
-        <div className="lg:col-span-3">
-          <h4 className="text-white font-bold mb-6 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Stay Connected</h4>
-          <SubscriptionBox />
-
-        </div>
       </div>
 
-      {/* 4. Bottom Bar */}
-      <div className="bg-slate-950/50 py-6">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 text-xs text-slate-500">
-          <div className="text-center md:text-left">
-            <p className="text-gray-400 text-sm">© {currentYear} Bakalia News. All rights reserved.</p>
-            <p className="mt-1">Breaking news and in-depth updates from Bangladesh and around the world.</p>
-          </div>
-          <div className="flex space-x-6">
-            {/* Additional bottom links if needed */}
-            <span>Designed & Developed by PortalX</span>
-          </div>
-        </div>
+      {/* 3. Subscription & Tools */}
+      <div className="lg:col-span-3">
+        <h4 className="text-white font-bold mb-6 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Stay Connected</h4>
+        <SubscriptionBox />
+
+        {/* PWA Install Button - Footer */}
+        <PWAInstallButton />
       </div>
-    </footer>
+    </div>
+
+      {/* 4. Bottom Bar */ }
+  <div className="bg-slate-950/50 py-6">
+    <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 text-xs text-slate-500">
+      <div className="text-center md:text-left">
+        <p className="text-gray-400 text-sm">© {currentYear} Bakalia News. All rights reserved.</p>
+        <p className="mt-1">Breaking news and in-depth updates from Bangladesh and around the world.</p>
+      </div>
+      <div className="flex space-x-6">
+        {/* Additional bottom links if needed */}
+        <span>Designed & Developed by PortalX</span>
+      </div>
+    </div>
+  </div>
+    </footer >
   );
 }
 
@@ -133,5 +138,46 @@ function SocialLink({ href, icon, label }) {
     >
       {icon}
     </a>
+  );
+}
+
+function PWAInstallButton() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
+
+  if (!deferredPrompt) return null;
+
+  return (
+    <div className="mt-8 pt-6 border-t border-slate-800 animate-in fade-in duration-700">
+      <h5 className="text-white font-bold mb-3 text-xs uppercase tracking-wider">Get the App</h5>
+      <button
+        onClick={handleInstallClick}
+        className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg hover:shadow-red-900/20 transition-all flex items-center justify-center space-x-3 group"
+      >
+        <span className="bg-white/20 p-1.5 rounded-full group-hover:bg-white/30 transition">
+          {/* Simple Icon inline */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M12 18h.01" /></svg>
+        </span>
+        <span>Install Bakalia News</span>
+      </button>
+      <p className="text-[10px] text-slate-500 mt-2 text-center">Fast, Offline-ready, and Ad-free experience.</p>
+    </div>
   );
 }

@@ -1,9 +1,9 @@
-const withPWA = require("@ducanh2912/next-pwa").default({
-  dest: "public",
-  disable: false, // Enable PWA in dev so user can verify on mobile
-  register: true,
-  skipWaiting: true,
-});
+// const withPWA = require("@ducanh2912/next-pwa").default({
+//   dest: "public",
+//   disable: false, // Enable PWA in dev so user can verify on mobile
+//   register: true,
+//   skipWaiting: true,
+// });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -44,4 +44,5 @@ const nextConfig = {
 };
 
 // এই লাইনটি .js ফাইলের জন্য জরুরি
-module.exports = withPWA(nextConfig);
+module.exports = nextConfig;
+// module.exports = withPWA(nextConfig);
