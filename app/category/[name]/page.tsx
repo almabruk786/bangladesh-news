@@ -142,6 +142,9 @@ export async function generateMetadata({ params }: { params: Promise<{ name: str
     title: `${seoInfo.title} | Bakalia News`,
     description: seoInfo.description,
     keywords: seoInfo.keywords,
+    alternates: {
+      canonical: `https://bakalia.xyz/category/${normalizedName}`,
+    },
     openGraph: {
       title: `${seoInfo.title} | Bakalia News`,
       description: seoInfo.description,
