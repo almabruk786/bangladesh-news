@@ -125,8 +125,16 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
         },
         editorProps: {
             attributes: {
-                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4',
+                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4 prose-strong:font-black prose-headings:font-bold',
             },
+            transformPastedHTML(html) {
+                // Ensure bold tags from mobile are respected
+                return html.replace(/<span style="font-weight: 700">/g, '<strong>')
+                    .replace(/<span style="font-weight: bold">/g, '<strong>');
+            },
+        },
+        parseOptions: {
+            preserveWhitespace: 'full',
         },
         immediatelyRender: false,
     });
