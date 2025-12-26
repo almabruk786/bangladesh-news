@@ -160,15 +160,19 @@ export default function EpaperManager() {
         let added = 0;
         let updated = 0;
 
-        if (confirm(`This will attempt to sync ${defaults.length} newspapers. It will add new ones and UPDATE logos for existing ones if missing. Continue?`)) {
+        if (confirm(`This will attempt to sync ${defaults.length} newspapers. It will fix broken '/assets/' paths and add new ones. Continue?`)) {
             const existingMap = new Map(newspapers.map(n => [n.url, n.id]));
 
             for (const paper of defaults) {
                 if (existingMap.has(paper.url)) {
-                    // Check if we should update (e.g. if DB has no logo but we have one)
+                    // Check if we should update (e.g. if DB has no logo OR has broken /assets/ path)
                     const id = existingMap.get(paper.url);
                     const existingPaper = newspapers.find(n => n.id === id);
-                    if (!existingPaper.logo && paper.logo) {
+
+                    // FIX: Overwrite if logo is missing, or points to broken /assets/ path
+                    const isBroken = !existingPaper.logo || existingPaper.logo.includes('/assets/');
+
+                    if (isBroken) {
                         await updateDoc(doc(db, "newspapers", id), { logo: paper.logo });
                         updated++;
                     }
@@ -237,9 +241,13 @@ export default function EpaperManager() {
     return (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
             {/* Header ... (kept same, just ensuring context for replacement) */}
+            {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">Newspaper Manager <span className="text-sm font-normal text-slate-500">({newspapers.length} Papers)</span></h2>
                 <div className="flex gap-2">
+                    <button onClick={seedDefaults} className="flex items-center gap-2 px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded text-sm font-bold hover:bg-yellow-200">
+                        <RefreshCw size={14} /> Fix Data
+                    </button>
                     <button onClick={() => setShowImport(true)} className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded text-sm font-bold hover:bg-green-200">
                         <Upload size={14} /> Import
                     </button>
@@ -356,74 +364,76 @@ export default function EpaperManager() {
 
             {/* List */}
             {/* Helpers */}
-            {(() => {
-                const onlinePapers = newspapers.filter(p => !p.type || p.type === 'online');
-                const ePapers = newspapers.filter(p => p.type === 'epaper');
+            {
+                (() => {
+                    const onlinePapers = newspapers.filter(p => !p.type || p.type === 'online');
+                    const ePapers = newspapers.filter(p => p.type === 'epaper');
 
-                const NewspaperRow = ({ paper }) => (
-                    <div key={paper.id} className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-700 rounded bg-white dark:bg-slate-900 mb-2">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-slate-100 rounded flex items-center justify-center p-1 relative">
-                                {paper.logo ? <img src={paper.logo} alt={paper.name} className="max-w-full max-h-full object-contain" /> : <span className="text-xs font-bold text-slate-400">No Logo</span>}
+                    const NewspaperRow = ({ paper }) => (
+                        <div key={paper.id} className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-700 rounded bg-white dark:bg-slate-900 mb-2">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-slate-100 rounded flex items-center justify-center p-1 relative">
+                                    {paper.logo ? <img src={paper.logo} alt={paper.name} className="max-w-full max-h-full object-contain" /> : <span className="text-xs font-bold text-slate-400">No Logo</span>}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                        {paper.name}
+                                        <span className="text-xs bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">#{paper.order || 999}</span>
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${paper.type === 'epaper' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                            {paper.type === 'epaper' ? 'E-PAPER' : 'ONLINE'}
+                                        </span>
+                                    </h4>
+                                    <a href={paper.url} target="_blank" className="text-xs text-blue-500 flex items-center gap-1 hover:underline"><ExternalLink size={10} /> {paper.url}</a>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                    {paper.name}
-                                    <span className="text-xs bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">#{paper.order || 999}</span>
-                                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${paper.type === 'epaper' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                                        {paper.type === 'epaper' ? 'E-PAPER' : 'ONLINE'}
-                                    </span>
-                                </h4>
-                                <a href={paper.url} target="_blank" className="text-xs text-blue-500 flex items-center gap-1 hover:underline"><ExternalLink size={10} /> {paper.url}</a>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => handleEdit(paper)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition"><Edit2 size={16} /></button>
+                                <button onClick={() => handleDelete(paper.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => handleEdit(paper)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition"><Edit2 size={16} /></button>
-                            <button onClick={() => handleDelete(paper.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
-                        </div>
-                    </div>
-                );
+                    );
 
-                return (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Online Papers Column */}
-                        <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <div className="flex items-center justify-between mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">
-                                <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                                    <span className="w-2 h-6 bg-green-500 rounded-full"></span>
-                                    Online Newspapers
-                                    <span className="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">{onlinePapers.length}</span>
-                                </h3>
-                                <button onClick={() => handleReorder('online')} className="text-[10px] uppercase font-bold text-blue-500 hover:bg-blue-50 px-2 py-1 rounded">
-                                    Fix Order
-                                </button>
+                    return (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Online Papers Column */}
+                            <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                                <div className="flex items-center justify-between mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">
+                                    <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                        <span className="w-2 h-6 bg-green-500 rounded-full"></span>
+                                        Online Newspapers
+                                        <span className="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">{onlinePapers.length}</span>
+                                    </h3>
+                                    <button onClick={() => handleReorder('online')} className="text-[10px] uppercase font-bold text-blue-500 hover:bg-blue-50 px-2 py-1 rounded">
+                                        Fix Order
+                                    </button>
+                                </div>
+                                <div className="space-y-2">
+                                    {onlinePapers.map(paper => <NewspaperRow key={paper.id} paper={paper} />)}
+                                    {onlinePapers.length === 0 && <div className="text-center py-8 text-slate-400 text-sm italic">No online newspapers yet.</div>}
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                {onlinePapers.map(paper => <NewspaperRow key={paper.id} paper={paper} />)}
-                                {onlinePapers.length === 0 && <div className="text-center py-8 text-slate-400 text-sm italic">No online newspapers yet.</div>}
-                            </div>
-                        </div>
 
-                        {/* E-Papers Column */}
-                        <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <div className="flex items-center justify-between mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">
-                                <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                                    <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
-                                    E-Newspapers (E-Paper)
-                                    <span className="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">{ePapers.length}</span>
-                                </h3>
-                                <button onClick={() => handleReorder('epaper')} className="text-[10px] uppercase font-bold text-blue-500 hover:bg-blue-50 px-2 py-1 rounded">
-                                    Fix Order
-                                </button>
-                            </div>
-                            <div className="space-y-2">
-                                {ePapers.map(paper => <NewspaperRow key={paper.id} paper={paper} />)}
-                                {ePapers.length === 0 && <div className="text-center py-8 text-slate-400 text-sm italic">No E-Papers yet.</div>}
+                            {/* E-Papers Column */}
+                            <div className="bg-slate-50 dark:bg-slate-950/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                                <div className="flex items-center justify-between mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">
+                                    <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                        <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
+                                        E-Newspapers (E-Paper)
+                                        <span className="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">{ePapers.length}</span>
+                                    </h3>
+                                    <button onClick={() => handleReorder('epaper')} className="text-[10px] uppercase font-bold text-blue-500 hover:bg-blue-50 px-2 py-1 rounded">
+                                        Fix Order
+                                    </button>
+                                </div>
+                                <div className="space-y-2">
+                                    {ePapers.map(paper => <NewspaperRow key={paper.id} paper={paper} />)}
+                                    {ePapers.length === 0 && <div className="text-center py-8 text-slate-400 text-sm italic">No E-Papers yet.</div>}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                );
-            })()}
-        </div>
+                    );
+                })()
+            }
+        </div >
     );
 }

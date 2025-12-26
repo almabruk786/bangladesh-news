@@ -121,7 +121,7 @@ export default function AnalyticsViewer() {
         const todayCount = data.filter(v => v.timestampObj >= startOfDay).length;
         const monthCount = data.filter(v => v.timestampObj >= startOfMonth).length;
 
-        // Active Users (Unique IPs in last 5 mins)
+        // Live Visitors (Unique IPs in last 5 mins)
         const recentLogs = data.filter(v => v.timestampObj >= fiveMinutesAgo);
         const uniqueActiveIPs = new Set(recentLogs.map(l => l.ip)).size;
         const activeCount = uniqueActiveIPs;
@@ -211,7 +211,7 @@ export default function AnalyticsViewer() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg shadow-blue-200 text-white">
                     <div className="flex items-center gap-2 mb-2 opacity-90">
-                        <Zap size={18} /> <h3 className="text-sm font-bold uppercase">Active Users</h3>
+                        <Zap size={18} /> <h3 className="text-sm font-bold uppercase">Live Visitors</h3>
                     </div>
                     <p className="text-4xl font-black">{stats.activeNow}</p>
                     <div className="mt-2 text-xs opacity-75 flex items-center gap-1">
