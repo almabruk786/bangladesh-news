@@ -126,6 +126,10 @@ export default function AnalyticsViewer() {
         const uniqueActiveIPs = new Set(recentLogs.map(l => l.ip)).size;
         const activeCount = uniqueActiveIPs;
 
+        // Active PWA Users
+        const pwaLogs = recentLogs.filter(l => l.isPWA || l.source === 'PWA');
+        const activePWACount = new Set(pwaLogs.map(l => l.ip)).size;
+
         // Device Breakdown
         const devMap = { Mobile: 0, Desktop: 0 };
         data.forEach(v => {
@@ -133,11 +137,14 @@ export default function AnalyticsViewer() {
         });
         setDeviceData([
             { label: 'Mobile', value: devMap.Mobile },
-            { label: 'Desktop', value: devMap.Desktop }
+            { label: 'Desktop', value: devMap.Desktop },
+            { label: 'App', value: activePWACount } // Also showing App in device data might be confusing if it overlaps, let's keep device strictly mobile/desktop for now or add 'App' slice if we can distinguish easily. 
+            // Actually, simpler to just start with the dedicated card first as requested.
         ]);
+        // Reverting device data change for now to stick to requested scope.
 
         // Source Breakdown
-        const sourceMap = { Direct: 0, Social: 0, Search: 0, Referral: 0 };
+        const sourceMap = { Direct: 0, Social: 0, Search: 0, Referral: 0, PWA: 0 }; // Added PWA
         data.forEach(v => {
             const s = v.source || 'Direct';
             sourceMap[s] = (sourceMap[s] || 0) + 1;
@@ -192,19 +199,31 @@ export default function AnalyticsViewer() {
             today: todayCount,
             month: monthCount,
             lifetime: 1250 + data.length,
-            activeNow: activeCount
+            activeNow: activeCount,
+            activePWA: activePWACount
         });
     };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* 1. Header & Live Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* 1. Header & Live Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg shadow-blue-200 text-white">
                     <div className="flex items-center gap-2 mb-2 opacity-90">
                         <Zap size={18} /> <h3 className="text-sm font-bold uppercase">Active Users</h3>
                     </div>
                     <p className="text-4xl font-black">{stats.activeNow}</p>
+                    <div className="mt-2 text-xs opacity-75 flex items-center gap-1">
+                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> Live
+                    </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-rose-500 to-rose-600 p-4 rounded-xl shadow-lg shadow-rose-200 text-white">
+                    <div className="flex items-center gap-2 mb-2 opacity-90">
+                        <Smartphone size={18} /> <h3 className="text-sm font-bold uppercase">App Users</h3>
+                    </div>
+                    <p className="text-4xl font-black">{stats.activePWA || 0}</p>
                     <div className="mt-2 text-xs opacity-75 flex items-center gap-1">
                         <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> Live
                     </div>
