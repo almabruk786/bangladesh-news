@@ -9,6 +9,8 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
+import TextAlign from '@tiptap/extension-text-align';
+import { Color } from '@tiptap/extension-color';
 import Placeholder from '@tiptap/extension-placeholder';
 import {
     Bold, Italic, Underline as UnderlineIcon,
@@ -16,7 +18,8 @@ import {
     List, ListOrdered, Quote,
     Image as ImageIcon, Youtube as YoutubeIcon,
     Table as TableIcon, Link as LinkIcon,
-    Undo, Redo, AlertTriangle
+    Undo, Redo, AlertTriangle,
+    AlignLeft, AlignCenter, AlignRight, AlignJustify
 } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
 
@@ -57,6 +60,13 @@ const MenuBar = ({ editor, onImageUpload, addVideo }) => {
 
             <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
 
+            <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive({ textAlign: 'left' }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><AlignLeft size={18} /></button>
+            <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive({ textAlign: 'center' }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><AlignCenter size={18} /></button>
+            <button type="button" onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive({ textAlign: 'right' }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><AlignRight size={18} /></button>
+            <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive({ textAlign: 'justify' }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><AlignJustify size={18} /></button>
+
+            <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
+
             <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Heading1 size={18} /></button>
             <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Heading2 size={18} /></button>
             <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 3 }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Heading3 size={18} /></button>
@@ -87,6 +97,10 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
         extensions: [
             StarterKit,
             TextStyle,
+            Color,
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
             Image,
             Youtube.configure({
                 controls: true,
