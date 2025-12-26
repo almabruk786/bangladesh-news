@@ -25,7 +25,7 @@ export const metadata = {
     template: '%s | বাকলিয়া নিউজ | BD All Newspaper',
     default: 'All Bangla Newspaper | বাকলিয়া নিউজ | BD News & Breaking Headlines'
   },
-  description: "Read the latest BD News and All Bangla Newspaper updates. বাকলিয়া নিউজ provides 24/7 coverage of politics, sports, and entertainment from the top Bangladesh newspaper list.",
+  description: "Latest BD News & Bangla Newspaper updates. বাকলিয়া নিউজ covers politics, sports, and entertainment 24/7 from top Bangladesh newspapers.",
   keywords: [
     "Bangla Newspaper",
     "BD News",
@@ -66,7 +66,21 @@ export const metadata = {
     url: 'https://bakalia.xyz',
     siteName: 'বাকলিয়া নিউজ',
     title: 'All Bangla Newspaper | বাকলিয়া নিউজ | BD News',
-    description: "Your trusted source for All Bangla Newspaper and latest BD News. Live updates on politics, sports, and more."
+    description: "Your trusted source for All Bangla Newspaper and latest BD News. Live updates on politics, sports, and more.",
+    images: [
+      {
+        url: 'https://bakalia.xyz/bn-icon.png',
+        width: 512,
+        height: 512,
+        alt: 'Bakalia News Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'All Bangla Newspaper | বাকলিয়া নিউজ',
+    description: "Latest BD News & Bangla Newspaper updates. বাকলিয়া নিউজ covers politics, sports, and entertainment.",
+    images: ['https://bakalia.xyz/bn-icon.png'],
   },
   robots: {
     index: true,
