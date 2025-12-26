@@ -87,31 +87,31 @@ export default function Footer() {
           </nav>
         </div>
 
+
+
+        {/* 3. Subscription & Tools */}
+        <div className="lg:col-span-3">
+          <h4 className="text-white font-bold mb-6 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Stay Connected</h4>
+          <SubscriptionBox />
+
+          {/* PWA Install Button - Footer */}
+          <PWAInstallButton />
+        </div>
       </div>
 
-      {/* 3. Subscription & Tools */}
-      <div className="lg:col-span-3">
-        <h4 className="text-white font-bold mb-6 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Stay Connected</h4>
-        <SubscriptionBox />
-
-        {/* PWA Install Button - Footer */}
-        <PWAInstallButton />
+      {/* 4. Bottom Bar */}
+      <div className="bg-slate-950/50 py-6">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 text-xs text-slate-500">
+          <div className="text-center md:text-left">
+            <p className="text-gray-400 text-sm">© {currentYear} Bakalia News. All rights reserved.</p>
+            <p className="mt-1">Breaking news and in-depth updates from Bangladesh and around the world.</p>
+          </div>
+          <div className="flex space-x-6">
+            {/* Additional bottom links if needed */}
+            <span>Designed & Developed by PortalX</span>
+          </div>
+        </div>
       </div>
-    </div>
-
-      {/* 4. Bottom Bar */ }
-  <div className="bg-slate-950/50 py-6">
-    <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 text-xs text-slate-500">
-      <div className="text-center md:text-left">
-        <p className="text-gray-400 text-sm">© {currentYear} Bakalia News. All rights reserved.</p>
-        <p className="mt-1">Breaking news and in-depth updates from Bangladesh and around the world.</p>
-      </div>
-      <div className="flex space-x-6">
-        {/* Additional bottom links if needed */}
-        <span>Designed & Developed by PortalX</span>
-      </div>
-    </div>
-  </div>
     </footer >
   );
 }
