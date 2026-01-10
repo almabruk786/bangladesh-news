@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye, Wand2, BarChart3, AlertTriangle } from "lucide-react";
+import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye, Wand2, BarChart3, AlertTriangle, Star } from "lucide-react";
 import { addDoc, collection, updateDoc, doc, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import TiptapEditor from "./TiptapEditor";
@@ -111,7 +111,8 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 content: cleanContent(existingData.content),
                 imageUrls: existingData.imageUrls || (existingData.imageUrl ? [existingData.imageUrl] : []),
                 category: existingData.category || "National",
-                categories: existingData.categories || (existingData.category ? [existingData.category] : ["National"]),
+                category: existingData.category || existingData.categories?.[0] || "National",
+                categories: existingData.categories?.length > 0 ? existingData.categories : (existingData.category ? [existingData.category] : ["National"]),
                 scheduledAt: existingData.scheduledAt || "",
                 tags: existingData.tags || [],
                 ogImage: existingData.ogImage || "",
@@ -514,30 +515,100 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                         <label className="text-sm font-bold text-slate-700">Categories (Select Multiple)</label>
                         <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-48 overflow-y-auto">
                             {categories.map((cat, i) => (
-                                <label key={i} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        checked={form.categories.includes(cat.name)}
-                                        onChange={(e) => {
-                                            const checked = e.target.checked;
-                                            setForm(prev => {
-                                                let newCats = checked
-                                                    ? [...new Set([...prev.categories, cat.name])]
-                                                    : prev.categories.filter(c => c !== cat.name);
+                                <div key={i} className={`flex items-center justify-between p-2 rounded transition-colors ${form.categories.includes(cat.name) ? 'bg-blue-50 border-blue-100' : 'hover:bg-slate-100'}`}>
+                                    <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                        <input
+                                            type="checkbox"
+                                            checked={form.categories.includes(cat.name)}
+                                            onChange={(e) => {
+                                                const checked = e.target.checked;
+                                                setForm(prev => {
+                                                    let newCats = checked
+                                                        ? [...new Set([...prev.categories, cat.name])]
+                                                        : prev.categories.filter(c => c !== cat.name);
 
-                                                if (newCats.length === 0 && !checked) newCats = [cat.name]; // Must have at least one
+                                                    // Prevent deselecting all if possible, or allow it but warn? 
+                                                    // Let's allow empty but maybe show validation later.
+                                                    // If we are unchecking the PRIMARY category, we must pick a new one.
+                                                    let newPrimary = prev.category;
 
-                                                return { ...prev, categories: newCats, category: newCats[0] };
-                                            });
-                                        }}
-                                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                                    />
-                                    <span className={`text-sm ${form.category === cat.name ? 'font-bold text-blue-700' : 'text-slate-700'}`}>
-                                        {cat.bn || cat.name} {form.category === cat.name && '(Primary)'}
-                                    </span>
-                                </label>
+                                                    if (checked) {
+                                                        // Adding a new one: Don't change primary unless it was empty
+                                                        if (!newPrimary) newPrimary = cat.name;
+                                                    } else {
+                                                        // Removing one
+                                                        if (prev.category === cat.name) {
+                                                            // If we removed the primary, default to the first one available
+                                                            newPrimary = newCats.length > 0 ? newCats[0] : "";
+                                                        }
+                                                    }
+
+                                                    return { ...prev, categories: newCats, category: newPrimary };
+                                                });
+                                            }}
+                                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                        />
+                                        <div className="flex flex-col">
+                                            <span className={`text-sm ${form.category === cat.name ? 'font-bold text-blue-700' : 'text-slate-700'}`}>
+                                                {cat.bn || cat.name}
+                                            </span>
+                                            {form.category === cat.name && <span className="text-[10px] text-blue-600 font-bold">Primary</span>}
+                                        </div>
+                                    </label>
+
+                                    {/* Star Button to Set Primary */}
+                                    {form.categories.includes(cat.name) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setForm(p => ({ ...p, category: cat.name }))}
+                                            className="p-1 hover:bg-white rounded-full transition-colors"
+                                            title="Set as Primary Category"
+                                        >
+                                            <Star
+                                                size={16}
+                                                className={form.category === cat.name ? "fill-orange-400 text-orange-400" : "text-slate-300 hover:text-orange-300"}
+                                            />
+                                        </button>
+                                    )}
+                                </div>
                             ))}
                         </div>
+
+                        {/* Ghost/Legacy Categories */}
+                        {(() => {
+                            const ghostCategories = form.categories.filter(c => !categories.some(cat => cat.name === c));
+                            if (ghostCategories.length === 0) return null;
+                            return (
+                                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <div className="text-xs font-bold text-yellow-800 mb-1 flex items-center gap-1">
+                                        <AlertTriangle size={12} /> Legacy / Invalid Categories
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {ghostCategories.map((ghost, i) => (
+                                            <span key={i} className="flex items-center gap-1 bg-white border border-yellow-200 text-slate-500 text-xs px-2 py-1 rounded">
+                                                {ghost}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setForm(prev => {
+                                                        const newCats = prev.categories.filter(c => c !== ghost);
+                                                        // If we removed the primary, reset it
+                                                        let newPrimary = prev.category;
+                                                        if (newPrimary === ghost) {
+                                                            newPrimary = newCats.length > 0 ? newCats[0] : "";
+                                                        }
+                                                        return { ...prev, categories: newCats, category: newPrimary };
+                                                    })}
+                                                    className="text-red-400 hover:text-red-600"
+                                                    title="Remove this invalid category"
+                                                >
+                                                    <XCircle size={12} />
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     <div className="space-y-2">

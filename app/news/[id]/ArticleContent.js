@@ -103,7 +103,9 @@ export default function ArticleContent({ article, relatedNews }) {
                                             "Lifestyle": "জীবনযাপন", "lifestyle": "জীবনযাপন", "LIFESTYLE": "জীবনযাপন",
                                             "Education": "শিক্ষা", "education": "শিক্ষা", "EDUCATION": "শিক্ষা",
                                             "Opinion": "মতামত", "opinion": "মতামত", "OPINION": "মতামত",
-                                            "Bangladesh": "বাংলাদেশ", "bangladesh": "বাংলাদেশ", "BANGLADESH": "বাংলাদেশ"
+                                            "Bangladesh": "বাংলাদেশ", "bangladesh": "বাংলাদেশ", "BANGLADESH": "বাংলাদেশ",
+                                            "Weather": "আবহাওয়া", "weather": "আবহাওয়া", "WEATHER": "আবহাওয়া",
+                                            "Crime": "অপরাধ", "crime": "অপরাধ", "CRIME": "অপরাধ"
                                         };
                                         return map[cat] || (cat && map[cat.trim()]) || cat;
                                     };
