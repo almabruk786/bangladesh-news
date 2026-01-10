@@ -13,7 +13,9 @@ export async function GET() {
         '', '/about', '/contact', '/privacy-policy',
         '/category/Politics', '/category/Sports', '/category/International',
         '/category/Bangladesh', '/category/Business', '/category/Entertainment',
-        '/category/Lifestyle', '/category/Opinion'
+        '/category/Lifestyle', '/category/Opinion', '/category/Technology',
+        '/category/Health', '/category/Education', '/category/National',
+        '/category/Weather', '/category/Crime'
     ];
 
     const staticXml = staticUrls.map(url => `
