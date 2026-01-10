@@ -7,7 +7,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
    We will try to dynamic import or use the specific path if standard import failed.
    Actually, let's try importing from the subpath defined in exports.
 */
-import { BubbleMenu, FloatingMenu } from '@tiptap/react'; // Attempting restart might fix if cache? No.
+// import { BubbleMenu, FloatingMenu } from '@tiptap/react'; // Attempting restart might fix if cache? No.
 // Let's try importing from direct file if needed, but 'exports' should map it.
 // If 'exports' has "./menus", then "@tiptap/react/menus" is the path.
 // BUT, let's comment that out and try the verified path.
@@ -138,7 +138,9 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
         ],
         content: content,
         onUpdate: ({ editor }) => {
-            onChange(editor.getHTML());
+            if (!isSourceMode) {
+                onChange(editor.getHTML());
+            }
         },
         editorProps: {
             attributes: {
@@ -162,7 +164,6 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
         }
     }, []);
 
-    // Sync editor content when prop changes (e.g., initial load)
     useEffect(() => {
         if (editor && content) {
             if (editor.getText().trim() === "" && content.trim() !== "") {

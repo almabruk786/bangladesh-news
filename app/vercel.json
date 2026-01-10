@@ -4,5 +4,16 @@
       "path": "/api/cron",
       "schedule": "0 * * * *"
     }
+  ],
+  "headers": [
+    {
+      "source": "/ads.txt",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
   ]
 }
