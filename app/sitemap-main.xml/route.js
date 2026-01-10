@@ -8,17 +8,31 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     const baseUrl = 'https://bakalia.xyz';
 
-    // Static Pages
-    const staticUrls = [
-        '', '/about', '/contact', '/privacy-policy',
-        '/category/Politics', '/category/Sports', '/category/International',
-        '/category/Bangladesh', '/category/Business', '/category/Entertainment',
-        '/category/Lifestyle', '/category/Opinion', '/category/Technology',
-        '/category/Health', '/category/Education', '/category/National',
-        '/category/Weather', '/category/Crime'
-    ];
+    // Static Pages (Always present)
+    const baseStaticUrls = ['', '/about', '/contact', '/privacy-policy'];
 
-    const staticXml = staticUrls.map(url => `
+    // Fetch Categories dynamically from DB
+    let categoryUrls = [];
+    try {
+        const catSnapshot = await getDocs(collection(db, "categories"));
+        categoryUrls = catSnapshot.docs.map(doc => {
+            const name = doc.data().name;
+            // Ensure URL encoding if needed, though simple names are best.
+            // Using encodeURIComponent to be safe for "Science & Tech" etc.
+            return `/category/${encodeURIComponent(name.trim())}`;
+        });
+    } catch (e) {
+        console.error("Sitemap Category Fetch Error:", e);
+        // Fallback if DB fails (Vital categories)
+        categoryUrls = [
+            '/category/Politics', '/category/Sports', '/category/National',
+            '/category/International', '/category/Business'
+        ];
+    }
+
+    const allStaticUrls = [...baseStaticUrls, ...categoryUrls];
+
+    const staticXml = allStaticUrls.map(url => `
   <url>
     <loc>${baseUrl}${url}</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
