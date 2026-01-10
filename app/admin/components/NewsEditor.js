@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { PenTool, Upload, Sparkles, Calendar, XCircle, Save, ArrowLeft, RefreshCw, Hash, Loader2, Eye, Wand2, BarChart3, AlertTriangle } from "lucide-react";
-import { addDoc, collection, updateDoc, doc, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, updateDoc, doc, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import TiptapEditor from "./TiptapEditor";
 import ImageConverter from "./ImageConverter"; // Import the tool
@@ -18,7 +18,7 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
     const [uploading, setUploading] = useState(false);
     const [uploadingEditor, setUploadingEditor] = useState(false);
     const [generatingTags, setGeneratingTags] = useState(false);
-    const [categories, setCategories] = useState(["বাংলাদেশ", "রাজনীতি", "আন্তর্জাতিক", "খেলা", "মতামত", "বাণিজ্য", "বিনোদন", "জীবনযাপন", "প্রযুক্তি", "স্বাস্থ্য", "শিক্ষা", "জাতীয়"]);
+    const [categories, setCategories] = useState([]); // Dynamic fetch
     const [showImageTool, setShowImageTool] = useState(false); // State for modal
     const [showSeo, setShowSeo] = useState(false); // State for SEO sidebar
 
@@ -62,6 +62,28 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 }
             } catch (e) { }
         }
+    }, []);
+
+    // 🛡️ Fetch Categories from DB
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const q = query(collection(db, "categories"), orderBy("name"));
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    setCategories(snapshot.docs.map(doc => doc.data()));
+                } else {
+                    // Fallback if DB empty
+                    setCategories([
+                        { name: "National", bn: "জাতীয়" },
+                        { name: "Politics", bn: "রাজনীতি" },
+                    ]);
+                }
+            } catch (err) {
+                console.error("Failed to load categories", err);
+            }
+        };
+        fetchCategories();
     }, []);
 
     // 🛡️ Recovery Actions
@@ -495,23 +517,23 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                                 <label key={i} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors">
                                     <input
                                         type="checkbox"
-                                        checked={form.categories.includes(cat)}
+                                        checked={form.categories.includes(cat.name)}
                                         onChange={(e) => {
                                             const checked = e.target.checked;
                                             setForm(prev => {
                                                 let newCats = checked
-                                                    ? [...new Set([...prev.categories, cat])]
-                                                    : prev.categories.filter(c => c !== cat);
+                                                    ? [...new Set([...prev.categories, cat.name])]
+                                                    : prev.categories.filter(c => c !== cat.name);
 
-                                                if (newCats.length === 0 && !checked) newCats = [cat]; // Must have at least one
+                                                if (newCats.length === 0 && !checked) newCats = [cat.name]; // Must have at least one
 
                                                 return { ...prev, categories: newCats, category: newCats[0] };
                                             });
                                         }}
                                         className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                                     />
-                                    <span className={`text-sm ${form.category === cat ? 'font-bold text-blue-700' : 'text-slate-700'}`}>
-                                        {cat} {form.category === cat && '(Primary)'}
+                                    <span className={`text-sm ${form.category === cat.name ? 'font-bold text-blue-700' : 'text-slate-700'}`}>
+                                        {cat.bn || cat.name} {form.category === cat.name && '(Primary)'}
                                     </span>
                                 </label>
                             ))}

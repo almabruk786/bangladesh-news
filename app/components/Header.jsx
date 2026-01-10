@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Moon, Sun, Search, X, Menu as MenuIcon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { usePathname, useRouter } from 'next/navigation';
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 export default function Header() {
   const { darkMode, toggleTheme, lang } = useTheme();
@@ -47,31 +49,51 @@ export default function Header() {
     const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' };
 
     // Format: "Monday, 1 January, 2024" (No Time)
-    // Format: "Monday, 1 January, 2024" (No Time)
     const dateStr = now.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', dateOptions);
 
     setCurrentDate(dateStr);
     setCurrentIso(now.toISOString());
   }, [lang]);
 
-  const categories = [
-    { name: "National", bn: "জাতীয়", link: "/category/National" },
-    { name: "Bangladesh", bn: "বাংলাদেশ", link: "/category/Bangladesh" },
-    { name: "Politics", bn: "রাজনীতি", link: "/category/Politics", hot: true },
-    { name: "International", bn: "আন্তর্জাতিক", link: "/category/International" },
-    { name: "Sports", bn: "খেলা", link: "/category/Sports", hot: true },
-    { name: "Health", bn: "স্বাস্থ্য", link: "/category/Health" },
-    { name: "Technology", bn: "প্রযুক্তি", link: "/category/Technology" },
-    { name: "Education", bn: "শিক্ষা", link: "/category/Education" },
-    { name: "Opinion", bn: "মতামত", link: "/category/Opinion" },
-    { name: "Business", bn: "বাণিজ্য", link: "/category/Business" },
-    { name: "Entertainment", bn: "বিনোদন", link: "/category/Entertainment" },
-    { name: "Lifestyle", bn: "জীবনযাপন", link: "/category/Lifestyle" },
-  ];
+  // Fetch Categories
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        // Fetch all categories (sorted by name to ensure consistent base)
+        const q = query(collection(db, "categories"), orderBy("name"));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const cats = snapshot.docs.map(doc => ({
+            name: doc.data().name,
+            bn: doc.data().bn,
+            link: `/category/${doc.data().name}`,
+            hot: doc.data().hot,
+            order: doc.data().order || 999 // Default to end of list if no order
+          }));
+
+          // Sort Client-Side
+          cats.sort((a, b) => (a.order - b.order) || a.name.localeCompare(b.name));
+
+          setCategories(cats);
+        } else {
+          // Fallback
+          setCategories([
+            { name: "National", bn: "জাতীয়", link: "/category/National" },
+            { name: "Politics", bn: "রাজনীতি", link: "/category/Politics" },
+          ]);
+        }
+      } catch (e) {
+        console.error("Nav Load Error", e);
+      }
+    };
+    fetchCats();
+  }, []);
 
   return (
     <>
-      <header className={`bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-sans sticky top-0 z-50 shadow-sm`}>
+      <header className={`bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-sans sticky top-0 z-50 shadow-sm transition-colors duration-300`}>
 
         {/* 1. Main Header Area (Logo + Utilities) */}
         <div className="py-3 max-w-7xl mx-auto px-4 flex justify-between items-center relative">
@@ -80,7 +102,7 @@ export default function Header() {
           <div className="flex items-center space-x-3 lg:space-x-4 flex-1 lg:flex-none">
             {/* Mobile Menu Trigger */}
             <div className="lg:hidden">
-              <button type="button" aria-label="Open Main Menu" className="p-2 -ml-2 text-slate-800 dark:text-white hover:bg-slate-100 rounded-full transition cursor-pointer" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <button type="button" aria-label="Open Main Menu" className="p-2 -ml-2 text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition cursor-pointer" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                 <MenuIcon size={24} />
               </button>
             </div>
@@ -89,7 +111,7 @@ export default function Header() {
             <Link href="/" className="flex items-center space-x-2 group">
               <img src="/favicon.png" alt="Bakalia News" className="transition-all duration-300 object-contain w-9 h-9 md:w-10 md:h-10" />
               <div className="flex flex-col justify-center">
-                <span className="font-black text-red-600 tracking-tighter leading-none whitespace-nowrap text-2xl">
+                <span className="font-black text-red-600 tracking-tighter leading-none whitespace-nowrap text-xl md:text-2xl">
                   Bakalia
                 </span>
                 <span className="font-bold text-slate-700 dark:text-slate-300 text-[10px] tracking-widest uppercase leading-none -mt-0.5 block">
@@ -100,7 +122,7 @@ export default function Header() {
           </div>
 
           {/* CENTER (LG): Date Only (Static) */}
-          <div className="hidden lg:flex flex-col text-xs text-slate-600 font-bold text-center absolute left-1/2 transform -translate-x-1/2 min-w-[250px]">
+          <div className="hidden lg:flex flex-col text-xs text-slate-600 dark:text-slate-400 font-bold text-center absolute left-1/2 transform -translate-x-1/2 min-w-[250px]">
             {/* dateTime helps search engines understand readability */}
             <time dateTime={currentIso}>{currentDate}</time>
           </div>
@@ -108,41 +130,44 @@ export default function Header() {
           {/* RIGHT: Actions */}
           <div className="flex items-center justify-end space-x-2 flex-1 lg:flex-none">
             <div className="relative" ref={searchRef}>
-              <button type="button" onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 transition cursor-pointer">
+              <button type="button" onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search" className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-600 dark:text-slate-400 transition cursor-pointer">
                 <Search size={20} />
               </button>
 
               {/* Search Bar Dropdown */}
               {isSearchOpen && (
-                <div className="absolute top-full right-0 w-64 md:w-80 bg-white shadow-xl border border-slate-100 p-2 z-50 rounded mt-2">
+                <div className="absolute top-full right-0 w-64 md:w-80 bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800 p-2 z-50 rounded mt-2">
                   <input
                     type="text"
                     autoFocus
                     aria-label="Search Query"
                     placeholder="Search news..."
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:border-red-500 text-sm"
+                    className="w-full px-3 py-2 border dark:border-slate-700 rounded focus:outline-none focus:border-red-500 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                     onKeyDown={handleSearch}
                   />
                 </div>
               )}
             </div>
 
-            <div className="flex items-center space-x-2 border-l border-slate-200 pl-3">
-              <button type="button" onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500 cursor-pointer">
+            <div className="flex items-center space-x-2 border-l border-slate-200 dark:border-slate-700 pl-3">
+              <button type="button" onClick={toggleTheme} aria-label="Toggle Theme" className="p-1 hover:text-red-500 transition text-slate-500 dark:text-slate-400 cursor-pointer">
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* 2. Navigation Bar (Scrollable) */}
+        {/* 2. Navigation Bar (Multi-line) */}
         <div className="border-t border-slate-100 dark:border-slate-800 block">
-          <div className="max-w-7xl mx-auto px-4">
-            <nav aria-label="Main Navigation" className="flex items-center justify-start md:justify-center overflow-x-auto md:overflow-hidden no-scrollbar py-2 space-x-2 md:space-x-5">
+          <div className="max-w-7xl mx-auto px-4 py-2">
+            <nav
+              aria-label="Main Navigation"
+              className="flex flex-wrap items-center justify-center gap-y-2 gap-x-1 md:gap-x-4"
+            >
               <Link
                 href="/"
                 aria-label="Home"
-                className="px-1 md:px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0"
+                className="px-2 py-1 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0"
               >
                 {lang === 'bn' ? 'সর্বশেষ' : 'Home'}
               </Link>
@@ -151,7 +176,7 @@ export default function Header() {
               <Link
                 href="/newspapers"
                 aria-label="NewsPapers"
-                className="py-1 px-3 rounded text-xs md:text-sm font-bold uppercase text-white transition shrink-0 flex items-center space-x-1 bg-red-600 shadow-md shadow-red-500/30"
+                className="py-1 px-3 rounded text-xs md:text-sm font-bold uppercase text-white transition shrink-0 flex items-center space-x-1 bg-red-600 shadow-md shadow-red-500/30 hover:bg-red-700"
               >
                 <span>NewsPapers</span> <span>📰</span>
               </Link>
@@ -161,7 +186,7 @@ export default function Header() {
                   key={cat.name}
                   href={cat.link}
                   aria-current={pathname === cat.link ? 'page' : undefined}
-                  className={`py-2 px-1 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 whitespace-nowrap ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
+                  className={`py-1 px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
                 >
                   {lang === 'bn' ? cat.bn : cat.name} {cat.hot && <span className="text-[10px]">🔥</span>}
                 </Link>
