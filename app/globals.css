@@ -2,120 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: #1e293b;
-  /* Slate 800 */
-  --accent: #dc2626;
-  /* Red 600 */
-  --bg-page: #ffffff;
-}
-
-[data-theme='dark'],
-.dark {
-  --primary: #f8fafc;
-  /* Slate 50 */
-  --bg-page: #0f172a;
-  /* Slate 900 */
-}
-
-body {
-  @apply font-sans antialiased bg-slate-50 dark:bg-slate-950;
-  -webkit-tap-highlight-color: transparent;
-  /* Remove blue highlight on tap */
-}
-
-/* App-Like Touch Interactions */
-.active-scale:active {
-  transform: scale(0.98);
-  transition: transform 0.1s;
-}
-
-/* Typography Enhancements */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  @apply tracking-tight font-bold text-slate-900 dark:text-slate-100;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full hover:bg-slate-400;
-}
-
-/* Article Content Links */
-.prose a {
-  @apply text-blue-600 dark:text-blue-400 underline decoration-blue-600/30 hover:decoration-blue-600 transition-colors font-medium;
-  @apply text-blue-600 dark:text-blue-400 underline decoration-blue-600/30 hover:decoration-blue-600 transition-colors font-medium;
-}
-
-/* Reduce image margin in prose to allow closer captions */
-.prose img {
-  @apply mb-1 rounded-xl shadow-sm;
-}
-
-.prose figcaption {
-  @apply mt-1 text-center text-sm text-slate-700 italic bg-slate-50 py-1 px-2 rounded border border-slate-200 inline-block font-medium;
-}
-
-.container-custom {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-}
-
-.hover-lift {
-  @apply transition-transform duration-300 hover:-translate-y-1;
-}
-
-.text-shadow-sm {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* Responsive Embeds (YouTube, etc) */
-iframe,
-video {
-  max-width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  border-radius: 0.5rem;
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  /* IE and Edge */
-  scrollbar-width: none !important;
-  /* Firefox */
-}
-
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
+@layer utilities {
+  .container-custom {
+    @apply container mx-auto px-4 max-w-7xl;
   }
 
-  100% {
-    transform: translateX(-50%);
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
-}
 
-.animate-marquee {
-  animation: marquee 40s linear infinite;
-}
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
+  /* Custom Red Scrollbar (Underline Effect) */
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    /* slate-100 */
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #ef4444;
+    /* red-500 */
+    border-radius: 4px;
+  }
+
+  /* Firefox support */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #ef4444 #f1f5f9;
+  }
 }

@@ -162,12 +162,12 @@ export default function Header() {
           <div className="max-w-7xl mx-auto px-4 py-2">
             <nav
               aria-label="Main Navigation"
-              className="flex flex-wrap items-center justify-center gap-y-2 gap-x-1 md:gap-x-4"
+              className="flex items-center overflow-x-auto gap-x-3 px-1 pb-2 custom-scrollbar md:flex-wrap md:justify-center md:overflow-visible md:pb-0"
             >
               <Link
                 href="/"
                 aria-label="Home"
-                className="px-2 py-1 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0"
+                className="px-2 py-1 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100 hover:text-red-600 transition shrink-0 whitespace-nowrap"
               >
                 {lang === 'bn' ? 'সর্বশেষ' : 'Home'}
               </Link>
@@ -176,7 +176,7 @@ export default function Header() {
               <Link
                 href="/newspapers"
                 aria-label="NewsPapers"
-                className="py-1 px-3 rounded text-xs md:text-sm font-bold uppercase text-white transition shrink-0 flex items-center space-x-1 bg-red-600 shadow-md shadow-red-500/30 hover:bg-red-700"
+                className="py-1 px-3 rounded text-xs md:text-sm font-bold uppercase text-white transition shrink-0 flex items-center space-x-1 bg-red-600 shadow-md shadow-red-500/30 hover:bg-red-700 whitespace-nowrap"
               >
                 <span>NewsPapers</span> <span>📰</span>
               </Link>
@@ -186,7 +186,7 @@ export default function Header() {
                   key={cat.name}
                   href={cat.link}
                   aria-current={pathname === cat.link ? 'page' : undefined}
-                  className={`py-1 px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
+                  className={`py-1 px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 whitespace-nowrap ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
                 >
                   {lang === 'bn' ? cat.bn : cat.name} {cat.hot && <span className="text-[10px]">🔥</span>}
                 </Link>

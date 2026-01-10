@@ -37,11 +37,7 @@ export default function CategoryBlock({ title, news, color = "border-slate-800" 
                             {mainStory.title}
                         </h3>
                         <p className="text-slate-500 text-sm line-clamp-2">
-                            {(() => {
-                                const content = parseNewsContent(mainStory.content);
-                                const plainText = stripHtml(content);
-                                return plainText.substring(0, 120) + (plainText.length > 120 ? "..." : "");
-                            })()}
+                            {mainStory.excerpt}
                         </p>
                     </Link>
                 </div>

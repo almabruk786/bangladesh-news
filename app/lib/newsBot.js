@@ -33,7 +33,7 @@ async function getAvailableModels(apiKey, logger) {
     const generationNames = generationModels.map(m => m.name.replace('models/', ''));
 
     // Preference list
-    const preferred = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"];
+    const preferred = ["gemini-1.5-flash", "gemini-1.5-flash-001", "gemini-1.5-flash-002", "gemini-1.5-pro", "gemini-pro"];
 
     // Sort models: Preferred ones first, then others
     const sortedModels = [];

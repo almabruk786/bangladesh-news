@@ -53,7 +53,7 @@ export default function HeroSection({ heroNews, sideNews }) {
                                 </div>
                                 {/* Hide Excerpt on Mobile to show more image */}
                                 <p className="hidden md:block text-slate-200 text-xs line-clamp-2 leading-relaxed opacity-90">
-                                    {getSmartExcerpt(heroNews.content, 20)}
+                                    {heroNews.excerpt}
                                 </p>
                             </div>
                         </Link>
@@ -96,8 +96,8 @@ export default function HeroSection({ heroNews, sideNews }) {
 
                             <div className="md:col-span-5 flex flex-col justify-between h-full py-1">
                                 <p className="text-slate-600 text-sm leading-relaxed text-justify line-clamp-[8] select-text">
-                                    {/* Smart Excerpt: Increased to 70 words to fill space */}
-                                    {getSmartExcerpt(heroNews.content, 70)}
+                                    {/* Smart Excerpt: Pre-calculated to save data */}
+                                    {heroNews.excerpt}
                                 </p>
                                 <div className="mt-3">
                                     <Link href={`/news/${heroNews.id}`} className="inline-block text-xs font-bold text-red-600 border-b-2 border-red-100 hover:border-red-600 transition-all">

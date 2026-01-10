@@ -1,3 +1,4 @@
+"use client";
 import { useEditor, EditorContent } from '@tiptap/react';
 /* 
    FIX: In this version of @tiptap/react, BubbleMenu and FloatingMenu are not exported from the root.
@@ -70,35 +71,39 @@ const MenuBar = ({ editor, onImageUpload, addVideo, isSourceMode, toggleSource }
     return (
         <div className="flex flex-wrap gap-1 p-2 bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
             {/* ... simplified duplicate buttons for fallback, but main focus is smart menus now ... */}
-            <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('bold') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Bold size={18} /></button>
-            <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('italic') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Italic size={18} /></button>
-            <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('underline') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><UnderlineIcon size={18} /></button>
+            <div className={`flex flex-wrap gap-1 items-center ${isSourceMode ? 'hidden' : 'contents'}`}>
+                <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('bold') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Bold size={18} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('italic') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Italic size={18} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('underline') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><UnderlineIcon size={18} /></button>
 
-            <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
+                <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
 
-            <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Heading2 size={18} /></button>
-            <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 3 }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Heading3 size={18} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Heading2 size={18} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 3 }) ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><Heading3 size={18} /></button>
 
-            <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
+                <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
 
-            <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('bulletList') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><List size={18} /></button>
-            <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('orderedList') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><ListOrdered size={18} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('bulletList') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><List size={18} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('orderedList') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><ListOrdered size={18} /></button>
 
-            <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
+                <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
 
-            <button type="button" onClick={setLink} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('link') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><LinkIcon size={18} /></button>
-            <button type="button" onClick={addImage} className="p-2 rounded hover:bg-slate-200 text-slate-600"><ImageIcon size={18} /></button>
-            <button type="button" onClick={addYoutube} className="p-2 rounded hover:bg-slate-200 text-slate-600"><YoutubeIcon size={18} /></button>
+                <button type="button" onClick={setLink} className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('link') ? 'bg-slate-200 text-blue-600' : 'text-slate-600'}`}><LinkIcon size={18} /></button>
+                <button type="button" onClick={addImage} className="p-2 rounded hover:bg-slate-200 text-slate-600"><ImageIcon size={18} /></button>
+                <button type="button" onClick={addYoutube} className="p-2 rounded hover:bg-slate-200 text-slate-600"><YoutubeIcon size={18} /></button>
+
+                <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
+            </div>
 
             <div className="w-px h-6 bg-slate-300 mx-1 self-center"></div>
 
             <button
                 type="button"
                 onClick={toggleSource}
-                className={`p-2 rounded hover:bg-slate-200 ${isSourceMode ? 'bg-slate-800 text-white hover:bg-slate-900' : 'text-slate-600'}`}
-                title="View HTML Source"
+                className={`p-2 rounded hover:bg-slate-200 ml-auto ${isSourceMode ? 'bg-slate-800 text-white hover:bg-slate-900' : 'text-slate-600'}`}
+                title={isSourceMode ? "Switch to Editor" : "View HTML Source"}
             >
-                <Code size={18} />
+                {isSourceMode ? <span className="text-xs font-bold px-1">WYSIWYG</span> : <Code size={18} />}
             </button>
         </div>
     );
@@ -198,17 +203,17 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
 
     return (
         <div className="border border-slate-200 rounded-xl overflow-hidden bg-white group editor-container">
-            {!isSourceMode && <MenuBar
+            <MenuBar
                 editor={editor}
                 onImageUpload={onImageUpload}
                 addVideo={addVideo}
                 isSourceMode={isSourceMode}
                 toggleSource={toggleSourceMode}
-            />}
+            />
 
             {/* Bubble Menu: Appears on text selection */}
             {editor && (
-                <BubbleMenuComponent editor={editor} tippyOptions={{ duration: 100 }}>
+                <BubbleMenuComponent editor={editor}>
                     <div className="bg-slate-900 text-white rounded-lg shadow-xl border border-slate-700 p-1 flex items-center gap-1">
                         <button
                             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -250,7 +255,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
 
             {/* Floating Menu: Appears on empty lines */}
             {editor && (
-                <FloatingMenuComponent editor={editor} tippyOptions={{ duration: 100 }} className="flex gap-2">
+                <FloatingMenuComponent editor={editor} className="flex gap-2">
                     <button
                         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                         className="bg-white text-slate-500 border border-slate-200 shadow-sm p-1.5 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition flex items-center gap-2 text-xs font-bold"

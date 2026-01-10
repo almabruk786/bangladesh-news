@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const MODELS = ["gemini-1.5-flash", "gemini-2.0-flash"]; // Swapped preference
+const MODELS = ["gemini-1.5-flash-001", "gemini-1.5-flash-002", "gemini-pro"];
 
 async function generateWithGemini(prompt, apiKey) {
     for (const modelName of MODELS) {

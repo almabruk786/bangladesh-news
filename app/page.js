@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getNews } from './lib/firebase';
-import { getBanglaRelativeTime } from './lib/utils';
+import { getBanglaRelativeTime, getSmartExcerpt } from './lib/utils';
 import { generateItemListSchema } from './lib/schemas';
 
 // Modern Components
@@ -23,7 +23,15 @@ export const metadata = {
 
 export default async function Home() {
   // 1. Fetch Data on Server
-  const allDocs = await getNews();
+  const rawDocs = await getNews();
+
+  // OPTIMIZATION: Strip heavy HTML content to reduce page size significantly
+  const allDocs = rawDocs.map(item => ({
+    ...item,
+    content: undefined, // Remove heavy HTML
+    excerpt: getSmartExcerpt(item.content, 60), // Pre-calculate 60-word excerpt for safe reuse
+    // content is now removed, speeding up serialization
+  }));
 
   // 2. Logic for Categorization (Moved from Client to Server)
   const pinned = allDocs.filter(n => n.isPinned);
