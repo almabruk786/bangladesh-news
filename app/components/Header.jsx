@@ -70,7 +70,7 @@ export default function Header() {
             bn: doc.data().bn,
             link: `/category/${doc.data().name}`,
             hot: doc.data().hot,
-            order: doc.data().order || 999 // Default to end of list if no order
+            order: doc.data().order !== undefined ? doc.data().order : 999 // Default to end of list if no order
           }));
 
           // Sort Client-Side

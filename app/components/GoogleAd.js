@@ -48,12 +48,12 @@ export default function GoogleAd({ slotId, format = "auto", responsive = "true",
 
     return (
         <div
-            className="w-full bg-slate-100 dark:bg-slate-900 flex justify-center items-center relative my-4"
-            style={{ minHeight: '280px', ...style }} // Ensure container has height
+            className="w-full flex justify-center items-center relative overflow-hidden"
+            style={{ ...style }}
         >
             <ins className="adsbygoogle"
                 ref={adRef}
-                style={{ display: 'block', width: '100%', minWidth: '200px', ...style }} // Enforce block and min-width
+                style={{ display: 'block', width: '100%', ...style }}
                 data-ad-client="ca-pub-2257905734584691"
                 data-ad-slot={slotId || "3652013893"}
                 data-ad-format={format}

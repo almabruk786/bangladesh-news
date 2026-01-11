@@ -169,10 +169,10 @@ export default function RootLayout({ children }) {
           `}
         </Script>
 
-        {/* ✅ Google AdSense Script */}
+        {/* ✅ Google AdSense Script - Optimized for Speed */}
         <Script
           id="adsense-init"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2257905734584691"
           crossOrigin="anonymous"
         />

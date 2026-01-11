@@ -211,7 +211,9 @@ export default function CategoryManager() {
                 {categories.map((cat) => (
                     <div key={cat.id} className="flex justify-between items-center p-4 bg-white border border-slate-100 rounded-xl shadow-sm hover:shadow-md transition-all group">
                         <div className="flex items-center gap-3">
-                            <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2 py-1 rounded">#{cat.order || 0}</span>
+                            <span className={`text-xs font-bold px-2 py-1 rounded ${cat.order !== undefined ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-400'}`}>
+                                {cat.order !== undefined ? `#${cat.order}` : '—'}
+                            </span>
                             <div>
                                 <h3 className="font-bold text-slate-800">{cat.name}</h3>
                                 <p className="text-sm text-slate-500">{cat.bn || "—"}</p>
