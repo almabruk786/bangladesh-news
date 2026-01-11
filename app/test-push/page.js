@@ -21,6 +21,12 @@ export default function TestPush() {
             const perm = Notification.permission;
             addLog(`Permission: ${perm}`);
 
+            // Pre-check browser capabilities
+            addLog("Checking Browser APIs...");
+            addLog(`ServiceWorker: ${'serviceWorker' in navigator ? 'OK' : 'MISSING'}`);
+            addLog(`PushManager: ${'PushManager' in window ? 'OK' : 'MISSING'}`);
+            addLog(`IndexedDB: ${'indexedDB' in window ? 'OK' : 'MISSING'}`);
+
             if (perm !== 'granted') {
                 addLog("Requesting permission...");
                 const req = await Notification.requestPermission();
