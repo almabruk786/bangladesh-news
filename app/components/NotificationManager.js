@@ -7,6 +7,7 @@ export default function NotificationManager() {
     const [permission, setPermission] = useState('default');
     const [showPrompt, setShowPrompt] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [statusText, setStatusText] = useState("");
 
     useEffect(() => {
         if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -22,32 +23,57 @@ export default function NotificationManager() {
 
     const requestPermission = async () => {
         setIsLoading(true);
+        setStatusText("Please click 'Allow' on the browser popup...");
+
         try {
-            const permissionResult = await Notification.requestPermission();
+            // timeout promise
+            const timeout = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Request timed out")), 15000)
+            );
+
+            // Permission request
+            const permissionReq = Notification.requestPermission();
+
+            const permissionResult = await Promise.race([permissionReq, timeout]);
             setPermission(permissionResult);
 
             if (permissionResult === 'granted') {
-                const token = await getFcmToken("BLxhDnQ4pI6_KxsaFUUaegdHmQPqVkfNtWH1eEsjwHwM_nzEb7dAsNPU9odSY5_3v2S71QXhDgisMLUsfUy8bDM");
+                setStatusText("Connecting...");
+
+                // Token fetch with timeout
+                const tokenPromise = getFcmToken("BLxhDnQ4pI6_KxsaFUUaegdHmQPqVkfNtWH1eEsjwHwM_nzEb7dAsNPU9odSY5_3v2S71QXhDgisMLUsfUy8bDM");
+                const token = await Promise.race([tokenPromise, timeout]);
+
                 if (token) {
-                    await fetch('/api/notifications/subscribe', {
+                    const subRes = await fetch('/api/notifications/subscribe', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token })
                     });
-                    alert("Success! You will now receive updates.");
-                    setShowPrompt(false);
+
+                    if (subRes.ok) {
+                        alert("Success! You will now receive updates.");
+                        setShowPrompt(false);
+                    } else {
+                        throw new Error("Subscription failed");
+                    }
                 } else {
-                    alert("Failed to connect to notification service. Please try again.");
+                    throw new Error("Failed to get token");
                 }
             } else {
                 alert("Notifications blocked. Please enable them in your browser settings.");
                 setShowPrompt(false);
             }
         } catch (error) {
-            console.error('Error requesting permission:', error);
-            alert("Something went wrong. Please try again.");
+            console.error('Permission/Token Error:', error);
+            if (error.message === "Request timed out") {
+                alert("It took too long. Please check if the browser permission popup is waiting for you.");
+            } else {
+                alert("Something went wrong: " + error.message);
+            }
         } finally {
             setIsLoading(false);
+            setStatusText("");
         }
     };
 
@@ -79,7 +105,7 @@ export default function NotificationManager() {
                                 disabled={isLoading}
                                 className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex-1"
                             >
-                                {isLoading ? 'Allowing...' : 'Allow Updates'}
+                                {isLoading ? (statusText || 'Processing...') : 'Allow Updates'}
                             </button>
                             <button
                                 onClick={() => setShowPrompt(false)}
