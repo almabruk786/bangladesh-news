@@ -45,8 +45,10 @@ export default function TestPush() {
 
         } catch (err) {
             setStatus("Error");
-            setError(err.message);
-            addLog(`Catch Error: ${err.message}`);
+            // Show detailed error info
+            const msg = err.message || JSON.stringify(err);
+            setError(msg + (err.code ? ` (Code: ${err.code})` : ""));
+            addLog(`Catch Error: ${msg}`);
             console.error(err);
         }
     };
