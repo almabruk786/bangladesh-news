@@ -60,7 +60,7 @@ export const getFcmToken = async (vapidKey) => {
     if (err.code === 'messaging/invalid-argument') {
       console.error("VAPID Key seems invalid or mismatched with project.");
     }
-    return null;
+    throw err; // Reveal error to caller
   }
 };
 
