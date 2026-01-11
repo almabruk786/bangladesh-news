@@ -8,6 +8,7 @@ import CookieConsent from "./components/CookieConsent";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import NotificationManager from "./components/NotificationManager";
 import { generateOrganizationSchema } from "./lib/schemas";
+import { getCategories } from "./lib/firebase";
 
 import { Inter, Frank_Ruhl_Libre, Noto_Serif_Bengali } from "next/font/google";
 
@@ -104,7 +105,8 @@ export const viewport = {
   ],
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const categories = await getCategories();
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${frankRuhlLibre.variable} ${notoserifBengali.variable}`}>
       <body className={`${inter.className} font-sans flex flex-col min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300`}>
@@ -179,7 +181,7 @@ export default function RootLayout({ children }) {
 
         <ThemeProvider>
           <AuthProvider>
-            <Header />
+            <Header initialCategories={categories} />
             <div className="flex-grow">
               {children}
             </div>

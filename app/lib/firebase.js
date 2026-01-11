@@ -77,3 +77,29 @@ export const getNews = async () => {
     return [];
   }
 };
+
+export const getCategories = async () => {
+  try {
+    const { collection, getDocs, query, orderBy } = await import("firebase/firestore");
+    const q = query(collection(db, "categories"), orderBy("name"));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) return [];
+
+    const cats = snapshot.docs.map(doc => ({
+      name: doc.data().name,
+      bn: doc.data().bn,
+      link: `/category/${doc.data().name}`,
+      hot: doc.data().hot,
+      order: doc.data().order !== undefined ? doc.data().order : 999
+    }));
+
+    // Sort: Order first (asc), then Name (asc)
+    cats.sort((a, b) => (a.order - b.order) || a.name.localeCompare(b.name));
+
+    return cats;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+};

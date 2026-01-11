@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
-export default function Header() {
+export default function Header({ initialCategories = [] }) {
   const { darkMode, toggleTheme, lang } = useTheme();
   const pathname = usePathname();
   const [currentDate, setCurrentDate] = useState("");
@@ -16,6 +16,9 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const router = useRouter();
   const searchRef = useRef(null);
+
+  // Use server-provided categories
+  const categories = initialCategories;
 
   // Close search on click outside
   useEffect(() => {
@@ -54,42 +57,6 @@ export default function Header() {
     setCurrentDate(dateStr);
     setCurrentIso(now.toISOString());
   }, [lang]);
-
-  // Fetch Categories
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    const fetchCats = async () => {
-      try {
-        // Fetch all categories (sorted by name to ensure consistent base)
-        const q = query(collection(db, "categories"), orderBy("name"));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          const cats = snapshot.docs.map(doc => ({
-            name: doc.data().name,
-            bn: doc.data().bn,
-            link: `/category/${doc.data().name}`,
-            hot: doc.data().hot,
-            order: doc.data().order !== undefined ? doc.data().order : 999 // Default to end of list if no order
-          }));
-
-          // Sort Client-Side
-          cats.sort((a, b) => (a.order - b.order) || a.name.localeCompare(b.name));
-
-          setCategories(cats);
-        } else {
-          // Fallback
-          setCategories([
-            { name: "National", bn: "জাতীয়", link: "/category/National" },
-            { name: "Politics", bn: "রাজনীতি", link: "/category/Politics" },
-          ]);
-        }
-      } catch (e) {
-        console.error("Nav Load Error", e);
-      }
-    };
-    fetchCats();
-  }, []);
 
   return (
     <>
