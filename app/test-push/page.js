@@ -53,6 +53,20 @@ export default function TestPush() {
         }
     };
 
+    const resetState = async () => {
+        addLog("Resetting Service Workers...");
+        try {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (let reg of regs) {
+                await reg.unregister();
+                addLog("Unregistered SW");
+            }
+            setStatus("Reset Done. Reload Page now.");
+        } catch (e) {
+            addLog("Reset Error: " + e.message);
+        }
+    };
+
     return (
         <div className="p-10 font-mono text-sm">
             <h1 className="text-xl font-bold mb-4">Push Notification Debugger</h1>
