@@ -5,118 +5,73 @@ import { Bell, X } from 'lucide-react';
 
 export default function NotificationManager() {
     const [permission, setPermission] = useState('default');
-    const [showPrompt, setShowPrompt] = useState(false);
+    const [showBell, setShowBell] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [statusText, setStatusText] = useState("");
 
     useEffect(() => {
         if (typeof window !== 'undefined' && 'Notification' in window) {
             setPermission(Notification.permission);
-
-            // Show prompt if default (not decided yet)
+            // Show bell if permission is 'default' (not chosen yet)
             if (Notification.permission === 'default') {
-                const timer = setTimeout(() => setShowPrompt(true), 3000);
-                return () => clearTimeout(timer);
+                setShowBell(true);
             }
         }
     }, []);
 
     const requestPermission = async () => {
         setIsLoading(true);
-        setStatusText("Please click 'Allow' on the browser popup...");
-
         try {
-            // timeout promise
-            const timeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Request timed out")), 15000)
-            );
-
-            // Permission request
-            const permissionReq = Notification.requestPermission();
-
-            const permissionResult = await Promise.race([permissionReq, timeout]);
+            // Direct request
+            const permissionResult = await Notification.requestPermission();
             setPermission(permissionResult);
 
             if (permissionResult === 'granted') {
-                setStatusText("Connecting...");
-
-                // Token fetch with timeout
-                const tokenPromise = getFcmToken("BLxhDnQ4pI6_KxsaFUUaegdHmQPqVkfNtWH1eEsjwHwM_nzEb7dAsNPU9odSY5_3v2S71QXhDgisMLUsfUy8bDM");
-                const token = await Promise.race([tokenPromise, timeout]);
-
+                const token = await getFcmToken("BLxhDnQ4pI6_KxsaFUUaegdHmQPqVkfNtWH1eEsjwHwM_nzEb7dAsNPU9odSY5_3v2S71QXhDgisMLUsfUy8bDM");
                 if (token) {
-                    const subRes = await fetch('/api/notifications/subscribe', {
+                    await fetch('/api/notifications/subscribe', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token })
                     });
 
-                    if (subRes.ok) {
-                        alert("Success! You will now receive updates.");
-                        setShowPrompt(false);
-                    } else {
-                        throw new Error("Subscription failed");
-                    }
+                    alert("Success! You will now receive updates.");
+                    setShowBell(false);
                 } else {
-                    throw new Error("Failed to get token");
+                    alert("Connected, but failed to save settings.");
                 }
             } else {
-                alert("Notifications blocked. Please enable them in your browser settings.");
-                setShowPrompt(false);
+                // Denied - we hide the bell because we can't ask again easily
+                setShowBell(false);
             }
         } catch (error) {
             console.error('Permission/Token Error:', error);
-            if (error.message === "Request timed out") {
-                alert("It took too long. Please check if the browser permission popup is waiting for you.");
-            } else {
-                alert("Something went wrong: " + error.message);
-            }
         } finally {
             setIsLoading(false);
-            setStatusText("");
         }
     };
 
-    if (!showPrompt) return null;
+    if (!showBell || permission !== 'default') return null;
 
     return (
-        <div className="fixed top-20 left-4 md:left-1/2 md:-translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-5 duration-300">
-            <div className="bg-white p-4 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 w-[320px] md:w-[400px]">
-                <button
-                    onClick={() => setShowPrompt(false)}
-                    className="absolute top-2 right-2 text-slate-400 hover:text-slate-600 p-1"
-                >
-                    <X size={16} />
-                </button>
+        <button
+            onClick={requestPermission}
+            disabled={isLoading}
+            className="fixed bottom-6 right-6 w-12 h-12 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-105 z-50 animate-in zoom-in duration-300 group"
+            title="Enable Notifications"
+        >
+            {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+                <>
+                    <Bell size={24} />
+                    <span className="absolute right-0 top-0 w-3 h-3 bg-red-400 rounded-full animate-ping"></span>
 
-                <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-                        <Bell className="text-red-600" size={20} />
+                    {/* Tooltip on Hover */}
+                    <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs py-1 px-3 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                        Get News Updates
                     </div>
-                    <div>
-                        <h3 className="font-bold text-slate-800 text-sm">Enable Notifications?</h3>
-                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                            Stay updated with breaking news and special stories. No spam, we promise.
-                        </p>
-
-                        <div className="flex gap-2 mt-3">
-                            <button
-                                onClick={requestPermission}
-                                disabled={isLoading}
-                                className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex-1"
-                            >
-                                {isLoading ? (statusText || 'Processing...') : 'Allow Updates'}
-                            </button>
-                            <button
-                                onClick={() => setShowPrompt(false)}
-                                className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold px-4 py-2 rounded-lg transition-colors flex-1"
-                            >
-                                Maybe Later
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                </>
+            )}
+        </button>
     );
 }
