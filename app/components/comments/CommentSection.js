@@ -18,6 +18,7 @@ export default function CommentSection({ articleId }) {
         const q = query(
             collection(db, "comments"),
             where("articleId", "==", articleId),
+            where("status", "==", "published"), // Only show approved comments
             orderBy("createdAt", "desc")
         );
 
@@ -60,9 +61,10 @@ export default function CommentSection({ articleId }) {
             }
 
             if (!data.success) {
-                alert(data.error); // Show AI rejection reason
+                alert(data.error);
             } else {
-                setNewComment(""); // Clear input on success
+                setNewComment("");
+                alert("আপনার মন্তব্য জমা হয়েছে। অ্যাডমিন আপ্রুভ করার পর এটি প্রকাশ করা হবে।");
             }
         } catch (error) {
             console.error("Error submitting comment:", error);

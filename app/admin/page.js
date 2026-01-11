@@ -19,6 +19,7 @@ import UserManager from "./components/UserManager";
 import AutoBot from "./components/AutoBot";
 import LogoFetcher from "./components/LogoFetcher";
 import Messenger from "./components/Messenger"; // Messages Chat System
+import CommentManager from "./components/CommentManager";
 
 const MASTER_PASSWORD = "Arif@42480";
 
@@ -330,6 +331,8 @@ export default function AdminDashboard() {
         return <AutoBot masterKey={MASTER_PASSWORD} />;
       case "messages":
         return <Messenger user={user} />;
+      case "comments":
+        return <CommentManager />;
       default:
         return <DashboardStats stats={stats} />;
     }

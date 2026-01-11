@@ -12,6 +12,12 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+console.log("Firebase Config Debug:", {
+  apiKey: firebaseConfig.apiKey ? "Present" : "MISSING",
+  projectId: firebaseConfig.projectId,
+  senderId: firebaseConfig.messagingSenderId,
+});
+
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
@@ -50,6 +56,10 @@ export const getFcmToken = async (vapidKey) => {
     return null;
   } catch (err) {
     console.error('An error occurred while retrieving token.', err);
+    // Specific error handling for "missing or insufficient permissions" vs "invalid-argument"
+    if (err.code === 'messaging/invalid-argument') {
+      console.error("VAPID Key seems invalid or mismatched with project.");
+    }
     return null;
   }
 };

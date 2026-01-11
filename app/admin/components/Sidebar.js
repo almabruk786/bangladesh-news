@@ -1,5 +1,5 @@
 import {
-    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail, BarChart3, Bot, Newspaper
+    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail, BarChart3, Bot, Newspaper, MessageSquare
 } from "lucide-react";
 
 export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen, onClose }) {
@@ -11,6 +11,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
 
         // Admin Specific Order
         { id: "pending", label: "Inbox (Pending)", icon: FileText, role: "admin" },
+        { id: "comments", label: "Comments", icon: MessageSquare, role: "admin" },
         { id: "messages", label: "Messages", icon: Mail, role: "admin" }, // Also for publisher? Keeping strict to valid logic
         { id: "manage", label: "All News", icon: Newspaper, role: "admin" }, // Using Newspaper icon for 'All News'
         { id: "category", label: "Categories", icon: Tags, role: "admin" },
