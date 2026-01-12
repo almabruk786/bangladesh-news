@@ -25,6 +25,7 @@ import LogoFetcher from "./components/LogoFetcher";
 import Messenger from "./components/Messenger";
 import CommentManager from "./components/CommentManager";
 import ActionPalette from "./components/ActionPalette";
+import NamazTimingPanel from "./components/NamazTimingPanel";
 
 const MASTER_PASSWORD = "Arif@42480";
 
