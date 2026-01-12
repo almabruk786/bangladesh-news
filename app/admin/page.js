@@ -320,6 +320,12 @@ export default function AdminDashboard() {
         return <Messenger user={user} />;
       case "comments":
         return <CommentManager />;
+      case "namaz":
+        return (
+          <div className="max-w-2xl mx-auto pt-8">
+            <NamazTimingPanel />
+          </div>
+        );
       default:
         return <DashboardStats stats={stats} />;
     }
