@@ -7,17 +7,13 @@ class SmartCache {
         this.maxSize = maxSize;
     }
 
-    // Get time-of-day multiplier for dynamic TTL
     getTimeMultiplier() {
         const hour = new Date().getHours();
-        // Peak hours (9 AM - 11 PM Bangladesh): shorter cache
-        // Off-peak (11 PM - 9 AM): longer cache
-        if (hour >= 9 && hour < 23) return 1; // Normal
-        return 3; // 3x longer during off-peak
+        if (hour >= 9 && hour < 23) return 1;
+        return 3;
     }
 
     set(key, value, ttl) {
-        // Apply dynamic TTL based on time
         const dynamicTTL = ttl * this.getTimeMultiplier();
 
         const item = {
@@ -27,7 +23,6 @@ class SmartCache {
             hits: 0
         };
 
-        // LRU: If cache full, remove least recently used
         if (this.cache.size >= this.maxSize) {
             const firstKey = this.cache.keys().next().value;
             this.cache.delete(firstKey);
@@ -41,14 +36,12 @@ class SmartCache {
         if (!item) return null;
 
         const age = Date.now() - item.timestamp;
-        item.hits++; // Track popularity
+        item.hits++;
 
-        // Stale-while-revalidate: Return stale data but mark for refresh
         if (age > item.ttl) {
             return { value: item.value, stale: true };
         }
 
-        // Move to end (LRU)
         this.cache.delete(key);
         this.cache.set(key, item);
 
@@ -63,7 +56,6 @@ class SmartCache {
         }
     }
 
-    // Get cache stats
     getStats() {
         const entries = Array.from(this.cache.entries());
         return {
@@ -79,16 +71,14 @@ class SmartCache {
     }
 }
 
-// Initialize smart caches
-const newsCache = new SmartCache(50); // Cache up to 50 news queries
+const newsCache = new SmartCache(50);
 const categoryCache = new SmartCache(20);
-const articleCache = new SmartCache(100); // Individual articles
+const articleCache = new SmartCache(100);
 
-// Base TTLs (will be multiplied by time-of-day)
 const BASE_TTL = {
-    NEWS: 5 * 60 * 1000,      // 5 minutes (15 min at night)
-    CATEGORIES: 60 * 60 * 1000, // 60 minutes (3 hours at night)
-    ARTICLE: 10 * 60 * 1000    // 10 minutes (30 min at night)
+    NEWS: 5 * 60 * 1000,
+    CATEGORIES: 60 * 60 * 1000,
+    ARTICLE: 10 * 60 * 1000
 };
 
 export const getNews = async () => {
@@ -100,11 +90,9 @@ export const getNews = async () => {
         return cached.value;
     }
 
-    // If stale, return old data but refresh in background
     if (cached && cached.stale) {
         console.log('[getNews] Cache HIT (stale) - returning old data, refreshing...');
 
-        // Background refresh (non-blocking)
         setImmediate(async () => {
             try {
                 const fresh = await fetchNewsFromDb();
@@ -118,7 +106,6 @@ export const getNews = async () => {
         return cached.value;
     }
 
-    // Cache miss - fetch from DB
     console.log('[getNews] Cache MISS - fetching from DB');
     const news = await fetchNewsFromDb();
     newsCache.set(cacheKey, news, BASE_TTL.NEWS);
@@ -127,32 +114,42 @@ export const getNews = async () => {
 
 async function fetchNewsFromDb() {
     if (!adminDb) {
-        console.warn('[getNews] adminDb not available');
+        console.warn('[fetchNewsFromDb] adminDb not available');
         return [];
     }
 
-    const snapshot = await adminDb
-        .collection('articles')
-        .where('status', '==', 'published')
-        .orderBy('publishedAt', 'desc')
-        .limit(100)
-        .get();
+    try {
+        const snapshot = await adminDb
+            .collection('articles')
+            .where('status', '==', 'published')
+            .orderBy('publishedAt', 'desc')
+            .limit(100)
+            .get();
 
-    return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            title: data.title,
-            category: data.category,
-            categories: data.categories,
-            excerpt: data.excerpt,
-            imageUrl: data.imageUrl,
-            imageUrls: data.imageUrls,
-            imageAlt: data.imageAlt,
-            publishedAt: data.publishedAt?.toDate?.()?.toISOString() || data.publishedAt,
-            views: data.views || 0,
-        };
-    });
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title,
+                category: data.category,
+                categories: data.categories,
+                excerpt: data.excerpt,
+                imageUrl: data.imageUrl,
+                imageUrls: data.imageUrls,
+                imageAlt: data.imageAlt,
+                published At: data.publishedAt?.toDate?.()?.toISOString() || data.publishedAt,
+                views: data.views || 0,
+            };
+        });
+    } catch (error) {
+        // Handle quota exceeded gracefully
+        if (error.code === 8 || error.message?.includes('Quota exceeded')) {
+            console.warn('[fetchNewsFromDb] Quota exceeded - returning empty array');
+            return [];
+        }
+        console.error('[fetchNewsFromDb] Error:', error);
+        return [];
+    }
 }
 
 export const getCategories = async () => {
@@ -188,11 +185,20 @@ export const getCategories = async () => {
 async function fetchCategoriesFromDb() {
     if (!adminDb) return [];
 
-    const snapshot = await adminDb.collection('categories').orderBy('order').get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    try {
+        const snapshot = await adminDb.collection('categories').orderBy('order').get();
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        // Handle quota exceeded gracefully
+        if (error.code === 8 || error.message?.includes('Quota exceeded')) {
+            console.warn('[fetchCategoriesFromDb] Quota exceeded - returning empty array');
+            return [];
+        }
+        console.error('[fetchCategoriesFromDb] Error:', error);
+        return [];
+    }
 }
 
-// Cache individual article (useful for trending/related)
 export const getArticleById = async (id) => {
     const cached = articleCache.get(id);
 
@@ -217,15 +223,24 @@ export const getArticleById = async (id) => {
 
     if (!adminDb) return null;
 
-    const doc = await adminDb.collection('articles').doc(id).get();
-    if (!doc.exists) return null;
+    try {
+        const doc = await adminDb.collection('articles').doc(id).get();
+        if (!doc.exists) return null;
 
-    const article = { id: doc.id, ...doc.data() };
-    articleCache.set(id, article, BASE_TTL.ARTICLE);
-    return article;
+        const article = { id: doc.id, ...doc.data() };
+        articleCache.set(id, article, BASE_TTL.ARTICLE);
+        return article;
+    } catch (error) {
+        // Handle quota exceeded
+        if (error.code === 8 || error.message?.includes('Quota exceeded')) {
+            console.warn('[getArticleById] Quota exceeded - returning null');
+            return null;
+        }
+        console.error('[getArticleById] Error:', error);
+        return null;
+    }
 };
 
-// Clear cache manually (useful for admin actions)
 export const clearCache = (type = 'all') => {
     if (type === 'news' || type === 'all') newsCache.clear();
     if (type === 'categories' || type === 'all') categoryCache.clear();
@@ -233,7 +248,6 @@ export const clearCache = (type = 'all') => {
     console.log(`[Cache] Cleared: ${type}`);
 };
 
-// Get cache statistics (for monitoring)
 export const getCacheStats = () => ({
     news: newsCache.getStats(),
     categories: categoryCache.getStats(),
