@@ -32,7 +32,6 @@ export default function ArticleContent({ article, relatedNews }) {
         "headline": article.title,
         "image": imageList,
         "datePublished": article.publishedAt,
-        "datePublished": article.publishedAt,
         "dateModified": article.updatedAt || article.publishedAt,
         "author": [{
             "@type": "Person",
