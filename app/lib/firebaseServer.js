@@ -137,7 +137,7 @@ async function fetchNewsFromDb() {
                 imageUrl: data.imageUrl,
                 imageUrls: data.imageUrls,
                 imageAlt: data.imageAlt,
-                published At: data.publishedAt?.toDate?.()?.toISOString() || data.publishedAt,
+                publishedAt: data.publishedAt?.toDate?.()?.toISOString() || data.publishedAt,
                 views: data.views || 0,
             };
         });
