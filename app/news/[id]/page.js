@@ -30,15 +30,18 @@ export async function generateMetadata({ params }) {
       const seoUrl = `https://bakalia.xyz/news/${generateSeoUrl(article.title, article.id)}`;
 
       // Robust Image Logic
+      const ensureAbsoluteUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        return `https://bakalia.xyz${url.startsWith('/') ? '' : '/'}${url}`;
+      };
+
       let ogImages = [];
       const imgAlt = article.imageAlt || article.title;
+      const primaryImage = ensureAbsoluteUrl(article.ogImage || article.imageUrl || (article.imageUrls?.[0]));
 
-      if (article.ogImage) {
-        ogImages.push({ url: article.ogImage, alt: imgAlt });
-      } else if (article.imageUrl) {
-        ogImages.push({ url: article.imageUrl, alt: imgAlt });
-      } else if (article.imageUrls && article.imageUrls.length > 0) {
-        ogImages.push({ url: article.imageUrls[0], alt: imgAlt });
+      if (primaryImage) {
+        ogImages.push({ url: primaryImage, alt: imgAlt });
       } else {
         ogImages.push({ url: 'https://bakalia.xyz/bn-icon.png', alt: 'Bakalia News Logo' });
       }
