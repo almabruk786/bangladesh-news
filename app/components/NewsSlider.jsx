@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 
-export default function NewsSlider({ images, title }) {
+export default function NewsSlider({ images, title, altText }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // অটোমেটিক স্লাইডার (৩ সেকেন্ড পর পর)
@@ -30,7 +30,7 @@ export default function NewsSlider({ images, title }) {
       <div className="relative w-full h-0 pb-[56.25%] rounded-xl overflow-hidden shadow-lg border border-slate-100">
         <Image
           src={images[0]}
-          alt={title}
+          alt={altText || title}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
@@ -47,7 +47,7 @@ export default function NewsSlider({ images, title }) {
       <div className="absolute inset-0 z-10">
         <Image
           src={images[currentIndex]}
-          alt={`${title} - image ${currentIndex + 1}`}
+          alt={currentIndex === 0 && altText ? altText : `${title} - image ${currentIndex + 1}`}
           fill
           className="object-cover transition-opacity duration-300"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"

@@ -8,7 +8,7 @@ import SeoSidebar from "./SeoSidebar"; // Import SEO Sidebar
 
 export default function NewsEditor({ user, existingData, onCancel, onSuccess }) {
     const [form, setForm] = useState({
-        title: "", content: "", imageUrls: [], category: "বাংলাদেশ", categories: ["বাংলাদেশ"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", authorName: "", imageCaption: ""
+        title: "", content: "", imageUrls: [], category: "বাংলাদেশ", categories: ["বাংলাদেশ"], scheduledAt: "", tags: [], ogImage: "", videoUrl: "", metaDescription: "", authorName: "", imageCaption: "", imageAlt: ""
     });
     const [tagInput, setTagInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -120,7 +120,9 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 metaDescription: existingData.metaDescription || "",
                 isLive: existingData.isLive || false,
                 authorName: existingData.authorName || "",
-                imageCaption: existingData.imageCaption || ""
+                authorName: existingData.authorName || "",
+                imageCaption: existingData.imageCaption || "",
+                imageAlt: existingData.imageAlt || ""
             });
             setDocId(existingData.id);
         }
@@ -362,7 +364,9 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                 metaDescription: form.metaDescription, // Manual SEO Description
                 categories: form.categories, // Array of categories
                 category: form.categories[0] || form.category, // Primary category
-                imageCaption: form.imageCaption // Main Image Caption
+                category: form.categories[0] || form.category, // Primary category
+                imageCaption: form.imageCaption, // Main Image Caption
+                imageAlt: form.imageAlt // Main Image Alt Text
             };
 
             if (docId) {
@@ -753,6 +757,19 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                         value={form.imageCaption || ""}
                         onChange={handleChange}
                     />
+                </div>
+
+                {/* Image Alt Text (SEO) */}
+                <div className="space-y-2 mt-4">
+                    <label className="text-sm font-bold text-slate-700">Image Alt Text (SEO)</label>
+                    <input
+                        name="imageAlt"
+                        placeholder="Describe the image for Google (e.g. 'Prime Minister at Press Conference')"
+                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                        value={form.imageAlt || ""}
+                        onChange={handleChange}
+                    />
+                    <p className="text-xs text-slate-400">Important for SEO and Accessibility. Leave empty to use Title.</p>
                 </div>
 
 

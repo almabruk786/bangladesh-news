@@ -136,7 +136,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                 {article.title}
                             </h1>
 
-                            <NewsSlider images={imageList} title={article.title} />
+                            <NewsSlider images={imageList} title={article.title} altText={article.imageAlt} />
 
                             {/* --- Manual Ad Unit --- */}
                             {/* <div className="w-full">
