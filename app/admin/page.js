@@ -21,6 +21,7 @@ import AutoBot from "./components/AutoBot";
 import LogoFetcher from "./components/LogoFetcher";
 import Messenger from "./components/Messenger";
 import CommentManager from "./components/CommentManager";
+import ActionPalette from "./components/ActionPalette";
 
 const MASTER_PASSWORD = "Arif@42480";
 
@@ -42,6 +43,7 @@ export default function AdminDashboard() {
   }, []);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [popupMsg, setPopupMsg] = useState(null);
 
   // Popup Listener (Global)
@@ -363,6 +365,14 @@ export default function AdminDashboard() {
         logout={logout}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+      />
+
+      {/* Quick Action Palette (Cmd+K) */}
+      <ActionPalette
+        isOpen={isPaletteOpen}
+        onClose={setIsPaletteOpen}
+        user={user}
+        setActiveTab={setActiveTab}
       />
 
       <main className="flex-1 overflow-y-auto h-full relative w-full scroll-smooth bg-[#F8FAFC]">

@@ -9,7 +9,8 @@ export const getNews = async () => {
         const snapshot = await articlesRef
             .where("status", "==", "published")
             .orderBy("publishedAt", "desc")
-            .limit(50)
+            .select('title', 'category', 'publishedAt', 'updatedAt', 'imageUrl', 'imageUrls', 'isPinned', 'views', 'excerpt', 'status')
+            .limit(25)
             .get();
 
         return snapshot.docs.map(doc => {
