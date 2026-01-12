@@ -41,9 +41,19 @@ export async function generateMetadata({ params }) {
       const primaryImage = ensureAbsoluteUrl(article.ogImage || article.imageUrl || (article.imageUrls?.[0]));
 
       if (primaryImage) {
-        ogImages.push({ url: primaryImage, alt: imgAlt });
+        ogImages.push({
+          url: primaryImage,
+          alt: imgAlt,
+          width: 1200,
+          height: 630,
+        });
       } else {
-        ogImages.push({ url: 'https://bakalia.xyz/bn-icon.png', alt: 'Bakalia News Logo' });
+        ogImages.push({
+          url: 'https://bakalia.xyz/bn-icon.png',
+          alt: 'Bakalia News Logo',
+          width: 512,
+          height: 512,
+        });
       }
 
       return {
@@ -62,6 +72,12 @@ export async function generateMetadata({ params }) {
           url: seoUrl,
           siteName: 'বাকলিয়া নিউজ',
           locale: 'bn_BD',
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: article.title,
+          description: description,
+          images: [primaryImage || 'https://bakalia.xyz/bn-icon.png'],
         },
       };
     }
