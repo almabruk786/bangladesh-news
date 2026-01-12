@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { MapPin, Moon, Sun, Sunrise, Sunset, Clock, Bell, BellOff, Navigation, Loader } from 'lucide-react';
+import { MapPin, Moon, Sun, Sunrise, Sunset, Clock, Bell, BellOff, Navigation, Loader, Volume2, VolumeX } from 'lucide-react';
 
 const BD_CITIES = [
     { name: 'Dhaka', nameBn: 'ঢাকা', lat: 23.8103, lng: 90.4125 },
@@ -23,9 +23,9 @@ export default function NamazTimingPanel() {
     const [hijriDate, setHijriDate] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [usingGPS, setUsingGPS] = useState(false);
-    const [notifications, setNotifications] = useState({
-        Fajr: true, Dhuhr: true, Asr: true, Maghrib: true, Isha: true
-    });
+
+    // Global notification state for Fard prayers
+    const [fardNotificationsEnabled, setFardNotificationsEnabled] = useState(true);
 
     // Helper to request notification permission
     useEffect(() => {
@@ -97,7 +97,6 @@ export default function NamazTimingPanel() {
                     // Format Hijri Date
                     if (data.data.date.hijri) {
                         const h = data.data.date.hijri;
-                        // Map Hijri months to Bangla (Approximate transliteration)
                         const hijriMonths = {
                             'Muharram': 'মহররম', 'Safar': 'সফর', 'Rabi al-Awwal': 'রবিউল আউয়াল', 'Rabi al-Thani': 'রবিউল সানি',
                             'Jumada al-Ula': 'জমাদিউল আউয়াল', 'Jumada al-Akhirah': 'জমাদিউল সানি', 'Rajab': 'রজব', 'Sha\'ban': 'শাবান',
@@ -164,7 +163,6 @@ export default function NamazTimingPanel() {
             }
             setNextEvent(next);
 
-            // Time Diff
             const diff = next.time - currentTime;
             const h = Math.floor(diff / 60);
             const m = diff % 60;
@@ -172,8 +170,8 @@ export default function NamazTimingPanel() {
             const mStr = `${toBnNum(m)} মিনিট`;
             setTimeLeft(`${hStr} ${mStr} বাকি`);
 
-            // Notifications logic (check every minute)
-            if (diff === 10 && next.type === 'fard' && notifications[next.name] && Notification.permission === 'granted') {
+            // Notifications
+            if (diff === 10 && next.type === 'fard' && fardNotificationsEnabled && Notification.permission === 'granted') {
                 new Notification('নামাজের সময়', {
                     body: `${next.nameBn} নামাজের ১০ মিনিট বাকি`,
                     icon: '/bn-icon.png'
@@ -184,7 +182,7 @@ export default function NamazTimingPanel() {
         updateTimer();
         const interval = setInterval(updateTimer, 60000);
         return () => clearInterval(interval);
-    }, [prayerTimes, notifications]);
+    }, [prayerTimes, fardNotificationsEnabled]);
 
 
     // Tab Content Generation
@@ -192,36 +190,19 @@ export default function NamazTimingPanel() {
         if (!prayerTimes) return [];
         const t = prayerTimes.timings;
 
-        // Time formatter: 24h -> Bangla 12h
-        const fmt = (timeStr, addMinsVal = 0) => {
-            const [h, m] = timeStr.split(':').map(Number);
-            const date = new Date();
-            date.setHours(h);
-            date.setMinutes(m + addMinsVal);
-
-            let hours = date.getHours();
-            const minutes = date.getMinutes();
-            const ampm = hours >= 12 ? 'পিএম' : 'এএম';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
-
-            return `${toBnNum(hours)}:${toBnNum(String(minutes).padStart(2, '0'))}`; // Simple format
-        };
-
         const fmt24 = (timeStr, addMinsVal = 0) => {
             const [h, m] = timeStr.split(':').map(Number);
             const date = new Date(); date.setHours(h); date.setMinutes(m + addMinsVal);
             return `${toBnNum(String(date.getHours()).padStart(2, '0'))}:${toBnNum(String(date.getMinutes()).padStart(2, '0'))}`;
         };
 
-
         if (activeTab === 'fard') {
             return [
-                { id: 'Fajr', name: 'ফজর', time: fmt24(t.Fajr), end: fmt24(t.Sunrise), icon: <Sunrise size={20} /> },
-                { id: 'Dhuhr', name: 'যোহর', time: fmt24(t.Dhuhr), end: fmt24(t.Asr), icon: <Sun size={20} /> },
-                { id: 'Asr', name: 'আসর', time: fmt24(t.Asr), end: fmt24(t.Maghrib), icon: <Sun size={20} className="opacity-70" /> },
-                { id: 'Maghrib', name: 'মাগরিব', time: fmt24(t.Maghrib), end: fmt24(t.Isha), icon: <Sunset size={20} /> },
-                { id: 'Isha', name: 'এশা', time: fmt24(t.Isha), end: fmt24(t.Fajr), icon: <Moon size={20} /> },
+                { id: 'Fajr', name: 'ফজর', start: fmt24(t.Fajr), end: fmt24(t.Sunrise), icon: <Sunrise size={20} /> },
+                { id: 'Dhuhr', name: 'যোহর', start: fmt24(t.Dhuhr), end: fmt24(t.Asr), icon: <Sun size={20} /> },
+                { id: 'Asr', name: 'আসর', start: fmt24(t.Asr), end: fmt24(t.Maghrib), icon: <Sun size={20} className="opacity-70" /> },
+                { id: 'Maghrib', name: 'মাগরিব', start: fmt24(t.Maghrib), end: fmt24(t.Isha), icon: <Sunset size={20} /> },
+                { id: 'Isha', name: 'এশা', start: fmt24(t.Isha), end: fmt24(t.Fajr), icon: <Moon size={20} /> },
             ];
         }
 
@@ -242,10 +223,6 @@ export default function NamazTimingPanel() {
         }
     };
 
-    const toggleNotif = (id) => {
-        setNotifications(prev => ({ ...prev, [id]: !prev[id] }));
-    };
-
     if (isLoading && !prayerTimes) return (
         <div className="flex justify-center items-center h-96">
             <Loader className="animate-spin text-green-600" size={32} />
@@ -257,7 +234,7 @@ export default function NamazTimingPanel() {
     return (
         <div className="max-w-md mx-auto bg-gray-50 dark:bg-gray-900 min-h-[600px] shadow-2xl rounded-[30px] overflow-hidden border border-gray-100 dark:border-gray-800 relative font-sans">
 
-            {/* Header: Location & GPS */}
+            {/* Header: Location & Notifications */}
             <div className="bg-white dark:bg-gray-900 p-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                 <div className="flex items-center gap-2">
                     <MapPin className="text-green-600 dark:text-green-400" size={20} />
@@ -269,7 +246,6 @@ export default function NamazTimingPanel() {
                             onChange={(e) => setLocation(BD_CITIES.find(c => c.name === e.target.value))}
                             className="font-bold text-gray-800 dark:text-gray-200 bg-transparent outline-none cursor-pointer appearance-none text-lg"
                         >
-                            {/* GPS Option */}
                             <option value="My Location">📍 আমার অবস্থান (GPS)</option>
                             {BD_CITIES.filter(c => c.name !== 'My Location').map(c => (
                                 <option key={c.name} value={c.name}>{c.nameBn}</option>
@@ -277,9 +253,18 @@ export default function NamazTimingPanel() {
                         </select>
                     )}
                 </div>
-                <button onClick={handleGPSLocation} className="p-2 bg-green-50 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400 hover:bg-green-100 transition-colors" title="GPS ব্যবহার করুন">
-                    <Navigation size={18} />
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setFardNotificationsEnabled(!fardNotificationsEnabled)}
+                        className={`p-2 rounded-full transition-colors ${fardNotificationsEnabled ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-100'}`}
+                        title="ফরজ নামাজের নোটিফিকেশন"
+                    >
+                        {fardNotificationsEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                    </button>
+                    <button onClick={handleGPSLocation} className="p-2 bg-green-50 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400 hover:bg-green-100 transition-colors" title="GPS ব্যবহার করুন">
+                        <Navigation size={18} />
+                    </button>
+                </div>
             </div>
 
             {/* Hero Card */}
@@ -287,13 +272,11 @@ export default function NamazTimingPanel() {
                 <div className="bg-gradient-to-br from-green-600 to-emerald-700 rounded-[24px] p-6 text-white text-center shadow-lg relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-10"></div>
 
-                    {/* Dates */}
                     <div className="relative z-10 flex flex-col gap-1">
                         <p className="text-lg font-bold">{currentDate || 'তারিখ লোড হচ্ছে...'}</p>
                         <p className="text-sm font-medium opacity-80">{hijriDate || 'হিজরি তারিখ...'}</p>
                     </div>
 
-                    {/* Countdown Ring */}
                     <div className="my-6 relative flex items-center justify-center z-10">
                         <div className="w-52 h-52 rounded-full border-[6px] border-white/20 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md relative shadow-inner">
                             <div className="absolute inset-0 rounded-full border-[6px] border-t-white border-r-white/50 border-b-transparent border-l-transparent rotate-45"></div>
@@ -304,7 +287,6 @@ export default function NamazTimingPanel() {
                         </div>
                     </div>
 
-                    {/* Stats */}
                     <div className="flex justify-between items-center px-2 mt-2 relative z-10">
                         <div className="text-left">
                             <div className="flex items-center gap-1 mb-1 opacity-90">
@@ -358,28 +340,13 @@ export default function NamazTimingPanel() {
                             )}
                             <div>
                                 <span className="font-bold text-gray-800 dark:text-gray-200 text-xl block">{item.name}</span>
-                                {item.end && activeTab === 'fard' && (
-                                    <span className="text-xs text-gray-400">শেষ: {item.end}</span>
-                                )}
                             </div>
                         </div>
 
                         <div className="flex items-center gap-3">
                             <span className="font-mono font-bold text-gray-800 dark:text-gray-200 text-2xl">
-                                {item.time || item.start}
-                                {activeTab !== 'fard' && <span className="text-gray-400 mx-1">-</span>}
-                                {activeTab !== 'fard' && item.end}
+                                {item.start} &nbsp;—&nbsp; {item.end}
                             </span>
-
-                            {/* Notification Toggle for Fard */}
-                            {activeTab === 'fard' && (
-                                <button
-                                    onClick={() => toggleNotif(item.id)}
-                                    className={`p-2 rounded-full transition-colors ${notifications[item.id] ? 'text-green-600 bg-green-50' : 'text-gray-300 bg-gray-100'}`}
-                                >
-                                    {notifications[item.id] ? <Bell size={20} fill="currentColor" /> : <BellOff size={20} />}
-                                </button>
-                            )}
                         </div>
                     </div>
                 ))}
