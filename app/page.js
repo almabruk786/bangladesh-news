@@ -25,12 +25,11 @@ export default async function Home() {
   // 1. Fetch Data on Server
   const rawDocs = await getNews();
 
-  // OPTIMIZATION: Strip heavy HTML content to reduce page size significantly
+  // OPTIMIZATION: Stripping content is now done in getNews(), but we ensure excerpt exists here
   const allDocs = rawDocs.map(item => ({
     ...item,
-    content: undefined, // Remove heavy HTML
-    excerpt: getSmartExcerpt(item.content, 60), // Pre-calculate 60-word excerpt for safe reuse
-    // content is now removed, speeding up serialization
+    excerpt: item.excerpt || getSmartExcerpt(item.content, 60),
+    content: undefined,
   }));
 
   // 2. Logic for Categorization (Moved from Client to Server)
