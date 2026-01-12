@@ -144,6 +144,7 @@ export default function AdminDashboard() {
     fetchUpdates(); // Initial call
     const interval = setInterval(fetchUpdates, 30000); // Poll every 30s
 
+    // CRITICAL: Cleanup interval to prevent memory leak & quota exhaustion
     return () => clearInterval(interval);
   }, [user]);
 
