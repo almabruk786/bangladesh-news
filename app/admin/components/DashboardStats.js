@@ -53,8 +53,7 @@ export default function DashboardStats({ stats }) {
                     key={idx}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1, duration: 0.4 }}
-                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ delay: idx * 0.05, duration: 0.2 }}
                     className={`relative overflow-hidden bg-gradient-to-br ${card.gradient} rounded-2xl p-6 text-white shadow-xl ${card.shadow}`}
                 >
                     {/* Background Pattern */}
