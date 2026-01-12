@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 // New Widgets
 import PerformanceChart from './PerformanceChart';
 import RealTimeFeed from './RealTimeFeed';
+import NamazTimingPanel from './NamazTimingPanel';
 
 export default function DashboardOverview({ stats, user }) {
     const [trendingNews, setTrendingNews] = useState([]);
