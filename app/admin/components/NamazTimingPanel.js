@@ -62,9 +62,30 @@ export default function NamazTimingPanel() {
 
     // Bangla Number Converter
     const toBnNum = (str) => {
-        if (!str) return '';
+        if (str === null || str === undefined) return '';
         const enObj = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯' };
         return String(str).replace(/[0-9]/g, match => enObj[match]);
+    };
+
+    // Helper: 12-Hour Bangla Time Formatter
+    const formatTimeBN = (timeStr, addMinsVal = 0) => {
+        if (!timeStr) return '';
+        const [h, m] = timeStr.split(':').map(Number);
+        const date = new Date();
+        date.setHours(h);
+        date.setMinutes(m + addMinsVal);
+
+        let hours = date.getHours();
+        const minutes = date.getMinutes();
+
+        // Convert to 12-hour format
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+
+        const hStr = toBnNum(String(hours).padStart(2, '0'));
+        const mStr = toBnNum(String(minutes).padStart(2, '0'));
+
+        return `${hStr}:${mStr}`;
     };
 
     // Fetch Prayer Times
@@ -144,10 +165,10 @@ export default function NamazTimingPanel() {
                 { name: 'Fajr', nameBn: 'ফজর', time: fajrMin, type: 'fard' },
                 { name: 'Sunrise', nameBn: 'সূর্যোদয়', time: sunriseMin, type: 'haram' },
                 { name: 'Ishraq', nameBn: 'ইশরাক', time: sunriseMin + 15, type: 'nafl' },
-                { name: 'Zawal', nameBn: 'জাওয়াল (নিষিদ্ধ)', time: dhuhrMin - 15, type: 'haram' },
+                { name: 'Zawal', nameBn: 'জাওয়াল', time: dhuhrMin - 15, type: 'haram' },
                 { name: 'Dhuhr', nameBn: 'যোহর', time: dhuhrMin, type: 'fard' },
                 { name: 'Asr', nameBn: 'আসর', time: toMins(timings.Asr), type: 'fard' },
-                { name: 'Sunset', nameBn: 'সূর্যাস্ত (নিষিদ্ধ)', time: sunsetMin - 15, type: 'haram' },
+                { name: 'Sunset', nameBn: 'সূর্যাস্ত', time: sunsetMin - 15, type: 'haram' },
                 { name: 'Maghrib', nameBn: 'মাগরিব', time: maghribMin, type: 'fard' },
                 { name: 'Awwabin', nameBn: 'আওয়াবিন', time: maghribMin + 20, type: 'nafl' },
                 { name: 'Isha', nameBn: 'এশা', time: ishaMin, type: 'fard' },
@@ -190,35 +211,29 @@ export default function NamazTimingPanel() {
         if (!prayerTimes) return [];
         const t = prayerTimes.timings;
 
-        const fmt24 = (timeStr, addMinsVal = 0) => {
-            const [h, m] = timeStr.split(':').map(Number);
-            const date = new Date(); date.setHours(h); date.setMinutes(m + addMinsVal);
-            return `${toBnNum(String(date.getHours()).padStart(2, '0'))}:${toBnNum(String(date.getMinutes()).padStart(2, '0'))}`;
-        };
-
         if (activeTab === 'fard') {
             return [
-                { id: 'Fajr', name: 'ফজর', start: fmt24(t.Fajr), end: fmt24(t.Sunrise), icon: <Sunrise size={20} /> },
-                { id: 'Dhuhr', name: 'যোহর', start: fmt24(t.Dhuhr), end: fmt24(t.Asr), icon: <Sun size={20} /> },
-                { id: 'Asr', name: 'আসর', start: fmt24(t.Asr), end: fmt24(t.Maghrib), icon: <Sun size={20} className="opacity-70" /> },
-                { id: 'Maghrib', name: 'মাগরিব', start: fmt24(t.Maghrib), end: fmt24(t.Isha), icon: <Sunset size={20} /> },
-                { id: 'Isha', name: 'এশা', start: fmt24(t.Isha), end: fmt24(t.Fajr), icon: <Moon size={20} /> },
+                { id: 'Fajr', name: 'ফজর', start: formatTimeBN(t.Fajr), end: formatTimeBN(t.Sunrise), icon: <Sunrise size={20} /> },
+                { id: 'Dhuhr', name: 'যোহর', start: formatTimeBN(t.Dhuhr), end: formatTimeBN(t.Asr), icon: <Sun size={20} /> },
+                { id: 'Asr', name: 'আসর', start: formatTimeBN(t.Asr), end: formatTimeBN(t.Maghrib), icon: <Sun size={20} className="opacity-70" /> },
+                { id: 'Maghrib', name: 'মাগরিব', start: formatTimeBN(t.Maghrib), end: formatTimeBN(t.Isha), icon: <Sunset size={20} /> },
+                { id: 'Isha', name: 'এশা', start: formatTimeBN(t.Isha), end: formatTimeBN(t.Fajr), icon: <Moon size={20} /> },
             ];
         }
 
         if (activeTab === 'nafl') {
             return [
-                { name: 'ইশরাক', start: fmt24(t.Sunrise, 15), end: fmt24(t.Dhuhr, -45) },
-                { name: 'আওয়াবিন', start: fmt24(t.Maghrib, 20), end: fmt24(t.Isha, -15) },
-                { name: 'তাহাজ্জুদ', start: fmt24(t.Isha, 180), end: fmt24(t.Fajr, -30) },
+                { name: 'ইশরাক', start: formatTimeBN(t.Sunrise, 15), end: formatTimeBN(t.Dhuhr, -45) },
+                { name: 'আওয়াবিন', start: formatTimeBN(t.Maghrib, 20), end: formatTimeBN(t.Isha, -15) },
+                { name: 'তাহাজ্জুদ', start: formatTimeBN(t.Isha, 180), end: formatTimeBN(t.Fajr, -30) },
             ];
         }
 
         if (activeTab === 'haram') {
             return [
-                { name: 'সূর্যোদয়', start: t.Sunrise, end: fmt24(t.Sunrise, 15) },
-                { name: 'জাওয়াল (দ্বিপ্রহর)', start: fmt24(t.Dhuhr, -15), end: fmt24(t.Dhuhr, -5) },
-                { name: 'সূর্যাস্ত', start: fmt24(t.Maghrib, -15), end: t.Maghrib },
+                { name: 'সূর্যোদয়', start: formatTimeBN(t.Sunrise), end: formatTimeBN(t.Sunrise, 15) },
+                { name: 'জাওয়াল (দ্বিপ্রহর)', start: formatTimeBN(t.Dhuhr, -15), end: formatTimeBN(t.Dhuhr, -5) },
+                { name: 'সূর্যাস্ত', start: formatTimeBN(t.Maghrib, -15), end: formatTimeBN(t.Maghrib) }, // Haram ends exactly at Maghrib
             ];
         }
     };
@@ -292,13 +307,13 @@ export default function NamazTimingPanel() {
                             <div className="flex items-center gap-1 mb-1 opacity-90">
                                 <Sunrise size={16} /> <span className="text-xs font-bold">সেহরি শেষ</span>
                             </div>
-                            <p className="text-lg font-bold">{toBnNum(prayerTimes.timings.Fajr)}</p>
+                            <p className="text-lg font-bold">{formatTimeBN(prayerTimes.timings.Fajr)}</p>
                         </div>
                         <div className="text-right">
                             <div className="flex items-center gap-1 justify-end mb-1 opacity-90">
                                 <Sunset size={16} /> <span className="text-xs font-bold">ইফতার শুরু</span>
                             </div>
-                            <p className="text-lg font-bold">{toBnNum(prayerTimes.timings.Maghrib)}</p>
+                            <p className="text-lg font-bold">{formatTimeBN(prayerTimes.timings.Maghrib)}</p>
                         </div>
                     </div>
                 </div>
