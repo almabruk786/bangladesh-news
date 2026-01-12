@@ -96,8 +96,12 @@ export default function DashboardOverview({ stats, user }) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-            {/* ROW 1: Performance + Live Feed */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[400px]">
+            {/* ROW 1: Namaz + Performance + Live Feed */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Namaz Timing - First Priority */}
+                <div className="h-full">
+                    <NamazTimingPanel />
+                </div>
                 <div className="lg:col-span-2 h-full">
                     <PerformanceChart />
                 </div>
