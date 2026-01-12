@@ -421,7 +421,7 @@ export default function AdminDashboard() {
               flex-1 transition-all duration-300 ease-in-out
               ${isNavigating ? 'opacity-0 scale-95 blur-sm translate-y-4' : 'opacity-100 scale-100 blur-0 translate-y-0'}
           `}>
-            {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && activeTab !== "dashboard" && activeTab !== "auto" && user.role === "admin" && (
+            {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && activeTab !== "dashboard" && activeTab !== "auto" && activeTab !== "namaz" && user.role === "admin" && (
               <div className="mb-8">
                 <DashboardStats stats={stats} />
               </div>
