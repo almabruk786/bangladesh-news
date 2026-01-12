@@ -38,7 +38,15 @@ export async function generateMetadata({ params }) {
 
       let ogImages = [];
       const imgAlt = article.imageAlt || article.title;
-      const primaryImage = ensureAbsoluteUrl(article.ogImage || article.imageUrl || (article.imageUrls?.[0]));
+
+      // Try to find image in content if metadata is missing
+      let contentImage = null;
+      if (!article.ogImage && !article.imageUrl && (!article.imageUrls || article.imageUrls.length === 0)) {
+        const imgMatch = article.content?.match(/<img[^>]+src="([^">]+)"/);
+        if (imgMatch) contentImage = imgMatch[1];
+      }
+
+      const primaryImage = ensureAbsoluteUrl(article.ogImage || article.imageUrl || (article.imageUrls?.[0]) || contentImage);
 
       if (primaryImage) {
         ogImages.push({
