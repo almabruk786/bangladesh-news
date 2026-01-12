@@ -31,10 +31,17 @@ export async function generateMetadata({ params }) {
 
       // Robust Image Logic
       let ogImages = [];
-      if (article.ogImage) ogImages.push(article.ogImage);
-      else if (article.imageUrl) ogImages.push(article.imageUrl);
-      else if (article.imageUrls && article.imageUrls.length > 0) ogImages.push(article.imageUrls[0]);
-      else ogImages.push('https://bakalia.xyz/bn-icon.png'); // Fallback
+      const imgAlt = article.imageAlt || article.title;
+
+      if (article.ogImage) {
+        ogImages.push({ url: article.ogImage, alt: imgAlt });
+      } else if (article.imageUrl) {
+        ogImages.push({ url: article.imageUrl, alt: imgAlt });
+      } else if (article.imageUrls && article.imageUrls.length > 0) {
+        ogImages.push({ url: article.imageUrls[0], alt: imgAlt });
+      } else {
+        ogImages.push({ url: 'https://bakalia.xyz/bn-icon.png', alt: 'Bakalia News Logo' });
+      }
 
       return {
         title: `${article.title} | Bakalia News`,
