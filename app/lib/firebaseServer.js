@@ -1,4 +1,5 @@
 import { adminDb } from "./firebaseAdmin";
+import { getSmartExcerpt } from "./utils";
 
 export const getNews = async () => {
     try {
@@ -9,16 +10,25 @@ export const getNews = async () => {
         const snapshot = await articlesRef
             .where("status", "==", "published")
             .orderBy("publishedAt", "desc")
-            .select('title', 'category', 'publishedAt', 'updatedAt', 'imageUrl', 'imageUrls', 'isPinned', 'views', 'excerpt', 'status')
+            .select('title', 'category', 'publishedAt', 'updatedAt', 'imageUrl', 'imageUrls', 'isPinned', 'views', 'excerpt', 'status', 'content')
             .limit(25)
             .get();
 
+
+
         return snapshot.docs.map(doc => {
             const data = doc.data();
+
+            // Smart Excerpt Fallback (Server-Side)
+            // If DB excerpt is missing, generate it from content
+            const finalExcerpt = data.excerpt || getSmartExcerpt(data.content, 180);
+
             // Ensure specific fields are serializable for Next.js Server Components
             return {
                 id: doc.id,
                 ...data,
+                content: undefined, // OPTIMIZATION: Don't send heavy content to client
+                excerpt: finalExcerpt,
                 // serialize timestamps if they exist and are not already strings
                 publishedAt: (data.publishedAt && data.publishedAt.toDate) ? data.publishedAt.toDate().toISOString() : data.publishedAt,
                 updatedAt: (data.updatedAt && data.updatedAt.toDate) ? data.updatedAt.toDate().toISOString() : data.updatedAt,
