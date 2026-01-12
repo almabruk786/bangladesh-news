@@ -5,6 +5,9 @@ import { generateNewsArticleSchema, generateBreadcrumbSchema } from '../../lib/s
 import { parseNewsContent, getSmartExcerpt } from '../../lib/utils';
 import { extractIdFromUrl, generateSeoUrl } from '../../lib/urlUtils';
 
+// ISR: Revalidate every 5 minutes (reduces Firestore reads dramatically on Vercel)
+export const revalidate = 300;
+
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
   const { id: slugId } = await params;

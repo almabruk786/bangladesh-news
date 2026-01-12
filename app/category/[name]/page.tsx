@@ -3,6 +3,9 @@ import CategoryClient from "./CategoryClient";
 import { adminDb } from "../../lib/firebaseAdmin";
 import { getCategories } from "../../lib/firebaseServer";
 
+// ISR: Revalidate every 2 minutes (categories change less frequently)
+export const revalidate = 120;
+
 // Helper to fetch news on the server
 async function getCategoryNews(categoryName: string) {
   // Fetch dynamic categories to resolve English/Bangla names
