@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { Moon, Sun, Search, X, Menu as MenuIcon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { usePathname, useRouter } from 'next/navigation';
-import { collection, query, orderBy, getDocs } from "firebase/firestore";
-import { db } from "../lib/firebase";
 
 export default function Header({ initialCategories = [] }) {
   const { darkMode, toggleTheme, lang } = useTheme();

@@ -8,9 +8,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Allow mobile testing on local network
-  experimental: {
-    allowedDevOrigins: ['localhost:3000', '192.168.0.162:3000'],
-  },
+  // allowedDevOrigins is not supported in this version's experimental config or was causing issues
+  // experimental: {
+  //   allowedDevOrigins: ['localhost:3000', '192.168.0.162:3000'],
+  // },
   // ১. সব জায়গা থেকে ইমেজ লোড করার পারমিশন
   images: {
     unoptimized: false,

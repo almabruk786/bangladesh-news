@@ -56,9 +56,13 @@ const getAdminMessaging = () => {
 };
 
 // Robust mock to prevent crashes if init fails
+// Robust mock to prevent crashes if init fails
 const mockDb = {
     collection: () => ({
-        get: async () => ({ docs: [] }),
+        where: function () { return this; },
+        orderBy: function () { return this; },
+        limit: function () { return this; },
+        get: async () => ({ docs: [], empty: true }),
         doc: () => ({
             set: async () => console.warn("Mock Firestore: Data not saved (Init failed)"),
             get: async () => ({ exists: false, data: () => ({}) }),

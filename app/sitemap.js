@@ -1,4 +1,4 @@
-import { getNews } from './lib/firebase';
+import { getNews } from './lib/firebaseServer';
 
 export default async function sitemap() {
     const baseUrl = 'https://bakalia.xyz';

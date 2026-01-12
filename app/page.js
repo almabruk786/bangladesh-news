@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { getNews } from './lib/firebase';
+import { getNews } from './lib/firebaseServer';
 import { getBanglaRelativeTime, getSmartExcerpt } from './lib/utils';
 import { generateItemListSchema } from './lib/schemas';
 

@@ -1,18 +1,18 @@
-import { db } from '../../lib/firebase';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { adminDb } from '../../lib/firebaseAdmin';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const q = query(
-      collection(db, "articles"),
-      orderBy("publishedAt", "desc"),
-      limit(20)
-    );
+    if (!adminDb) return new Response("Database Error", { status: 500 });
 
-    const querySnapshot = await getDocs(q);
-    const articles = querySnapshot.docs.map(doc => ({
+    // Use Admin SDK
+    const snapshot = await adminDb.collection("articles")
+      .orderBy("publishedAt", "desc")
+      .limit(20)
+      .get();
+
+    const articles = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));

@@ -1,14 +1,15 @@
-import { db } from '../../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { adminDb } from '../../lib/firebaseAdmin';
 import RedirectClient from './RedirectClient';
 
 // Server Component for Metadata & Data Fetching
 export async function generateMetadata({ params }) {
     const { id } = await params;
-    const docRef = doc(db, "newspapers", id);
-    const snap = await getDoc(docRef);
 
-    if (snap.exists()) {
+    if (!adminDb) return { title: 'Newspaper Not Found' };
+
+    const snap = await adminDb.collection("newspapers").doc(id).get();
+
+    if (snap.exists) {
         const data = snap.data();
         return {
             title: `${data.name} - Read Online | Bakalia News`,
@@ -26,10 +27,11 @@ export default async function SitePage({ params }) {
     const { id } = await params;
 
     // Fetch Data on Server
-    const docRef = doc(db, "newspapers", id);
-    const snap = await getDoc(docRef);
+    if (!adminDb) return <div className="p-20 text-center text-red-500">System Error: DB Connection Failed</div>;
 
-    if (!snap.exists()) {
+    const snap = await adminDb.collection("newspapers").doc(id).get();
+
+    if (!snap.exists) {
         return <div className="p-20 text-center font-bold text-slate-500"> Newspaper not found </div>;
     }
 

@@ -3,7 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "./context/ThemeContext";
 import ConditionalAuthWrapper from "./components/ConditionalAuthWrapper";
 import { generateOrganizationSchema } from "./lib/schemas";
-import { getCategories } from "./lib/firebase";
+import { getCategories } from "./lib/firebaseServer";
 
 import { Inter, Frank_Ruhl_Libre, Noto_Serif_Bengali } from "next/font/google";
 
