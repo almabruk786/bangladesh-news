@@ -1,5 +1,4 @@
-import { db } from '../../lib/firebase';
-import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { adminDb } from '../../lib/firebaseAdmin';
 import Link from 'next/link';
 import ArticleContent from './ArticleContent';
 import { generateNewsArticleSchema, generateBreadcrumbSchema } from '../../lib/schemas';
@@ -9,34 +8,55 @@ import { extractIdFromUrl, generateSeoUrl } from '../../lib/urlUtils';
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
   const { id: slugId } = await params;
-  const id = extractIdFromUrl(slugId) || slugId; // Support both "123" and "news-title-123"
+  const id = extractIdFromUrl(slugId) || slugId;
 
-  const docRef = doc(db, "articles", id);
-  const docSnap = await getDoc(docRef);
+  if (!adminDb) return { title: "News Not Found" };
 
-  if (docSnap.exists()) {
-    const article = { id: docSnap.id, ...docSnap.data() };
-    const description = article.metaDescription || getSmartExcerpt(article.content, 30);
-    const seoUrl = `https://bakalia.xyz/news/${generateSeoUrl(article.title, article.id)}`;
+  try {
+    const docSnap = await adminDb.collection("articles").doc(id).get();
 
-    return {
-      title: `${article.title} | Bakalia News`,
-      description: description,
-      alternates: {
-        canonical: seoUrl, // Force SEO URL as canonical
-      },
-      openGraph: {
-        title: article.title,
+    if (docSnap.exists) {
+      const article = { id: docSnap.id, ...docSnap.data() };
+
+      // Robust Description Logic
+      let description = article.metaDescription;
+      if (!description) {
+        description = getSmartExcerpt(article.content, 30);
+      }
+      if (!description || description.length < 10) {
+        description = `${article.title} - বিস্তারিত পড়ুন বাকলিয়া নিউজে...`;
+      }
+
+      const seoUrl = `https://bakalia.xyz/news/${generateSeoUrl(article.title, article.id)}`;
+
+      // Robust Image Logic
+      let ogImages = [];
+      if (article.ogImage) ogImages.push(article.ogImage);
+      else if (article.imageUrl) ogImages.push(article.imageUrl);
+      else if (article.imageUrls && article.imageUrls.length > 0) ogImages.push(article.imageUrls[0]);
+      else ogImages.push('https://bakalia.xyz/bn-icon.png'); // Fallback
+
+      return {
+        title: `${article.title} | Bakalia News`,
         description: description,
-        images: article.ogImage
-          ? [article.ogImage]
-          : (article.imageUrl ? [article.imageUrl] : (article.imageUrls && article.imageUrls.length > 0 ? [article.imageUrls[0]] : [])),
-        type: 'article',
-        publishedTime: article.publishedAt,
-        authors: [article.authorName || 'Desk Report'],
-        url: seoUrl,
-      },
-    };
+        alternates: {
+          canonical: seoUrl,
+        },
+        openGraph: {
+          title: article.title,
+          description: description,
+          images: ogImages,
+          type: 'article',
+          publishedTime: article.publishedAt?.toDate?.().toISOString() || article.publishedAt,
+          authors: [article.authorName || 'Desk Report'],
+          url: seoUrl,
+          siteName: 'বাকলিয়া নিউজ',
+          locale: 'bn_BD',
+        },
+      };
+    }
+  } catch (e) {
+    console.error("Metadata generation error:", e);
   }
 
   return {
@@ -54,33 +74,43 @@ export default async function NewsDetails({ params }) {
   let article = null;
   let relatedNews = [];
 
-  try {
-    const docRef = doc(db, "articles", id);
-    const docSnap = await getDoc(docRef);
+  if (!adminDb) return <div className="p-10 text-center">System Error: Admin SDK Missing</div>;
 
-    if (docSnap.exists()) {
+  try {
+    const docSnap = await adminDb.collection("articles").doc(id).get();
+
+    if (docSnap.exists) {
       const data = docSnap.data();
+
+      // Serialize Firestore Dates
+      const serializeDate = (date) => {
+        if (!date) return null;
+        if (date.toDate) return date.toDate().toISOString();
+        return date; // assume string
+      };
+
       article = {
         id: docSnap.id,
         ...data,
-        publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : data.publishedAt,
-        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+        publishedAt: serializeDate(data.publishedAt),
+        updatedAt: serializeDate(data.updatedAt),
       };
 
-      // Fetch related news (Sidebar)
-      // Note: Firestore structured queries might need composite indexes. 
-      // If it fails on server, we might want to wrap in try/catch or simplify query.
+      // Fetch related news (Sidebar) using Admin SDK
       try {
-        const q = query(collection(db, "articles"), where("category", "==", article.category), where("status", "==", "published"), limit(6));
-        const snap = await getDocs(q);
-        // Filter out current article and serialize data
-        relatedNews = snap.docs
+        const relatedSnap = await adminDb.collection("articles")
+          .where("category", "==", article.category)
+          .where("status", "==", "published")
+          .limit(6)
+          .get();
+
+        relatedNews = relatedSnap.docs
           .map(d => {
             const dData = d.data();
             return {
               id: d.id,
               ...dData,
-              publishedAt: dData.publishedAt?.toDate ? dData.publishedAt.toDate().toISOString() : dData.publishedAt
+              publishedAt: serializeDate(dData.publishedAt)
             };
           })
           .filter(n => n.id !== id && !n.hidden);
@@ -90,14 +120,16 @@ export default async function NewsDetails({ params }) {
     }
   } catch (error) {
     console.error("Failed to fetch article:", error);
-    // You might want to return a specific error component or let it fall through to "News Not Found"
   }
 
   if (!article || article.hidden) {
     notFound();
   }
 
-  const newsSchema = generateNewsArticleSchema({ ...article, updatedAt: null }); // Pass updatedAt if available in db
+  const newsSchema = generateNewsArticleSchema({
+    ...article,
+    updatedAt: article.updatedAt // ensure schema gets updated date if available
+  });
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
     { name: article.category, url: `/category/${article.category}` },
