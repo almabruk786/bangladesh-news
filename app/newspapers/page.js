@@ -1,6 +1,5 @@
 import NewspapersList from '../components/NewspapersList';
-import { db } from '../lib/firebase';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { adminDb } from '../lib/firebaseAdmin'; // Use Admin SDK
 
 export const metadata = {
     title: "All Bangla Newspapers List | Online & E-Paper | বাংলাদেশের সব সংবাদপত্র",
@@ -18,9 +17,12 @@ export const metadata = {
 
 async function getNewspapers() {
     try {
-        const q = query(collection(db, "newspapers"));
-        const querySnapshot = await getDocs(q);
-        const papers = querySnapshot.docs.map(doc => ({
+        // Use Admin SDK to bypass client rules
+        // adminDb is already initialized in lib/firebaseAdmin.js
+        if (!adminDb) return [];
+
+        const snapshot = await adminDb.collection("newspapers").get();
+        const papers = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
@@ -43,9 +45,11 @@ async function getNewspapers() {
 export const revalidate = 60; // Cache for 1 minute
 
 export default async function NewspapersPage() {
-    // Fetch data
+    // Fetch data safely
     const rawPapers = await getNewspapers();
     // Serialize to ensure plain JSON (removes Timestamps, undefined, etc) to prevent hydration mismatch
+    // Also Admin SDK timestamps need .toDate() but JSON.stringify handles basic ISO conversion if toJSON exists, 
+    // but better to be explicit or use the lazy parse/stringify hack which is robust enough for simple data.
     const papers = JSON.parse(JSON.stringify(rawPapers));
 
     return (

@@ -1,8 +1,6 @@
 "use client";
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { db } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore';
 
 export default function AnalyticsTracker() {
     const pathname = usePathname();
@@ -16,25 +14,14 @@ export default function AnalyticsTracker() {
                 // 1. Basic Info
                 const userAgent = navigator.userAgent;
 
-                // 0. Filter Bots (Crowlers)
+                // 2. Filter Bots (Crowlers)
                 const isBot = /bot|googlebot|crawler|spider|robot|crawling|facebookexternalhit/i.test(userAgent);
                 if (isBot) {
-                    console.log("Analytics: Bot detected, ignoring.");
+                    // console.log("Analytics: Bot detected, ignoring.");
                     return;
                 }
 
                 const platform = navigator.platform;
-                const timestamp = serverTimestamp();
-
-                // 2. Increment Article View Count
-                if (pathname.startsWith('/news/')) {
-                    const articleId = pathname.split('/').pop();
-                    if (articleId) {
-                        const articleRef = doc(db, "articles", articleId);
-                        // Fire and forget update
-                        updateDoc(articleRef, { views: increment(1) }).catch(e => console.log("View count update failed", e));
-                    }
-                }
 
                 // 3. Geo Info (Robust Multi-Provider Fallback)
                 let locationData = {};
@@ -110,21 +97,25 @@ export default function AnalyticsTracker() {
                     }
                 }
 
-                // 5. Log Raw Visit
-                await addDoc(collection(db, "analytics"), {
-                    path: pathname,
-                    userAgent: userAgent,
-                    platform: platform,
-                    mobile: /iPhone|iPad|iPod|Android/i.test(userAgent),
-                    referrer: referrer,
-                    source: source,
-                    isPWA: isPWA,
-                    ...locationData,
-                    timestamp: timestamp
+                // 5. Send to API (Secure Server-Side Write)
+                await fetch('/api/analytics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        path: pathname,
+                        userAgent: userAgent,
+                        platform: platform,
+                        mobile: /iPhone|iPad|iPod|Android/i.test(userAgent),
+                        referrer: referrer,
+                        source: source,
+                        isPWA: isPWA,
+                        ...locationData
+                    })
                 });
 
             } catch (error) {
-                console.error("Analytics Error", error);
+                // Silently fail on analytics error to not bother user
+                // console.error("Analytics Error", error);
             }
         };
 

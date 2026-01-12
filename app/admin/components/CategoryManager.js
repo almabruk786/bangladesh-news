@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Tag, Edit2, AlertTriangle, Save, X, RefreshCw } from "lucide-react";
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDocs, where, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, query, orderBy, getDocs, where, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export default function CategoryManager() {
@@ -25,10 +25,12 @@ export default function CategoryManager() {
         { name: "Bangladesh", bn: "বাংলাদেশ", order: 12 },
     ];
 
-    useEffect(() => {
-        // Fetch by name, Sort Client-Side to handle missing 'order' field
-        const q = query(collection(db, "categories"), orderBy("name"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+    // Fetch Categories (Manual)
+    const fetchCategories = async () => {
+        try {
+            // Fetch by name, Sort Client-Side to handle missing 'order' field
+            const q = query(collection(db, "categories"), orderBy("name"));
+            const snapshot = await getDocs(q);
             const cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             // Sort: Order first (asc), then Name (asc)
             // Treat missing order as 999 (end of list)
@@ -38,8 +40,13 @@ export default function CategoryManager() {
                 return (orderA - orderB) || a.name.localeCompare(b.name);
             });
             setCategories(cats);
-        });
-        return () => unsubscribe();
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchCategories();
     }, []);
 
     const handleSubmit = async (e) => {
@@ -68,6 +75,7 @@ export default function CategoryManager() {
                     order: Number(form.order)
                 });
             }
+            fetchCategories(); // Refresh list
             setForm({ name: "", bn: "", order: 0 });
         } catch (error) {
             console.error(error);
@@ -104,6 +112,7 @@ export default function CategoryManager() {
             }
 
             await deleteDoc(doc(db, "categories", cat.id));
+            fetchCategories(); // Refresh list
         } catch (err) {
             console.error(err);
             alert("Error calculating usage. Check console.");
@@ -129,6 +138,7 @@ export default function CategoryManager() {
         if (count > 0) {
             await batch.commit();
             alert(`Added ${count} missing categories!`);
+            fetchCategories(); // Refresh list
         } else {
             alert("All default categories already exist.");
         }

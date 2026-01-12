@@ -1,49 +1,24 @@
 "use client";
-import { useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
-import { db } from '../lib/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 
 export default function NewspapersList({ initialPapers = [] }) {
-    const [newspapers, setNewspapers] = useState(initialPapers);
-    const [loading, setLoading] = useState(!initialPapers.length);
+    // Purely presentational if props provided. 
+    // If empty, we just show empty state (no more client fetch loop)
 
-    useEffect(() => {
-        if (initialPapers.length > 0) return;
+    // Sort logic handled on server, but can do a quick safety sort here too if needed.
+    // Assuming server provides sorted data.
 
-        const fetchPapers = async () => {
-            try {
-                const q = query(collection(db, "newspapers"));
-                const querySnapshot = await getDocs(q);
-                let papers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                // Client-side sort
-                papers.sort((a, b) => {
-                    const orderA = a.order !== undefined ? a.order : 999;
-                    const orderB = b.order !== undefined ? b.order : 999;
-                    if (orderA !== orderB) return orderA - orderB;
-                    return a.name.localeCompare(b.name);
-                });
-
-                setNewspapers(papers);
-            } catch (error) {
-                console.error("Error fetching newspapers:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchPapers();
-    }, [initialPapers]);
+    const newspapers = initialPapers;
 
     const onlinePapers = newspapers.filter(p => !p.type || p.type === 'online');
     const ePapers = newspapers.filter(p => p.type === 'epaper');
 
     return (
         <div className="space-y-8 md:space-y-12">
-            {loading ? (
-                <div className="flex justify-center py-20">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600"></div>
+            {!newspapers.length ? (
+                <div className="flex justify-center py-20 text-slate-400">
+                    No newspapers found.
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start">
@@ -74,12 +49,6 @@ export default function NewspapersList({ initialPapers = [] }) {
                                 </p>
                             </div>
                             <PaperGrid papers={onlinePapers} />
-                        </div>
-                    )}
-
-                    {onlinePapers.length === 0 && ePapers.length === 0 && (
-                        <div className="text-center py-20 text-slate-400 col-span-full">
-                            No newspapers found.
                         </div>
                     )}
                 </div>

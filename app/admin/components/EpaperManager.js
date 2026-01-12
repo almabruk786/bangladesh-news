@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { db } from '../../lib/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, orderBy } from 'firebase/firestore';
 import { Trash2, Edit2, Plus, ExternalLink, RefreshCw, Upload } from 'lucide-react';
 import BulkImport from './BulkImport';
 
@@ -27,10 +27,12 @@ export default function EpaperManager() {
     const maxOrder = relevantPapers.reduce((max, n) => Math.max(max, n.order || 0), 0);
     const nextAutoOrder = maxOrder + 1;
 
-    // Fetch Newspapers
-    useEffect(() => {
-        const q = query(collection(db, "newspapers"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+    // Fetch Newspapers (Manual)
+    const fetchNewspapers = async () => {
+        setLoading(true);
+        try {
+            const q = query(collection(db, "newspapers"));
+            const snapshot = await getDocs(q);
             const newsData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -49,9 +51,14 @@ export default function EpaperManager() {
             });
 
             setNewspapers(newsData);
-            setLoading(false);
-        });
-        return () => unsubscribe();
+        } catch (error) {
+            console.error("Error fetching newspapers:", error);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchNewspapers();
     }, []);
 
     // Handle Form Submit
@@ -72,6 +79,7 @@ export default function EpaperManager() {
                 await addDoc(collection(db, "newspapers"), submissionData);
             }
             resetForm();
+            fetchNewspapers(); // Refresh list
         } catch (error) {
             console.error("Error saving newspaper:", error);
         }
@@ -93,6 +101,7 @@ export default function EpaperManager() {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this newspaper?")) {
             await deleteDoc(doc(db, "newspapers", id));
+            fetchNewspapers(); // Refresh list
         }
     };
 
@@ -182,6 +191,7 @@ export default function EpaperManager() {
                 }
             }
             alert(`Sync Complete!\nAdded: ${added}\nUpdated: ${updated}`);
+            fetchNewspapers(); // Refresh list
         }
     };
 
@@ -206,6 +216,7 @@ export default function EpaperManager() {
                 return Promise.resolve();
             }));
             alert(`Updated orders for ${batchCount} newspapers.`);
+            fetchNewspapers(); // Refresh list
         } catch (error) {
             console.error("Error reordering:", error);
             alert("Failed to reorder. Check console.");

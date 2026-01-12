@@ -1,73 +1,88 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { db } from "../../lib/firebase"; // Using same db instance
-import { collection, query, where, orderBy, onSnapshot, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { Check, X, Clock, MessageSquare, Trash2, User } from "lucide-react";
+import { Check, MessageSquare, Trash2, User, RefreshCw } from "lucide-react";
 
 export default function CommentManager() {
     const [comments, setComments] = useState([]);
     const [stats, setStats] = useState({ pending: 0, published: 0 });
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
+    // Fetch Comments from API
+    const fetchComments = async () => {
+        try {
+            setRefreshing(true);
+            const res = await fetch("/api/admin/comments");
+            const data = await res.json();
+
+            if (data.success) {
+                const list = data.comments;
+                setComments(list);
+
+                // Update Stats
+                const p = list.filter(c => c.status === "pending").length;
+                const pub = list.filter(c => c.status === "published").length;
+                setStats({ pending: p, published: pub });
+            } else {
+                console.error("Failed to fetch comments:", data.error);
+            }
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
 
     useEffect(() => {
-        // Fetch ALL comments to show stats and list
-        // Note: In a real large app, separate queries or limiting is better.
-        // Here we assume manageable volume or we can limit to pending + recent.
-        // Let's fetch Pending ones mainly for the list, and maybe stats separately if needed.
-        // Actually user wants to see "pending" to approve.
-
-        const q = query(
-            collection(db, "comments"),
-            orderBy("createdAt", "desc")
-        );
-
-        const unsub = onSnapshot(q, (snap) => {
-            const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-            // Stats
-            const p = list.filter(c => c.status === "pending").length;
-            const pub = list.filter(c => c.status === "published").length;
-            setStats({ pending: p, published: pub });
-
-            setComments(list);
-        });
-
-        return () => unsub();
+        fetchComments();
     }, []);
 
     const handleApprove = async (id) => {
         try {
-            await updateDoc(doc(db, "comments", id), {
-                status: "published"
+            // Optimistic Update
+            setComments(prev => prev.map(c => c.id === id ? { ...c, status: "published" } : c));
+            setStats(prev => ({ pending: prev.pending - 1, published: prev.published + 1 }));
+
+            const res = await fetch("/api/admin/comments", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, status: "published" })
             });
+            const result = await res.json();
+            if (!result.success) throw new Error(result.error);
         } catch (error) {
             console.error("Error approving:", error);
             alert("Failed to approve");
+            fetchComments(); // Revert on error
         }
     };
 
     const handleDelete = async (id) => {
         if (!confirm("Are you sure you want to delete this comment?")) return;
+
         try {
-            await deleteDoc(doc(db, "comments", id));
+            // Optimistic Update
+            setComments(prev => prev.filter(c => c.id !== id));
+
+            const res = await fetch(`/api/admin/comments?id=${id}`, {
+                method: "DELETE"
+            });
+            const result = await res.json();
+            if (!result.success) throw new Error(result.error);
         } catch (error) {
             console.error("Error deleting:", error);
             alert("Failed to delete");
+            fetchComments(); // Revert
         }
     };
 
-    // Filter to show Pending by default, or maybe tabs for All/Pending?
-    // Let's simple UI: Two sections or just a list with status badges?
-    // User requested "pending comments, i approve".
-    // Let's show Pending at the top or in a separate tab inside this component.
-    const [filter, setFilter] = useState("pending"); // pending, published, all
+    const [filter, setFilter] = useState("pending");
 
     const filteredComments = comments.filter(c => {
         if (filter === "all") return true;
-        // Default fallback for old comments without status? Assume published if 'isModerated' was true?
-        // Old comments had 'isModerated: true'. New have 'status: pending'.
-        // Let's treat 'status' missing as 'published' for legacy? Or just check explicitly.
-        // If status is undefined, it might be old published one.
         const s = c.status || "published";
+        if (filter === "published") return s === "published" || !c.status;
         return s === filter;
     });
 
@@ -79,6 +94,14 @@ export default function CommentManager() {
                     <p className="text-slate-500 text-sm">Review user comments before they go live</p>
                 </div>
                 <div className="flex gap-2">
+                    <button
+                        onClick={fetchComments}
+                        disabled={refreshing}
+                        className="p-2 rounded-lg bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
+                        title="Refresh List"
+                    >
+                        <RefreshCw size={20} className={refreshing ? "animate-spin" : ""} />
+                    </button>
                     <button
                         onClick={() => setFilter("pending")}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${filter === "pending" ? "bg-orange-100 text-orange-700" : "bg-white text-slate-600 hover:bg-slate-50"}`}
@@ -95,7 +118,9 @@ export default function CommentManager() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                {filteredComments.length === 0 ? (
+                {loading ? (
+                    <div className="p-10 text-center text-slate-400">Loading comments...</div>
+                ) : filteredComments.length === 0 ? (
                     <div className="p-10 text-center text-slate-400">
                         <MessageSquare size={40} className="mx-auto mb-3 opacity-20" />
                         <p>No {filter} comments found.</p>
@@ -117,9 +142,20 @@ export default function CommentManager() {
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h4 className="font-bold text-slate-800 text-sm">{comment.displayName}</h4>
-                                            <p className="text-xs text-slate-400">
-                                                Article ID: {comment.articleId.substring(0, 8)}... • {comment.createdAt?.seconds ? new Date(comment.createdAt.seconds * 1000).toLocaleString() : "Just now"}
-                                            </p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <a
+                                                    href={`/news/${comment.articleId}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-medium bg-blue-50 px-2 py-0.5 rounded"
+                                                >
+                                                    View Article <span className="opacity-50">↗</span>
+                                                </a>
+                                                <span className="text-xs text-slate-300">•</span>
+                                                <span className="text-xs text-slate-400">
+                                                    {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : ""}
+                                                </span>
+                                            </div>
                                         </div>
                                         {/* Actions */}
                                         <div className="flex items-center gap-2">

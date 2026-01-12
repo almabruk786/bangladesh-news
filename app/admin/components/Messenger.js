@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { db } from "../../lib/firebase";
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import { Send, Users, BellRing } from "lucide-react";
 
 export default function Messenger({ user }) {
@@ -9,17 +9,22 @@ export default function Messenger({ user }) {
     const [isPopup, setIsPopup] = useState(false);
     const scrollRef = useRef(null);
 
-    // Listen to Broadcast Messages Only
-    useEffect(() => {
-        const q = query(collection(db, "messages"), where("receiverId", "==", "all"), orderBy("createdAt", "asc"));
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+    // Fetch Messages (Manual)
+    const fetchMessages = async () => {
+        try {
+            const q = query(collection(db, "messages"), where("receiverId", "==", "all"), orderBy("createdAt", "asc"));
+            const snapshot = await getDocs(q);
             const allMsgs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             setMessages(allMsgs);
             setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-        });
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+        }
+    };
 
-        return () => unsubscribe();
+    // Initial Fetch
+    useEffect(() => {
+        fetchMessages();
     }, []);
 
     const handleSend = async (e) => {
@@ -42,6 +47,7 @@ export default function Messenger({ user }) {
             await addDoc(collection(db, "messages"), payload);
             setInputText("");
             setIsPopup(false);
+            fetchMessages(); // Refresh list
         } catch (error) {
             console.error("Messenger: Send failed", error);
         }

@@ -1,18 +1,25 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 import { X } from 'lucide-react';
 
 export default function AdPopup() {
     const [ad, setAd] = useState(null);
     const [show, setShow] = useState(false);
+
     useEffect(() => {
         const timer = setTimeout(() => {
-            getDoc(doc(db, "ads", "popup")).then(snap => {
-                if (snap.exists() && snap.data().isActive === true) { setAd(snap.data()); setShow(true); }
-            });
-        }, 2000);
+            fetch('/api/ads/popup')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.ad) {
+                        setAd(data.ad);
+                        setShow(true);
+                    }
+                })
+                .catch(err => {
+                    // Silent fail
+                });
+        }, 2000); // 2 second delay before popup triggers
         return () => clearTimeout(timer);
     }, []);
 

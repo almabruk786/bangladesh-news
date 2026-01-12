@@ -90,10 +90,10 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
                             key={item.id + item.role}
                             onClick={() => { setActiveTab(item.id); onClose(); }}
                             className={`
-                                w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden
+                                w-full flex items-center gap-3 px-4 py-4 rounded-xl transition-all duration-300 group relative overflow-hidden touch-manipulation
                                 ${isActive
                                     ? "text-white shadow-[0_10px_20px_-5px_rgba(79,70,229,0.3)] scale-[1.02]"
-                                    : "text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5"
+                                    : "text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 active:scale-95"
                                 }
                             `}
                         >
@@ -103,7 +103,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
                             )}
 
                             <Icon
-                                size={18}
+                                size={20}
                                 className={`relative z-10 transition-transform duration-300 ${isActive ? "text-white scale-110" : "group-hover:scale-110 group-hover:text-indigo-500"}`}
                             />
                             <span className={`relative z-10 text-sm font-bold tracking-wide ${isActive ? "text-white" : ""}`}>
@@ -120,9 +120,9 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
             <div className="p-4">
                 <button
                     onClick={logout}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-100 text-red-500 hover:bg-red-50 hover:border-red-200 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 font-bold text-sm"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-4 rounded-xl border border-red-100 text-red-500 hover:bg-red-50 hover:border-red-200 hover:shadow-lg hover:shadow-red-500/10 active:scale-95 transition-all duration-300 font-bold text-sm touch-manipulation"
                 >
-                    <LogOut size={16} />
+                    <LogOut size={18} />
                     <span>Sign Out</span>
                 </button>
             </div>

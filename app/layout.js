@@ -1,12 +1,7 @@
 import Script from "next/script";
 import "./globals.css";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
 import { ThemeProvider } from "./context/ThemeContext";
-import { AuthProvider } from "./context/AuthContext";
-import CookieConsent from "./components/CookieConsent";
-import AnalyticsTracker from "./components/AnalyticsTracker";
-import NotificationManager from "./components/NotificationManager";
+import ConditionalAuthWrapper from "./components/ConditionalAuthWrapper";
 import { generateOrganizationSchema } from "./lib/schemas";
 import { getCategories } from "./lib/firebase";
 
@@ -180,17 +175,9 @@ export default async function RootLayout({ children }) {
         />
 
         <ThemeProvider>
-          <AuthProvider>
-            <Header initialCategories={categories} />
-            <div className="flex-grow">
-              {children}
-            </div>
-            <Footer />
-
-            <CookieConsent />
-            <AnalyticsTracker />
-            <NotificationManager />
-          </AuthProvider>
+          <ConditionalAuthWrapper initialCategories={categories}>
+            {children}
+          </ConditionalAuthWrapper>
         </ThemeProvider>
 
         {/* Microsoft Clarity - Lazy Load */}

@@ -1,13 +1,14 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { db } from "../lib/firebase";
-import { collection, query, where, getDocs, orderBy, limit, onSnapshot, updateDoc, doc, arrayUnion, getCountFromServer } from "firebase/firestore";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { db, auth } from "../lib/firebase";
+import { collection, query, where, getDocs, orderBy, limit, updateDoc, doc, arrayUnion, getCountFromServer } from "firebase/firestore";
+import { signInAnonymously } from "firebase/auth";
 import { Menu, Bell, X } from "lucide-react";
 
 // New Components
 import Sidebar from "./components/Sidebar";
 import DashboardStats from "./components/DashboardStats";
-import DashboardOverview from "./components/DashboardOverview"; // New Dashboard 2.0
+import DashboardOverview from "./components/DashboardOverview";
 import NewsList from "./components/NewsList";
 import NewsEditor from "./components/NewsEditor";
 import LoginScreen from "./components/LoginScreen";
@@ -18,7 +19,7 @@ import EpaperManager from "./components/EpaperManager";
 import UserManager from "./components/UserManager";
 import AutoBot from "./components/AutoBot";
 import LogoFetcher from "./components/LogoFetcher";
-import Messenger from "./components/Messenger"; // Messages Chat System
+import Messenger from "./components/Messenger";
 import CommentManager from "./components/CommentManager";
 
 const MASTER_PASSWORD = "Arif@42480";
@@ -27,7 +28,18 @@ export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTabRaw] = useState("dashboard");
+
+  // Persist Tab Selection
+  const setActiveTab = (tab) => {
+    setActiveTabRaw(tab);
+    sessionStorage.setItem("admin_active_tab", tab);
+  };
+
+  useEffect(() => {
+    const savedTab = sessionStorage.getItem("admin_active_tab");
+    if (savedTab) setActiveTabRaw(savedTab);
+  }, []);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [popupMsg, setPopupMsg] = useState(null);
@@ -35,25 +47,6 @@ export default function AdminDashboard() {
   // Popup Listener (Global)
   useEffect(() => {
     if (!user) return;
-    // ... (rest of popup logic remains same, implicit in standard replace if strict, but let's keep it safe)
-    // Actually I need to match the exact block to insert state. 
-    // Best place is right after state declarations.
-    // But since I am replacing a chunk, I'll rewrite the render part mainly.
-    // Let's stick to the render part update for the Sidebar prop and the wrapper.
-    // I will add the function and state inside the component body in a separate small edit or careful larger edit.
-    // To be safe, I'll replace the Sidebar render and the `renderContent` wrapper.
-    // I need to inject `handleTabSwitch` and `isNavigating`.
-
-    // I'll assume I can add the state in a clean way.
-    // Actually, I can replace the whole functional component start if I want, but that's risky.
-    // I'll replace lines 261-268 (Sidebar render) and inject the state handling logic logic ABOVE it ? No that won't work.
-
-    // Let's replace the `AdminDashboard` body start to add state, AND the render part.
-    // Complexity: High if split.
-    // Better to use `replace_file_content` on the component start to add state, then another call for render.
-    // OR just one big replace for the whole return block + providing the function definition inline or above?
-
-    // Check lines 30-40.
   }, [user]);
 
   // Smoother Navigation Handler
@@ -76,16 +69,6 @@ export default function AdminDashboard() {
     });
     setPopupMsg(null);
   };
-
-  // ... (keeping existing fetch logic) ...
-
-  // Let's jump to the render part for this tool call.
-  // I will assume I can insert the handleTabSwitch function before `return`.
-  // Wait, I can't effectively insert a function in the middle without replacing a huge chunk.
-
-  // STRATEGY: 
-  // I will replace the component start to add state.
-
 
   // Data States
   const [articles, setArticles] = useState([]);
@@ -111,64 +94,55 @@ export default function AdminDashboard() {
         }
 
         setUser(restoredUser);
-        if (restoredUser.role === "admin") setActiveTab("dashboard");
+
+        // Restore Firebase Session silently
+        if (!auth.currentUser) {
+          signInAnonymously(auth).catch(e => console.error("Auth Restore Error:", e));
+        }
+
+        if (restoredUser.role === "admin") {
+          const savedTab = sessionStorage.getItem("admin_active_tab");
+          setActiveTab(savedTab || "dashboard");
+        }
       }
     }
   }, []);
 
-  // Popup Listener (Global)
+  // Polling for Updates (Dashboard Stats & Popups) - Secure API approach
   useEffect(() => {
     if (!user) return;
 
-    // Listen for unread popup messages addressed to 'all' or this user
-    const q = query(
-      collection(db, "messages"),
-      where("isPopup", "==", true),
-      // where("readBy", "not-in", [user.uid || user.name]) // Firestore constraint: 'not-in' can't be combined easily with other filters sometimes.
-      // Simpler approach: Fetch last 5 popups and check readBy client side or use a dedicated 'notifications' collection.
-      // For MVP: Fetch "all" popups and sort by date, show latest unread.
-      where("receiverId", "==", "all"),
-      orderBy("createdAt", "desc"),
-      limit(5)
-    );
+    const fetchUpdates = async () => {
+      try {
+        const res = await fetch(`/api/admin/updates?userId=${user.uid || user.name}`);
+        const data = await res.json();
 
-    const unsub = onSnapshot(q, (snap) => {
-      const unreadPopup = snap.docs.find(d => {
-        const data = d.data();
-        return !data.readBy?.includes(user.uid || user.name);
-      });
+        if (data.success) {
+          // Update Stats
+          setStats(prev => ({
+            ...prev,
+            activeUsers: data.stats.activeUsers,
+            activePWA: data.stats.activePWA
+          }));
 
-      if (unreadPopup) {
-        setPopupMsg({ id: unreadPopup.id, ...unreadPopup.data() });
+          // Check Popup
+          if (data.popupMsg) {
+            const msg = data.popupMsg;
+            // Client-side check if already read
+            if (!msg.readBy?.includes(user.uid || user.name)) {
+              setPopupMsg(msg);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
       }
-    });
+    };
 
-    return () => unsub();
-  }, [user]);
+    fetchUpdates(); // Initial call
+    const interval = setInterval(fetchUpdates, 30000); // Poll every 30s
 
-
-
-  // Live Analytics Listener
-  useEffect(() => {
-    if (!user) return;
-
-    // Listen for last 5 minutes of logs for active users count
-    // Note: limit(50) is a safety cap for the header. Real analytics view has more.
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60000);
-    const q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(500));
-
-    const unsub = onSnapshot(q, (snap) => {
-      const recentLogs = snap.docs.map(d => d.data()).filter(d => d.timestamp?.toDate() >= fiveMinutesAgo);
-      const uniqueActiveIPs = new Set(recentLogs.map(l => l.ip)).size;
-
-      // Calculate Active PWA Users (Standardized Logic)
-      const pwaLogs = recentLogs.filter(l => l.isPWA || l.source === 'PWA');
-      const uniquePWA = new Set(pwaLogs.map(l => l.ip)).size;
-
-      setStats(prev => ({ ...prev, activeUsers: uniqueActiveIPs, activePWA: uniquePWA }));
-    });
-
-    return () => unsub();
+    return () => clearInterval(interval);
   }, [user]);
 
   // Fetch Data based on User & Tab
@@ -275,7 +249,13 @@ export default function AdminDashboard() {
     if (loggedUser) {
       setUser(loggedUser);
       localStorage.setItem("news_session", JSON.stringify({ user: loggedUser, timestamp: Date.now() }));
-      setActiveTab("dashboard");
+
+      // Upgrade to Firebase Session for Rules Compliance
+      if (!auth.currentUser) {
+        signInAnonymously(auth).catch(e => console.error("Auth Bridge Error:", e));
+      }
+
+      setActiveTab(sessionStorage.getItem("admin_active_tab") || "dashboard");
     } else alert("Wrong credentials!");
   };
 
@@ -313,7 +293,7 @@ export default function AdminDashboard() {
         return (
           <div className="space-y-8">
             <LogoFetcher />
-            <NewspaperManager />
+            <EpaperManager />
           </div>
         );
       case "epaper":
@@ -395,15 +375,24 @@ export default function AdminDashboard() {
         {/* Content Wrapper */}
         <div className="relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto min-h-screen flex flex-col">
 
-          {/* Top Bar Mobile Only */}
-          <div className="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-white/80 backdrop-blur-lg z-30 py-3 px-4 -mx-4 border-b border-indigo-100 shadow-sm">
+          {/* Top Bar Mobile Only - Enhanced Touch Targets */}
+          <div className="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-white/80 backdrop-blur-lg z-30 py-4 px-4 -mx-4 border-b border-indigo-100 shadow-sm">
             <div className="flex items-center gap-3">
-              <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-indigo-900">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-3 -ml-2 text-indigo-900 active:bg-indigo-50 rounded-lg transition-colors touch-manipulation"
+                aria-label="Open menu"
+              >
                 <Menu size={24} />
               </button>
               <h1 className="font-black text-xl text-slate-800">Prime<span className="text-indigo-600">Control</span></h1>
             </div>
-            <button onClick={logout} className="text-red-500 text-sm font-bold">Sign Out</button>
+            <button
+              onClick={logout}
+              className="text-red-500 text-sm font-bold px-4 py-2 active:bg-red-50 rounded-lg transition-colors touch-manipulation min-h-[44px]"
+            >
+              Sign Out
+            </button>
           </div>
 
           {/* Main Module Render with Smooth Transition */}

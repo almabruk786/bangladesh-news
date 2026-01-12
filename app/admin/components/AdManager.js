@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Megaphone, Upload, RefreshCw, Save } from "lucide-react";
-import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export default function AdManager() {
@@ -8,15 +8,21 @@ export default function AdManager() {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
 
-    // Real-time listener to see true DB state
-    useEffect(() => {
-        const unsub = onSnapshot(doc(db, "ads", "popup"), (snap) => {
+    // Fetch Ad Data (Manual)
+    const fetchAdData = async () => {
+        try {
+            const snap = await getDoc(doc(db, "ads", "popup"));
             if (snap.exists()) {
                 const data = snap.data();
                 setAdData({ ...data, isActive: !!data.isActive });
             }
-        });
-        return () => unsub();
+        } catch (error) {
+            console.error("Error fetching ad data:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAdData();
     }, []);
 
     const handleImageUpload = async (e) => {

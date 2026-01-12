@@ -1,8 +1,7 @@
+"use client";
 import { useEffect, useState } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
-import { db } from '../lib/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 
 export default function NewspaperModal({ isOpen, onClose }) {
     const [newspapers, setNewspapers] = useState([]);
@@ -12,12 +11,13 @@ export default function NewspaperModal({ isOpen, onClose }) {
         if (isOpen) {
             const fetchPapers = async () => {
                 try {
-                    const q = query(collection(db, "newspapers"), orderBy("name"));
-                    const querySnapshot = await getDocs(q);
-                    const papers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setNewspapers(papers);
+                    const res = await fetch('/api/newspapers');
+                    const data = await res.json();
+                    if (data.success) {
+                        setNewspapers(data.papers);
+                    }
                 } catch (error) {
-                    console.error("Error fetching newspapers:", error);
+                    // console.error("Error fetching newspapers:", error);
                 } finally {
                     setLoading(false);
                 }

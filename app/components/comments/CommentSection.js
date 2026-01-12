@@ -1,8 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { db } from "../../lib/firebase";
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { Send, LogIn, MessageSquare, Trash2, Facebook, Mail } from "lucide-react";
 
 export default function CommentSection({ articleId }) {
@@ -11,24 +9,28 @@ export default function CommentSection({ articleId }) {
     const [newComment, setNewComment] = useState("");
     const [loading, setLoading] = useState(true);
 
-    // Fetch realtime comments
-    useEffect(() => {
-        if (!articleId) return;
-
-        const q = query(
-            collection(db, "comments"),
-            where("articleId", "==", articleId),
-            where("status", "==", "published"), // Only show approved comments
-            orderBy("createdAt", "desc")
-        );
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setComments(msgs);
+    // Fetch comments from API (Secure)
+    const fetchComments = async () => {
+        try {
+            const res = await fetch(`/api/comments?articleId=${articleId}`);
+            const data = await res.json();
+            if (data.success) {
+                // Mock Firestore timestamp interface for compatibility with render
+                const list = data.comments.map(c => ({
+                    ...c,
+                    createdAt: c.createdAt ? { toDate: () => new Date(c.createdAt) } : null
+                }));
+                setComments(list);
+            }
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+        } finally {
             setLoading(false);
-        });
+        }
+    };
 
-        return () => unsubscribe();
+    useEffect(() => {
+        if (articleId) fetchComments();
     }, [articleId]);
 
     const handleSubmit = async (e) => {
@@ -56,7 +58,6 @@ export default function CommentSection({ articleId }) {
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 data = await res.json();
             } else {
-                // Not JSON, likely an HTML error page (404/500)
                 throw new Error(`Server returned ${res.status} ${res.statusText}`);
             }
 
@@ -65,6 +66,8 @@ export default function CommentSection({ articleId }) {
             } else {
                 setNewComment("");
                 alert("আপনার মন্তব্য জমা হয়েছে। অ্যাডমিন আপ্রুভ করার পর এটি প্রকাশ করা হবে।");
+                // fetching again might fetch current comments, but ours is pending so wont show up. 
+                // That's fine/expected behavior for moderation.
             }
         } catch (error) {
             console.error("Error submitting comment:", error);
@@ -162,7 +165,7 @@ export default function CommentSection({ articleId }) {
                                     <div className="flex items-center justify-between mb-1">
                                         <h5 className="font-bold text-sm text-slate-900">{comment.displayName}</h5>
                                         <span className="text-[10px] text-slate-400">
-                                            {comment.createdAt?.toDate().toLocaleDateString('bn-BD')}
+                                            {comment.createdAt?.toDate ? comment.createdAt.toDate().toLocaleDateString('bn-BD') : ''}
                                         </span>
                                     </div>
                                     <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{comment.text}</p>
