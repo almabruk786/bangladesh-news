@@ -3,14 +3,12 @@ import admin from 'firebase-admin';
 if (!admin.apps.length) {
     try {
         let serviceAccount;
-
         // 1. Try Environment Variable (Best for Production/Vercel)
         if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
             try {
                 serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-                console.log("Using FIREBASE_SERVICE_ACCOUNT_JSON from environment.");
             } catch (e) {
-                console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON", e);
+                console.error("[FirebaseAdmin] Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON", e);
             }
         }
 
@@ -21,13 +19,16 @@ if (!admin.apps.length) {
                 const fs = require('fs');
                 const path = require('path');
                 const filePath = path.join(process.cwd(), 'service-account.json');
+                console.log(`[FirebaseAdmin] Checking path: ${filePath}`);
 
                 if (fs.existsSync(filePath)) {
                     serviceAccount = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-                    console.log("Using local service-account.json file.");
+                    console.log("[FirebaseAdmin] Using local service-account.json file.");
+                } else {
+                    console.warn("[FirebaseAdmin] Local service-account.json NOT FOUND at " + filePath);
                 }
             } catch (e) {
-                console.warn("Local service-account.json not found or unreadable.");
+                console.warn("[FirebaseAdmin] Local service-account.json read error:", e);
             }
         }
 
@@ -35,13 +36,15 @@ if (!admin.apps.length) {
             admin.initializeApp({
                 credential: admin.credential.cert(serviceAccount),
             });
-            console.log("Firebase Admin initialized successfully.");
+            console.log("[FirebaseAdmin] Firebase Admin initialized successfully.");
         } else {
-            console.error("No valid credentials found for Firebase Admin.");
+            console.error("[FirebaseAdmin] No valid credentials found for Firebase Admin.");
         }
     } catch (error) {
-        console.error('Firebase admin initialization error', error);
+        console.error('[FirebaseAdmin] Firebase admin initialization error', error);
     }
+} else {
+    console.log("[FirebaseAdmin] Already initialized (apps.length > 0)");
 }
 
 // Helper to safely get admin instances
@@ -62,6 +65,7 @@ const mockDb = {
         where: function () { return this; },
         orderBy: function () { return this; },
         limit: function () { return this; },
+        select: function () { return this; },
         get: async () => ({ docs: [], empty: true }),
         doc: () => ({
             set: async () => console.warn("Mock Firestore: Data not saved (Init failed)"),
