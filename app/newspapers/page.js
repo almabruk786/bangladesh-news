@@ -2,14 +2,15 @@ import NewspapersList from '../components/NewspapersList';
 import { adminDb } from '../lib/firebaseAdmin'; // Use Admin SDK
 
 export const metadata = {
-    title: "All Bangla Newspapers List | Online & E-Paper | বাংলাদেশের সব সংবাদপত্র",
-    description: "Read all top Bangla newspapers (Online & E-Paper) in one place. Prothom Alo, Bangladesh Pratidin, Jugantor, Kaler Kantho, The Daily Star, and more. All Bangladesh newspaper links.",
+    title: "Newspaper BD - All Bangla Newspapers List | Online & E-Paper | বাংলাদেশের সব সংবাদপত্র",
+    description: "Read all top Bangla newspapers (Online & E-Paper) in one place. Newspaper BD list: Prothom Alo, Bangladesh Pratidin, Jugantor, Kaler Kantho, The Daily Star, and 50+ more. All Bangladesh newspaper links.",
+    keywords: ["Newspaper BD", "Bangladesh Newspapers", "Bangla Newspaper", "Online Newspaper Bangladesh", "E-Paper BD", "Prothom Alo", "Kaler Kantho", "সংবাদপত্র", "Newspaper List Bangladesh"],
     alternates: {
         canonical: 'https://bakalia.xyz/newspapers',
     },
     openGraph: {
-        title: "All Bangla Newspapers List | Online & E-Paper",
-        description: "Access all popular Bangla newspapers and e-papers in one click. Prothom Alo, Kaler Kantho, Jugantor, Bhorer Kagoj, and other top dailies.",
+        title: "Newspaper BD - All Bangla Newspapers List | Online & E-Paper",
+        description: "Access all popular Bangla newspapers and e-papers in one click. Newspaper BD directory: Prothom Alo, Kaler Kantho, Jugantor, Bhorer Kagoj, and 50+ top dailies.",
         url: 'https://bakalia.xyz/newspapers',
         type: 'website',
     }

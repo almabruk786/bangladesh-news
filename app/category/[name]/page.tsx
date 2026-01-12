@@ -122,6 +122,31 @@ const SEO_DATA: Record<string, { title: string; description: string; keywords: s
     title: "Lifestyle News Bangladesh | Health, Fashion & Travel Tips",
     description: "Discover the best Lifestyle tips. Health advice, Fashion trends in Bangladesh, Travel guides, and Food recipes.",
     keywords: ["Lifestyle BD", "Health Tips Bangla", "Fashion BD", "Travel Bangladesh", "Food Recipes", "Wellness"]
+  },
+  "Bangladesh": {
+    title: "Bangladesh News Today | Breaking BD News, জাতীয় সংবাদ",
+    description: "Latest Bangladesh news today. Breaking headlines, জাতীয় সংবাদ, government updates, and national affairs. Your trusted source for BD news 24/7.",
+    keywords: ["Bangladesh News", "BD News", "জাতীয় সংবাদ", "Bangladesh News Today", "Breaking News BD", "National News Bangladesh", "Dhaka News"]
+  },
+  "National": {
+    title: "National News Bangladesh | জাতীয় সংবাদ | Government & Public Affairs",
+    description: "Comprehensive national news coverage from Bangladesh. জাতীয় সংবাদ, government policies, parliament updates, and public sector news.",
+    keywords: ["National News BD", "জাতীয়", "Government News", "Parliament Bangladesh", "সরকারি", "Public Affairs BD"]
+  },
+  "Opinion": {
+    title: "Opinion & Editorial Bangladesh | মতামত | Analysis & Commentary",
+    description: "Read expert opinions and editorials on Bangladesh affairs. In-depth analysis, মতামত, commentary from leading columnists and thought leaders.",
+    keywords: ["Opinion Bangladesh", "Editorial BD", "মতামত", "Analysis", "Commentary", "Column", "Expert Opinion BD"]
+  },
+  "Health": {
+    title: "Health News Bangladesh | Medical Updates, স্বাস্থ্য টিপস & COVID-19",
+    description: "Latest health news from Bangladesh. স্বাস্থ্য tips, medical updates, coronavirus news, hospital information, and wellness advice.",
+    keywords: ["Health News BD", "স্বাস্থ্য", "Medical Bangladesh", "Coronavirus BD", "COVID-19 Bangladesh", "Hospital News", "Health Tips Bangla"]
+  },
+  "Education": {
+    title: "Education News Bangladesh | শিক্ষা | HSC SSC Results, Admission & Jobs",
+    description: "Breaking education news from Bangladesh. শিক্ষা updates, HSC SSC results, university admission, exam schedules, and job circulars.",
+    keywords: ["Education News BD", "শিক্ষা", "HSC Result", "SSC Result", "University Admission", "Job Circular", "Exam Bangladesh", "শিক্ষা সংবাদ"]
   }
 };
 
