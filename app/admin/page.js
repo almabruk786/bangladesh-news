@@ -5,6 +5,9 @@ import { collection, query, where, getDocs, orderBy, limit, updateDoc, doc, arra
 import { signInAnonymously } from "firebase/auth";
 import { Menu, Bell, X } from "lucide-react";
 
+// Force dynamic rendering - Don't prerender this page during build
+export const dynamic = 'force-dynamic';
+
 // New Components
 import Sidebar from "./components/Sidebar";
 import DashboardStats from "./components/DashboardStats";
