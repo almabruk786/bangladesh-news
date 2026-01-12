@@ -18,11 +18,11 @@ export default function HeroSection({ heroNews, sideNews }) {
                         <Link href={`/news/${heroNews.id}`} className="relative block w-full h-0 pb-[56.25%] rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform">
                             {/* Full Image */}
                             <Image
-                                src={heroNews.imageUrl || (heroNews.imageUrls && heroNews.imageUrls[0]) || '/placeholder.png'}
-                                alt={heroNews.title}
+                                src={heroNews?.imageUrl || heroNews?.imageUrls?.[0] || '/placeholder.png'}
+                                alt={heroNews?.title || 'Hero News'}
                                 fill
                                 priority
-                                sizes="(max-width: 768px) 100vw, 0vw"
+                                sizes="(max-width: 768px) 100vw, 60vw"
                                 className="object-cover"
                             />
 
