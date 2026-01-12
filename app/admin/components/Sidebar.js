@@ -1,19 +1,19 @@
 import {
-    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail, BarChart3, Bot, Newspaper, MessageSquare
+    LayoutDashboard, FileText, PlusCircle, Users, Megaphone, Settings, LogOut, Tags, Mail, BarChart3, Bot, Newspaper, MessageSquare, Clock
 } from "lucide-react";
 
 export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen, onClose }) {
-    // Menu items configuration based on user requests
     const menuItems = [
         // Common
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, role: "all" },
         { id: "manual", label: "Write News", icon: PlusCircle, role: "all" },
+        { id: "namaz", label: "🕌 Namaz Times", icon: Clock, role: "all" }, // NEW!
 
         // Admin Specific Order
         { id: "pending", label: "Inbox (Pending)", icon: FileText, role: "admin" },
         { id: "comments", label: "Comments", icon: MessageSquare, role: "admin" },
-        { id: "messages", label: "Messages", icon: Mail, role: "admin" }, // Also for publisher? Keeping strict to valid logic
-        { id: "manage", label: "All News", icon: Newspaper, role: "admin" }, // Using Newspaper icon for 'All News'
+        { id: "messages", label: "Messages", icon: Mail, role: "admin" },
+        { id: "manage", label: "All News", icon: Newspaper, role: "admin" },
         { id: "category", label: "Categories", icon: Tags, role: "admin" },
         { id: "users", label: "Team", icon: Users, role: "admin" },
         { id: "ads", label: "Monetization", icon: Megaphone, role: "admin" },
@@ -21,12 +21,11 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
         { id: "epaper", label: "E-Paper Manager", icon: FileText, role: "admin" },
         { id: "auto", label: "AI Control", icon: Bot, role: "admin" },
 
-        // Publisher Specific (Hidden for Admin if duplicated in logic, or handled by role check)
+        // Publisher Specific
         { id: "my_news", label: "My Stories", icon: FileText, role: "publisher" },
         { id: "messages", label: "Messages", icon: Mail, role: "publisher" },
     ];
 
-    // Filter duplicates for admin if matched (prevent double messages)
     const filteredItems = menuItems.filter((item, index, self) =>
         index === self.findIndex((t) => (
             t.id === item.id && t.role === item.role
@@ -64,7 +63,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
                 </button>
             </div>
 
-            {/* Profile Section (Floating Glass) */}
+            {/* Profile Section */}
             <div className="px-6 py-6">
                 <div className="p-4 rounded-2xl bg-gradient-to-b from-white/60 to-white/30 backdrop-blur-md border border-white/40 shadow-sm flex items-center gap-3 group hover:shadow-md transition-all duration-300">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-indigo-200 text-sm">
@@ -114,8 +113,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
                             {isActive && <div className="absolute inset-0 bg-white/20 translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>}
                         </button>
                     );
-                })}
-            </nav>
+                })}</nav>
 
             <div className="p-4">
                 <button
