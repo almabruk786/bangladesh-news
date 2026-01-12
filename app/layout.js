@@ -2,6 +2,7 @@ import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "./context/ThemeContext";
 import ConditionalAuthWrapper from "./components/ConditionalAuthWrapper";
+import RamadanPopup from "./components/RamadanPopup";
 import { generateOrganizationSchema } from "./lib/schemas";
 import { getCategories } from "./lib/firebaseServer";
 
@@ -175,6 +176,7 @@ export default async function RootLayout({ children }) {
         />
 
         <ThemeProvider>
+          <RamadanPopup />
           <ConditionalAuthWrapper initialCategories={categories}>
             {children}
           </ConditionalAuthWrapper>
