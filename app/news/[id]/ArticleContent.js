@@ -8,6 +8,9 @@ import CommentSection from '../../components/comments/CommentSection'; // Commen
 import GoogleAd from '../../components/GoogleAd'; // Manual Ad Unit
 import { parseNewsContent, stripHtml } from '../../lib/utils';
 import FollowButtons from '../../components/FollowButtons';
+import ReadingProgressBar from '../../components/ReadingProgressBar';
+import FontAdjuster from '../../components/FontAdjuster';
+import TableOfContents from '../../components/TableOfContents';
 
 export default function ArticleContent({ article, relatedNews }) {
     // Functions for interaction
@@ -72,6 +75,8 @@ export default function ArticleContent({ article, relatedNews }) {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300">
+            <ReadingProgressBar />
+            <FontAdjuster />
 
             <main className="max-w-6xl mx-auto px-4 py-8">
 
@@ -83,9 +88,9 @@ export default function ArticleContent({ article, relatedNews }) {
                     <span className="text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[200px] md:max-w-md">{article.title}</span>
                 </nav>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-3">
                         <article className="bg-white dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-6 md:p-10 shadow-sm border border-slate-100 transition-colors duration-300">
                             <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4 text-sm">
                                 {(() => {
