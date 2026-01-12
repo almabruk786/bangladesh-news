@@ -1,35 +1,24 @@
 import CategoryClient from "./CategoryClient";
-import { db } from "../../lib/firebase";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+
+import { adminDb } from "../../lib/firebaseAdmin";
+import { getCategories } from "../../lib/firebaseServer";
 
 // Helper to fetch news on the server
-// Helper to fetch news on the server
 async function getCategoryNews(categoryName: string) {
-  const categories = [
-    { name: "Bangladesh", bn: "বাংলাদেশ" },
-    { name: "Politics", bn: "রাজনীতি" },
-    { name: "International", bn: "আন্তর্জাতিক" },
-    { name: "Sports", bn: "খেলা" },
-    { name: "Opinion", bn: "মতামত" },
-    { name: "Business", bn: "বাণিজ্য" },
-    { name: "Entertainment", bn: "বিনোদন" },
-    { name: "Lifestyle", bn: "জীবনযাপন" },
-    { name: "Technology", bn: "প্রযুক্তি" },
-    { name: "Health", bn: "স্বাস্থ্য" },
-    { name: "Education", bn: "শিক্ষা" },
-    { name: "National", bn: "জাতীয়" },
-  ];
+  // Fetch dynamic categories to resolve English/Bangla names
+  const allCategories = await getCategories();
 
   const decodedName = decodeURIComponent(categoryName).trim();
 
   // Find matching category to get both English and Bangla tags
-  const catMatch = categories.find(c =>
+  const catMatch = allCategories.find((c: any) =>
     c.name.toLowerCase() === decodedName.toLowerCase() ||
     c.bn === decodedName
   );
 
   let searchTags = [decodedName];
   if (catMatch) {
+    // @ts-ignore
     searchTags = [catMatch.name, catMatch.bn, catMatch.name.toUpperCase(), catMatch.name.toLowerCase()];
   } else {
     // If no match, try to add case variants of the decoded name itself
@@ -42,44 +31,47 @@ async function getCategoryNews(categoryName: string) {
   searchTags = [...new Set(searchTags)];
   if (!searchTags.includes(decodedName)) searchTags.push(decodedName);
 
-  // 1. Primary Query (Legacy + Primary Category) - Uses existing Index
-  const q1 = query(
-    collection(db, "articles"),
-    where("category", "in", searchTags),
-    orderBy("publishedAt", "desc")
-  );
-
-  // 2. Secondary Query (Multi-Category Array) - No OrderBy to avoid missing index issues
-  // We will merge and sort in memory.
-  const q2 = query(
-    collection(db, "articles"),
-    where("categories", "array-contains-any", searchTags)
-  );
+  if (!adminDb) return [];
 
   try {
-    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+    const articlesRef = adminDb.collection("articles");
+
+    // 1. Primary Query
+    // Firebase Admin 'in' query supports up to 10 items. searchTags should be small.
+    const q1 = articlesRef
+      .where("category", "in", searchTags.slice(0, 10))
+      .orderBy("publishedAt", "desc")
+      .limit(50)
+      .get();
+
+    // 2. Secondary Query (Multi-Category Array)
+    const q2 = articlesRef
+      .where("categories", "array-contains-any", searchTags.slice(0, 10))
+      .limit(50)
+      .get();
+
+    const [snap1, snap2] = await Promise.all([q1, q2]);
 
     // Merge and deduplicate
     const allDocs = new Map();
 
-    [...snap1.docs, ...snap2.docs].forEach(doc => {
+    const processDoc = (doc: any) => {
+      const data = doc.data();
       allDocs.set(doc.id, {
         id: doc.id,
-        ...doc.data(),
-        publishedAt: (() => {
-          const p = doc.data().publishedAt;
-          if (p?.seconds) return p.seconds * 1000; // Firestore Timestamp
-          if (typeof p === 'number') return p;      // Milliseconds
-          if (typeof p === 'string') return new Date(p).getTime(); // ISO String
-          return Date.now(); // Fallback
-        })(),
+        ...data,
+        publishedAt: (data.publishedAt && data.publishedAt.toDate) ? data.publishedAt.toDate().toISOString() : data.publishedAt,
+        updatedAt: (data.updatedAt && data.updatedAt.toDate) ? data.updatedAt.toDate().toISOString() : data.updatedAt,
       });
-    });
+    };
+
+    snap1.docs.forEach(processDoc);
+    snap2.docs.forEach(processDoc);
 
     // Convert to array and Sort by Date Descending
     return Array.from(allDocs.values())
       .filter((article: any) => !article.hidden && article.status === 'published')
-      .sort((a: any, b: any) => b.publishedAt - a.publishedAt);
+      .sort((a: any, b: any) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
   } catch (e) {
     console.error("Category Fetch Error:", e);
@@ -155,7 +147,16 @@ export async function generateMetadata({ params }: { params: Promise<{ name: str
   const decodedName = decodeURIComponent(name);
 
   // Normalize category name for lookup (First letter uppercase)
-  const normalizedName = decodedName.charAt(0).toUpperCase() + decodedName.slice(1).toLowerCase();
+  let normalizedName = decodedName.charAt(0).toUpperCase() + decodedName.slice(1).toLowerCase();
+
+  // Try to find English name if input is Bangla
+  try {
+    const allCats = await getCategories();
+    const match = allCats.find((c: any) => c.bn === decodedName || c.name.toLowerCase() === decodedName.toLowerCase());
+    if (match && match.name) {
+      normalizedName = match.name; // Use English name for SEO lookup
+    }
+  } catch (e) { }
 
   const seoInfo = SEO_DATA[normalizedName] || {
     title: `${decodedName} News Bangladesh | Latest Updates & Headlines`,

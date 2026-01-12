@@ -1,4 +1,4 @@
-import { getNews } from './lib/firebaseServer';
+import { getNews, getCategories } from './lib/firebaseServer';
 
 export default async function sitemap() {
     const baseUrl = 'https://bakalia.xyz';
@@ -14,14 +14,10 @@ export default async function sitemap() {
     }));
 
     // Category pages - CRITICAL FOR SEO!
-    const categories = [
-        'Bangladesh', 'Politics', 'International', 'Sports', 'Opinion',
-        'Business', 'Entertainment', 'Lifestyle', 'Technology', 'Health',
-        'Education', 'National'
-    ];
+    const categoryList = await getCategories();
 
-    const categoryUrls = categories.map((cat) => ({
-        url: `${baseUrl}/category/${cat}`,
+    const categoryUrls = categoryList.map((cat) => ({
+        url: `${baseUrl}/category/${cat.name}`,
         lastModified: new Date().toISOString(),
         changeFrequency: 'daily',
         priority: 0.9, // High priority for category pages
