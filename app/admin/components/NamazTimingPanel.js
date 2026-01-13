@@ -468,26 +468,68 @@ export default function NamazTimingPanel() {
 
             {/* List Content */}
             <div className="px-4 pb-8 space-y-3">
-                {listData.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <div className="flex items-center gap-4">
-                            {item.icon && (
-                                <div className="text-green-600 dark:text-green-400 p-2 bg-green-50 dark:bg-green-900/20 rounded-full">
-                                    {item.icon}
+                {activeTab === 'fard' ? (
+                    // Card Design for Fard Prayers
+                    listData.map((item, idx) => {
+                        // Unique gradient for each prayer
+                        const gradients = [
+                            'from-blue-500 to-cyan-500',      // Fajr - Blue (Dawn)
+                            'from-amber-500 to-yellow-500',   // Dhuhr - Sun/Gold
+                            'from-orange-500 to-pink-500',    // Asr - Afternoon
+                            'from-purple-500 to-indigo-500',  // Maghrib - Sunset
+                            'from-indigo-600 to-blue-800',    // Isha - Night
+                        ];
+
+                        return (
+                            <div
+                                key={idx}
+                                className={`bg-gradient-to-br ${gradients[idx]} p-6 rounded-3xl shadow-lg text-white relative overflow-hidden`}
+                            >
+                                {/* Background Pattern */}
+                                <div className="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
+
+                                <div className="relative z-10 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md">
+                                            {item.icon}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold mb-1">{item.name}</h3>
+                                            <p className="text-sm opacity-90">ওয়াক্ত</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-right">
+                                        <p className="text-3xl font-bold font-mono mb-1">{item.start}</p>
+                                        <p className="text-sm opacity-80">শেষ: {item.end}</p>
+                                    </div>
                                 </div>
-                            )}
-                            <div>
-                                <span className="font-bold text-gray-800 dark:text-gray-200 text-xl block">{item.name}</span>
+                            </div>
+                        );
+                    })
+                ) : (
+                    // Original simple list for Nafl/Haram
+                    listData.map((item, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-100 dark:border-gray-700 shadow-sm">
+                            <div className="flex items-center gap-4">
+                                {item.icon && (
+                                    <div className="text-green-600 dark:text-green-400 p-2 bg-green-50 dark:bg-green-900/20 rounded-full">
+                                        {item.icon}
+                                    </div>
+                                )}
+                                <div>
+                                    <span className="font-bold text-gray-800 dark:text-gray-200 text-xl block">{item.name}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                <span className="font-mono font-bold text-gray-800 dark:text-gray-200 text-xl sm:text-2xl whitespace-nowrap">
+                                    {item.start} — {item.end}
+                                </span>
                             </div>
                         </div>
-
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="font-mono font-bold text-gray-800 dark:text-gray-200 text-xl sm:text-2xl whitespace-nowrap">
-                                {item.start} — {item.end}
-                            </span>
-                        </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
 
             <div className="h-8"></div>

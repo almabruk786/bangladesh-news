@@ -26,6 +26,7 @@ import Messenger from "./components/Messenger";
 import CommentManager from "./components/CommentManager";
 import ActionPalette from "./components/ActionPalette";
 import NamazTimingPanel from "./components/NamazTimingPanel";
+import QuotaMonitor from "./components/QuotaMonitor";
 
 const MASTER_PASSWORD = "Arif@42480";
 
@@ -202,7 +203,7 @@ export default function AdminDashboard() {
       if (activeTab === "manage" && user.role === "admin") {
         // Fix: Removed orderBy("isPinned", "desc") to avoid missing index error.
         // We will sort by pinned status in the client side below.
-        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(500)); // Fetches latest 500 articles
+        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(100)); // Reduced from 500 to 100 for quota optimization
       }
       // For Admin "Pending" -> Fetch pending & pending_delete
       else if (activeTab === "pending" && user.role === "admin") {
@@ -312,6 +313,8 @@ export default function AdminDashboard() {
         );
       case "analytics":
         return <AnalyticsViewer />;
+      case "quota":
+        return <QuotaMonitor />;
       case "users":
         return <UserManager />;
       case "auto":

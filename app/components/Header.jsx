@@ -146,16 +146,20 @@ export default function Header({ initialCategories = [] }) {
                 <span>NewsPapers</span> <span>📰</span>
               </Link>
 
-              {categories.map((cat) => (
-                <Link
-                  key={cat.name}
-                  href={cat.link}
-                  aria-current={pathname === cat.link ? 'page' : undefined}
-                  className={`py-1 px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 whitespace-nowrap ${pathname === cat.link ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
-                >
-                  {lang === 'bn' ? cat.bn : cat.name} {cat.hot && <span className="text-[10px]">🔥</span>}
-                </Link>
-              ))}
+              {categories.map((cat) => {
+                // Generate link from category name if not provided
+                const categoryLink = cat.link || `/category/${encodeURIComponent(cat.name.toLowerCase())}`;
+                return (
+                  <Link
+                    key={cat.name}
+                    href={categoryLink}
+                    aria-current={pathname === categoryLink ? 'page' : undefined}
+                    className={`py-1 px-2 border-b-2 border-transparent hover:border-red-600 text-xs md:text-sm font-bold uppercase tracking-tight hover:text-red-600 transition shrink-0 whitespace-nowrap ${pathname === categoryLink ? 'border-red-600 text-red-600' : 'text-slate-700 dark:text-slate-300'}`}
+                  >
+                    {lang === 'bn' ? cat.bn : cat.name} {cat.hot && <span className="text-[10px]">🔥</span>}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
         </div>
@@ -188,11 +192,14 @@ export default function Header({ initialCategories = [] }) {
                   </div>
 
                   <Link href="/" className="block px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 font-bold" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-                  {categories.map((cat) => (
-                    <Link key={cat.name} href={cat.link} className="block px-4 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300" onClick={() => setIsMobileMenuOpen(false)}>
-                      {lang === 'bn' ? cat.bn : cat.name}
-                    </Link>
-                  ))}
+                  {categories.map((cat) => {
+                    const categoryLink = cat.link || `/category/${encodeURIComponent(cat.name.toLowerCase())}`;
+                    return (
+                      <Link key={cat.name} href={categoryLink} className="block px-4 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300" onClick={() => setIsMobileMenuOpen(false)}>
+                        {lang === 'bn' ? cat.bn : cat.name}
+                      </Link>
+                    );
+                  })}
                 </nav>
                 <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col space-y-3">
                   <Link href="/newspapers" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-2 bg-red-600 text-white font-bold rounded text-center block shadow-lg shadow-red-600/20">

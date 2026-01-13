@@ -88,7 +88,7 @@ export default function AnalyticsViewer() {
 
     // Enhanced UX States
     const [timeRange, setTimeRange] = useState('today'); // 'today', '7days', '30days', 'all'
-    const [autoRefresh, setAutoRefresh] = useState(true);
+    const [autoRefresh, setAutoRefresh] = useState(false); // Changed from true to false - only refresh manually
     const [lastUpdated, setLastUpdated] = useState(new Date());
     const [sortBy, setSortBy] = useState('time'); // 'time', 'source', 'country'
     const [sortOrder, setSortOrder] = useState('desc'); // 'asc', 'desc'
@@ -110,7 +110,7 @@ export default function AnalyticsViewer() {
         }
     };
 
-    // Fetch Logs with time range filtering
+    // Fetch Logs with time range filtering - OPTIMIZED
     const fetchLogs = async () => {
         setLoading(true);
         try {
@@ -122,10 +122,10 @@ export default function AnalyticsViewer() {
                     collection(db, "analytics"),
                     where("timestamp", ">=", startDate),
                     orderBy("timestamp", "desc"),
-                    limit(500)
+                    limit(100) // Reduced from 500 to 100 for quota optimization
                 );
             } else {
-                q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(500));
+                q = query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(100)); // Reduced from 500 to 100
             }
 
             const snapshot = await getDocs(q);
@@ -156,24 +156,46 @@ export default function AnalyticsViewer() {
         fetchLogs();
     }, [timeRange]); // Re-fetch when time range changes
 
-    // Auto-refresh every 30 seconds
+    // Auto-refresh every 60 seconds (increased from 30s to reduce quota usage)
     useEffect(() => {
         if (!autoRefresh) return;
         const interval = setInterval(() => {
             fetchLogs();
-        }, 30000); // 30 seconds
+        }, 60000); // 60 seconds instead of 30
         return () => clearInterval(interval);
     }, [autoRefresh, timeRange]);
 
-    // Fetch Top Articles
+    // Fetch Top Articles - with caching
     useEffect(() => {
         const fetchTop = async () => {
+            // Check localStorage cache
+            const cached = localStorage.getItem('topArticlesCache');
+            if (cached) {
+                const { data, timestamp } = JSON.parse(cached);
+                const isExpired = Date.now() - timestamp > 15 * 60 * 1000; // 15 minutes
+                if (!isExpired) {
+                    setTopArticles(data);
+                    return;
+                }
+            }
+
+            // Fetch fresh data
             const q = query(collection(db, "articles"), orderBy("views", "desc"), limit(10));
             const snap = await getDocs(q);
-            setTopArticles(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            const articles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            setTopArticles(articles);
+
+            // Cache the data
+            localStorage.setItem('topArticlesCache', JSON.stringify({
+                data: articles,
+                timestamp: Date.now()
+            }));
         };
         fetchTop();
     }, []);
+
+
+
 
 
     const calculateDeepStats = (data) => {

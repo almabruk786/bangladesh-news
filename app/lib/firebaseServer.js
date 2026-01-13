@@ -153,7 +153,7 @@ async function fetchNewsFromDb() {
 }
 
 export const getCategories = async () => {
-    const cacheKey = 'all_categories';
+    const cacheKey = 'all_categories_v2'; // Changed key to force refresh
     const cached = categoryCache.get(cacheKey);
 
     if (cached && !cached.stale) {
@@ -167,7 +167,10 @@ export const getCategories = async () => {
         setImmediate(async () => {
             try {
                 const fresh = await fetchCategoriesFromDb();
-                categoryCache.set(cacheKey, fresh, BASE_TTL.CATEGORIES);
+                // Only update cache if we got actual data
+                if (fresh && fresh.length > 0) {
+                    categoryCache.set(cacheKey, fresh, BASE_TTL.CATEGORIES);
+                }
             } catch (err) {
                 console.error('[getCategories] Background refresh failed:', err);
             }
@@ -178,7 +181,12 @@ export const getCategories = async () => {
 
     console.log('[getCategories] Cache MISS - fetching from DB');
     const categories = await fetchCategoriesFromDb();
-    categoryCache.set(cacheKey, categories, BASE_TTL.CATEGORIES);
+
+    // Only cache if we got data to prevent caching errors/empty states
+    if (categories && categories.length > 0) {
+        categoryCache.set(cacheKey, categories, BASE_TTL.CATEGORIES);
+    }
+
     return categories;
 };
 

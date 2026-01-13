@@ -49,6 +49,15 @@ export default function CategoryManager() {
         fetchCategories();
     }, []);
 
+    // Clear server-side cache to reflect changes immediately
+    const clearServerCache = async () => {
+        try {
+            await fetch('/api/admin/clear-cache?type=categories', { method: 'POST' });
+        } catch (err) {
+            console.error("Failed to clear cache:", err);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.name.trim() || !form.bn.trim()) return alert("Both English and Bangla names are required!");
@@ -75,6 +84,7 @@ export default function CategoryManager() {
                     order: Number(form.order)
                 });
             }
+            await clearServerCache(); // Clear cache
             fetchCategories(); // Refresh list
             setForm({ name: "", bn: "", order: 0 });
         } catch (error) {
@@ -112,6 +122,7 @@ export default function CategoryManager() {
             }
 
             await deleteDoc(doc(db, "categories", cat.id));
+            await clearServerCache(); // Clear cache
             fetchCategories(); // Refresh list
         } catch (err) {
             console.error(err);
@@ -137,6 +148,7 @@ export default function CategoryManager() {
 
         if (count > 0) {
             await batch.commit();
+            await clearServerCache(); // Clear cache
             alert(`Added ${count} missing categories!`);
             fetchCategories(); // Refresh list
         } else {
