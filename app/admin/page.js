@@ -25,7 +25,6 @@ import LogoFetcher from "./components/LogoFetcher";
 import Messenger from "./components/Messenger";
 import CommentManager from "./components/CommentManager";
 import ActionPalette from "./components/ActionPalette";
-import NamazTimingPanel from "./components/NamazTimingPanel";
 import QuotaMonitor from "./components/QuotaMonitor";
 
 const MASTER_PASSWORD = "Arif@42480";
@@ -147,10 +146,10 @@ export default function AdminDashboard() {
     };
 
     fetchUpdates(); // Initial call
-    const interval = setInterval(fetchUpdates, 30000); // Poll every 30s
+    // const interval = setInterval(fetchUpdates, 30000); // Poll every 30s - DISABLED to save quota
 
     // CRITICAL: Cleanup interval to prevent memory leak & quota exhaustion
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, [user]);
 
   // Fetch Data based on User & Tab
@@ -284,7 +283,12 @@ export default function AdminDashboard() {
 
     switch (activeTab) {
       case "dashboard":
-        return <DashboardOverview stats={stats} user={user} />;
+        return (
+          <>
+            <DashboardStats stats={stats} />
+            <DashboardOverview stats={stats} user={user} />
+          </>
+        );
       case "manual":
         return <NewsEditor user={user} onSuccess={() => { setActiveTab(user.role === "publisher" ? "my_news" : "manage"); fetchData(); }} />;
       case "manage":
@@ -323,12 +327,6 @@ export default function AdminDashboard() {
         return <Messenger user={user} />;
       case "comments":
         return <CommentManager />;
-      case "namaz":
-        return (
-          <div className="max-w-2xl mx-auto pt-8">
-            <NamazTimingPanel />
-          </div>
-        );
       default:
         return <DashboardStats stats={stats} />;
     }
@@ -424,11 +422,6 @@ export default function AdminDashboard() {
               flex-1 transition-all duration-300 ease-in-out
               ${isNavigating ? 'opacity-0 scale-95 blur-sm translate-y-4' : 'opacity-100 scale-100 blur-0 translate-y-0'}
           `}>
-            {activeTab !== "manual" && !editingArticle && activeTab !== "category" && activeTab !== "epaper" && activeTab !== "analytics" && activeTab !== "dashboard" && activeTab !== "auto" && activeTab !== "namaz" && user.role === "admin" && (
-              <div className="mb-8">
-                <DashboardStats stats={stats} />
-              </div>
-            )}
 
             {renderContent()}
           </div>

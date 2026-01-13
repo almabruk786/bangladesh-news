@@ -7,7 +7,6 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
         // Common
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, role: "all" },
         { id: "manual", label: "Write News", icon: PlusCircle, role: "all" },
-        { id: "namaz", label: "Namaz Times", icon: Clock, role: "all" },
 
         // Admin Specific Order
         { id: "pending", label: "Inbox (Pending)", icon: FileText, role: "admin" },

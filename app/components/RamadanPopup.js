@@ -1,23 +1,26 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { X, Moon, Star } from 'lucide-react';
+import { X, Moon, Star, Calendar } from 'lucide-react';
 
 export default function RamadanPopup() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(false);
     const [ramadanInfo, setRamadanInfo] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Helper to convert English digits to Bangla
+    const toBanglaDigit = (num) => num.toString().replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
 
     useEffect(() => {
         const checkRamadan = async () => {
             try {
-                // Check localStorage - show only once per day
-                const lastShown = localStorage.getItem('ramadanPopupShown');
-                const today = new Date().toDateString();
+                // Check localStorage
+                const lastBigPopupShown = localStorage.getItem('ramadanPopupLastShown');
+                const now = Date.now();
+                const twelveHours = 12 * 60 * 60 * 1000;
 
-                if (lastShown === today) {
-                    setIsLoading(false);
-                    return;
-                }
+                // If shown recently, we start in MINIMIZED mode (Fab visible), otherwise MAXIMIZED (Big popup visible)
+                const shouldStartMinimized = lastBigPopupShown && (now - parseInt(lastBigPopupShown) < twelveHours);
 
                 // Fetch Hijri date
                 const res = await fetch('https://api.aladhan.com/v1/gToH');
@@ -28,23 +31,49 @@ export default function RamadanPopup() {
                     const currentMonth = hijri.month.number;
                     const currentDay = parseInt(hijri.day);
 
-                    // Check if we're in Ramadan (month 9) or close to it
+                    // Calculations
                     const isRamadan = currentMonth === 9;
-                    const daysBeforeRamadan = currentMonth < 9 ?
-                        ((9 - currentMonth) * 29 - currentDay) : 0; // Rough estimate
+                    let daysBeforeRamadan = 0;
 
-                    if (isRamadan || (daysBeforeRamadan > 0 && daysBeforeRamadan <= 30)) {
-                        const daysLeft = isRamadan ? (30 - currentDay) : 0;
-                        setRamadanInfo({
-                            isRamadan,
-                            daysLeft,
-                            daysBeforeRamadan
-                        });
+                    if (currentMonth < 9) {
+                        daysBeforeRamadan = ((9 - currentMonth) * 29.5) - currentDay;
+                    } else if (currentMonth > 9) {
+                        daysBeforeRamadan = ((12 - currentMonth + 9) * 29.5) - currentDay;
+                    }
 
-                        // Show popup after short delay for smooth animation
+                    daysBeforeRamadan = Math.floor(daysBeforeRamadan);
+
+                    // Estimate Start Date
+                    const today = new Date();
+                    const estimatedStartDate = new Date(today);
+                    estimatedStartDate.setDate(today.getDate() + daysBeforeRamadan + 1); // +1 Day Offset
+
+                    // Manual Bangla Date Construction (Robust)
+                    const banglaMonths = [
+                        'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+                        'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+                    ];
+
+                    const day = toBanglaDigit(estimatedStartDate.getDate());
+                    const month = banglaMonths[estimatedStartDate.getMonth()];
+                    const year = toBanglaDigit(estimatedStartDate.getFullYear());
+
+                    const startDateStr = `${day} ${month} ${year}`;
+
+                    setRamadanInfo({
+                        isRamadan,
+                        daysLeft: isRamadan ? (30 - currentDay) : 0,
+                        daysBeforeRamadan: daysBeforeRamadan + 1, // Also update display count
+                        startDateStr
+                    });
+
+                    if (shouldStartMinimized) {
+                        setIsMinimized(true);
+                        setIsOpen(true);
+                    } else {
                         setTimeout(() => {
                             setIsOpen(true);
-                        }, 1500);
+                        }, 2000);
                     }
                 }
             } catch (error) {
@@ -57,125 +86,173 @@ export default function RamadanPopup() {
         checkRamadan();
     }, []);
 
+    // Auto-minimize effect
+    useEffect(() => {
+        if (isOpen && !isMinimized) {
+            const timer = setTimeout(() => {
+                setIsMinimized(true);
+            }, 10000);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, isMinimized]);
+
     const handleClose = () => {
         setIsOpen(false);
-        localStorage.setItem('ramadanPopupShown', new Date().toDateString());
+        localStorage.setItem('ramadanPopupLastShown', Date.now().toString());
+    };
+
+    const handleMinimize = (e) => {
+        e?.stopPropagation();
+        setIsMinimized(true);
+    };
+
+    const handleMaximize = () => {
+        setIsMinimized(false);
     };
 
     if (isLoading || !isOpen || !ramadanInfo) return null;
 
-    const { isRamadan, daysLeft, daysBeforeRamadan } = ramadanInfo;
+    const { isRamadan, daysLeft, daysBeforeRamadan, startDateStr } = ramadanInfo;
 
+    // FLOATING ACTION BUTTON (Minimized State)
+    if (isMinimized) {
+        return (
+            <div
+                onClick={handleMaximize}
+                className="fixed bottom-6 right-6 z-[9990] cursor-pointer group animate-in slide-in-from-bottom-10 fade-in duration-700"
+            >
+                <div className="absolute inset-0 bg-yellow-400/30 rounded-full animate-ping group-hover:bg-yellow-400/50"></div>
+                <div className="relative w-16 h-16 bg-gradient-to-br from-[#1e1b4b] to-[#4c1d95] rounded-full shadow-2xl border-2 border-yellow-400/50 flex items-center justify-center transform transition-transform group-hover:scale-110 group-active:scale-95 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <Moon size={28} className="text-yellow-400 fill-yellow-400 animate-[wiggle_3s_ease-in-out_infinite]" />
+                    <div className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white shadow-sm">
+                        {toBanglaDigit(isRamadan ? daysLeft : daysBeforeRamadan)}
+                    </div>
+                </div>
+                <div className="absolute bottom-full right-0 mb-2 w-max px-3 py-1 bg-white text-slate-900 text-xs font-bold rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 pointer-events-none">
+                    রমজান আপডেট 🌙
+                </div>
+            </div>
+        );
+    }
+
+    // EXPANDED POPUP (Desktop Split Layout)
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-500">
-            {/* Stars Background Animation */}
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
+            <div className="absolute inset-0" onClick={handleMinimize}></div>
+
+            {/* Stars Background */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {[...Array(20)].map((_, i) => (
+                {[...Array(40)].map((_, i) => (
                     <Star
                         key={i}
-                        className="absolute text-yellow-300 opacity-70 animate-pulse"
-                        size={Math.random() * 12 + 8}
+                        className="absolute text-yellow-200 opacity-60 animate-pulse"
+                        size={Math.random() * 10 + 4}
                         style={{
                             top: `${Math.random() * 100}%`,
                             left: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 2}s`,
-                            animationDuration: `${Math.random() * 2 + 1}s`
+                            animationDelay: `${Math.random() * 3}s`,
+                            animationDuration: `${Math.random() * 2 + 2}s`
                         }}
                     />
                 ))}
             </div>
 
-            {/* Popup Card */}
-            <div className="relative max-w-md w-full bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-700">
-
-                {/* Animated Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-transparent to-yellow-400/20 animate-pulse"></div>
+            {/* Main Popup Container */}
+            <div className="relative max-w-4xl w-full bg-[#1e1b4b] rounded-3xl shadow-2xl overflow-hidden border border-white/10 flex flex-col md:flex-row animate-in zoom-in-95 duration-500">
 
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-4 right-4 z-10 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors backdrop-blur-md"
+                    className="absolute top-4 right-4 z-50 p-2 bg-black/20 hover:bg-black/40 rounded-full transition-colors text-white/80 hover:text-white"
+                    title="Close Forever"
                 >
-                    <X size={20} className="text-white" />
+                    <X size={24} />
                 </button>
 
-                {/* Content */}
-                <div className="relative z-10 p-8 text-center text-white">
+                {/* Left Side: Visual/Illustration */}
+                <div className="relative w-full md:w-5/12 bg-gradient-to-b from-indigo-900 to-[#1e1b4b] overflow-hidden flex items-center justify-center p-8 min-h-[250px] md:min-h-full border-b md:border-b-0 md:border-r border-white/5">
+                    {/* Mosque Silhouette Effect (CSS) */}
+                    <div className="absolute bottom-0 w-full h-1/2 bg-[url('https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/512/1f54c.png')] bg-contain bg-bottom bg-no-repeat opacity-20 invert grayscale mix-blend-overlay"></div>
 
-                    {/* Crescent Moon Icon */}
-                    <div className="mb-6 flex justify-center">
-                        <div className="relative">
-                            {/* Outer Glow */}
-                            <div className="absolute inset-0 bg-yellow-300/50 blur-3xl rounded-full animate-pulse"></div>
-
-                            {/* Moon SVG */}
-                            <svg
-                                width="120"
-                                height="120"
-                                viewBox="0 0 120 120"
-                                className="relative drop-shadow-2xl animate-bounce"
-                                style={{ animationDuration: '3s' }}
-                            >
-                                <defs>
-                                    <linearGradient id="moonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style={{ stopColor: '#FCD34D', stopOpacity: 1 }} />
-                                        <stop offset="100%" style={{ stopColor: '#F59E0B', stopOpacity: 1 }} />
-                                    </linearGradient>
-                                </defs>
-                                {/* Crescent Moon Path */}
-                                <path
-                                    d="M 60 10 A 50 50 0 1 1 60 110 A 35 35 0 1 0 60 10 Z"
-                                    fill="url(#moonGradient)"
-                                    stroke="#FBBF24"
-                                    strokeWidth="2"
-                                />
-                                {/* Star on top */}
-                                <circle cx="85" cy="25" r="3" fill="#FFF" className="animate-pulse" />
-                            </svg>
-                        </div>
+                    {/* Big Moon */}
+                    <div className="relative z-10">
+                        <div className="absolute inset-0 bg-yellow-400/20 blur-[50px] rounded-full animate-pulse"></div>
+                        <Moon
+                            size={140}
+                            className="text-yellow-400 fill-yellow-400 drop-shadow-[0_0_30px_rgba(250,204,21,0.6)] animate-[bounce_6s_infinite]"
+                        />
+                        <Star size={32} className="text-white fill-white absolute -top-4 -right-6 animate-ping" style={{ animationDuration: '3s' }} />
+                        <Star size={20} className="text-indigo-200 absolute bottom-4 -left-8 animate-pulse" />
                     </div>
 
-                    {/* Message */}
-                    <div className="mb-6">
-                        {isRamadan ? (
-                            <>
-                                <h2 className="text-3xl font-bold mb-3 animate-pulse">
-                                    رَمَضَان مُبَارَك
-                                </h2>
-                                <p className="text-2xl font-bold mb-2">
-                                    রমজান এসে গেছে! 🌙
-                                </p>
-                                <p className="text-xl font-semibold mb-4">
-                                    আর মাত্র <span className="text-yellow-300 text-3xl">{daysLeft}</span> দিন বাকি!
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <h2 className="text-3xl font-bold mb-3">
-                                    رَمَضَان আসছে! 🌙
-                                </h2>
-                                <p className="text-xl font-semibold mb-4">
-                                    আর মাত্র <span className="text-yellow-300 text-3xl">{daysBeforeRamadan}</span> দিন বাকি!
-                                </p>
-                            </>
-                        )}
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-[#1e1b4b] to-transparent opacity-60"></div>
+                </div>
 
-                        <p className="text-lg leading-relaxed opacity-95">
-                            সেহরি-ইফতার সময়সূচি, দোয়া ও গুরুত্বপূর্ণ আপডেট পেতে <span className="font-bold">আমাদের সাথেই থাকুন।</span>
+                {/* Right Side: Content */}
+                <div className="relative w-full md:w-7/12 p-8 md:p-10 flex flex-col justify-center text-center md:text-left text-white bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#4c1d95]">
+
+                    {/* Header */}
+                    <div className="mb-6">
+                        <h2 className="text-4xl md:text-5xl font-bold mb-2 font-serif text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 pb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                            رَمَضَان كَرِيم
+                        </h2>
+                        <p className="text-indigo-200 text-sm tracking-[0.3em] uppercase opacity-80">Ramadan Kareem</p>
+                    </div>
+
+                    {/* Countdown Box */}
+                    <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 mb-8">
+                        {isRamadan ? (
+                            <div className="text-center">
+                                <p className="text-xl text-indigo-200 mb-1">পবিত্র রমজান চলছে</p>
+                                <p className="text-4xl font-bold text-white mt-2">আর বাকি <span className="text-yellow-400">{toBanglaDigit(daysLeft)}</span> দিন</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                                <div className="text-center md:text-left">
+                                    <p className="text-lg text-indigo-300 mb-1">রমজান শুরু হতে বাকি</p>
+                                    <div className="flex items-baseline justify-center md:justify-start gap-2">
+                                        <span className="text-5xl font-black text-white drop-shadow-lg">{toBanglaDigit(daysBeforeRamadan)}</span>
+                                        <span className="text-xl text-yellow-400 font-bold">দিন</span>
+                                    </div>
+                                </div>
+                                <div className="hidden md:block w-px h-12 bg-white/20"></div>
+                                <div className="text-center md:text-right">
+                                    <div className="flex items-center gap-2 text-indigo-200 text-sm justify-center md:justify-end mb-1">
+                                        <Calendar size={14} />
+                                        <span>সম্ভাব্য তারিখ</span>
+                                    </div>
+                                    <p className="text-xl font-bold text-white">{startDateStr}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Verse */}
+                    <div className="relative pl-6 border-l-4 border-yellow-500/50 text-left mb-8 hidden md:block">
+                        <p className="text-xl text-emerald-300 font-serif leading-relaxed mb-1" dir="rtl">
+                            شَهْرُ رَمَضَانَ الَّذِي أُنزِلَ فِيهِ الْقُرْآنُ
+                        </p>
+                        <p className="text-sm text-slate-300 italic">
+                            "রমজান মাসই হলো সেই মাস, যাতে নাযিল করা হয়েছে আল-কোরআন।"
                         </p>
                     </div>
 
-                    {/* Action Button */}
-                    <button
-                        onClick={handleClose}
-                        className="px-8 py-3 bg-white text-purple-600 font-bold text-lg rounded-full hover:bg-yellow-100 transition-all transform hover:scale-105 shadow-lg"
-                    >
-                        জাযাকাল্লাহ খাইরান
-                    </button>
+                    <div className="flex flex-col md:flex-row items-center gap-4 mt-auto">
+                        <button
+                            onClick={handleMinimize}
+                            className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-amber-500/30 transition-all transform hover:-translate-y-0.5"
+                        >
+                            আলহামদুলিল্লাহ
+                        </button>
+                        <p className="text-xs text-indigo-400">
+                            এটি স্বয়ংক্রিয়ভাবে মিনিমাইজ হবে <span className="text-yellow-400 animate-pulse">...</span>
+                        </p>
+                    </div>
                 </div>
 
-                {/* Bottom Decoration */}
-                <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400"></div>
+                {/* Progress Bar */}
+                <div className="absolute bottom-0 left-0 h-1.5 bg-gradient-to-r from-yellow-400 to-amber-600 animate-[width_10s_linear_forwards] w-full origin-left z-20"></div>
             </div>
         </div>
     );

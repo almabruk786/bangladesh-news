@@ -133,6 +133,7 @@ async function fetchNewsFromDb() {
                 title: data.title,
                 category: data.category,
                 categories: data.categories,
+                content: data.content, // Added to enable excerpt generation
                 excerpt: data.excerpt,
                 imageUrl: data.imageUrl,
                 imageUrls: data.imageUrls,

@@ -9,20 +9,13 @@ import { collection, query, where, getDocs, orderBy, limit } from 'firebase/fire
 import { db } from '../../lib/firebase';
 import { motion } from 'framer-motion';
 
-// New Widgets
-import PerformanceChart from './PerformanceChart';
-import RealTimeFeed from './RealTimeFeed';
-import NamazTimingPanel from './NamazTimingPanel';
-
 export default function DashboardOverview({ stats, user }) {
-    const [trendingNews, setTrendingNews] = useState([]);
     const [seoAnalysis, setSeoAnalysis] = useState(null);
     const [logs, setLogs] = useState([]);
-    const [searchResults, setSearchResults] = useState([]); // Search State
 
     const isAdmin = user?.role === 'admin';
 
-    // 1. Fetch Vercel Logs (Admin Only)
+    // 1. Fetch Vercel Logs (Admin Only) - Manual Refresh Only (No Auto-Refresh to Save Quota)
     useEffect(() => {
         if (!isAdmin) return;
         const fetchLogs = async () => {
@@ -32,12 +25,11 @@ export default function DashboardOverview({ stats, user }) {
                 if (data.logs) setLogs(data.logs);
             } catch (error) { console.error("Logs Fetch Error:", error); }
         };
-        fetchLogs();
-        const interval = setInterval(fetchLogs, 30000);
-        return () => clearInterval(interval);
+        fetchLogs(); // Only fetch once on mount
+        // Removed auto-refresh interval to save Firestore quota
     }, [isAdmin]);
 
-    // 2. Fetch AI Trends & SEO Data
+    // 2. Fetch SEO Data
     useEffect(() => {
         async function fetchInsights() {
             try {
@@ -53,12 +45,6 @@ export default function DashboardOverview({ stats, user }) {
                 const snap = await getDocs(q);
                 const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-                const trends = docs
-                    .map(d => ({ ...d, velocity: Math.floor(Math.random() * 100) + 20 }))
-                    .sort((a, b) => b.velocity - a.velocity)
-                    .slice(0, 3);
-                setTrendingNews(trends);
-
                 if (docs.length > 0) {
                     const latest = docs[0];
                     const analysis = analyzeSeo(latest);
@@ -72,120 +58,50 @@ export default function DashboardOverview({ stats, user }) {
     // SEO Modal State
     const [showSeoModal, setShowSeoModal] = useState(false);
 
-    // Goal Component
-    const GoalTracker = ({ title, current, target, color }) => {
-        const percent = Math.min((current / target) * 100, 100);
-        return (
-            <div className="mb-4">
-                <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
-                    <span>{title}</span>
-                    <span>{current}/{target}</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${percent}%` }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                        className={`h-full ${color}`}
-                    />
-                </div>
-            </div>
-        );
-    };
-
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-            {/* ROW 1: Performance + Live Feed */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[400px]">
-                <div className="lg:col-span-2 h-full">
-                    <PerformanceChart />
-                </div>
-                <div className="h-full">
-                    <RealTimeFeed />
-                </div>
-            </div>
-
-            {/* ROW 2: Goals + SEO + Trends */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                {/* 1. Goals & Targets */}
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-center">
-                    <div className="flex items-center gap-2 mb-6">
-                        <div className="bg-emerald-100 p-2 rounded-lg">
-                            <Target className="text-emerald-600" size={20} />
-                        </div>
-                        <h2 className="font-bold text-slate-800">Weekly Targets</h2>
-                    </div>
-
-                    <GoalTracker title="Articles Published" current={stats?.published || 12} target={50} color="bg-indigo-500" />
-                    <GoalTracker title="Total Reads (K)" current={42} target={100} color="bg-pink-500" />
-                    <GoalTracker title="Avg SEO Score" current={88} target={95} color="bg-emerald-500" />
+            {/* Compact SEO Analyzer Card */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={() => setShowSeoModal(true)}
+                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm cursor-pointer hover:shadow-lg transition-all group relative overflow-hidden"
+            >
+                <div className="absolute top-2 right-2 bg-slate-50 rounded-lg px-3 py-1 text-xs font-bold text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition">
+                    Click for Details ↗
                 </div>
 
-                {/* 2. AI Trend Detector */}
-                <div className={`col-span-1 md:col-span-1 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm`}>
-                    <div className="flex items-center gap-2 mb-6">
-                        <div className="bg-orange-100 p-2 rounded-lg">
-                            <TrendingUp className="text-orange-600" size={20} />
-                        </div>
-                        <h2 className="font-bold text-slate-800">
-                            {isAdmin ? "Trending Now 🔥" : "My Top Stories 🔥"}
-                        </h2>
-                    </div>
-
-                    <div className="space-y-4">
-                        {trendingNews.map((news, i) => (
-                            <div key={news.id} className="flex items-center gap-4 group cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition">
-                                <span className="font-black text-slate-200 text-2xl">0{i + 1}</span>
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-slate-800 truncate group-hover:text-indigo-600 transition">{news.title}</h4>
-                                    <div className="flex items-center gap-4 mt-1 text-xs text-slate-400">
-                                        <span className="flex items-center gap-1"><Users size={12} /> {news.velocity} reads/hr</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* 3. SEO Analyzer (Clickable Card) */}
-                <div
-                    onClick={() => setShowSeoModal(true)}
-                    className="col-span-1 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm cursor-pointer hover:shadow-md transition group relative overflow-hidden"
-                >
-                    <div className="absolute top-0 right-0 p-2 bg-slate-50 rounded-bl-xl text-xs font-bold text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition">
-                        Click for Details ↗
-                    </div>
-
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="bg-blue-100 p-2 rounded-lg group-hover:bg-blue-600 transition duration-300">
-                            <CheckCircle className="text-blue-600 group-hover:text-white transition duration-300" size={20} />
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-blue-100 p-3 rounded-xl group-hover:bg-blue-600 transition duration-300">
+                            <CheckCircle className="text-blue-600 group-hover:text-white transition duration-300" size={24} />
                         </div>
                         <div>
-                            <h2 className="font-bold text-slate-800">SEO Analyzer</h2>
-                            <p className="text-xs text-slate-400">Latest analysis result</p>
+                            <h2 className="font-bold text-slate-800 text-lg">SEO Health Check</h2>
+                            <p className="text-xs text-slate-400">Latest article analysis</p>
                         </div>
                     </div>
 
                     {seoAnalysis ? (
-                        <div className="text-center mt-4">
-                            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full border-[6px] text-3xl font-black mb-4 transition-all group-hover:scale-110
-                                ${seoAnalysis.score >= 80 ? 'border-green-500 text-green-600' : 'border-red-500 text-red-600'}`}>
-                                {seoAnalysis.score}
+                        <div className="flex items-center gap-6">
+                            <div className="text-center">
+                                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full border-4 text-2xl font-black transition-all group-hover:scale-110
+                                    ${seoAnalysis.score >= 80 ? 'border-green-500 text-green-600' : 'border-red-500 text-red-600'}`}>
+                                    {seoAnalysis.score}
+                                </div>
                             </div>
-                            <h4 className="font-bold text-slate-700 truncate px-2 mb-2">"{seoAnalysis.title}"</h4>
-                            <div className="flex justify-center gap-2 text-xs">
-                                <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full font-bold">{seoAnalysis.issues.length} Issues</span>
-                                <span className="bg-green-50 text-green-600 px-3 py-1 rounded-full font-bold">{seoAnalysis.good.length} Good</span>
+                            <div className="flex gap-2">
+                                <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full font-bold text-sm">{seoAnalysis.issues.length} Issues</span>
+                                <span className="bg-green-50 text-green-600 px-3 py-1 rounded-full font-bold text-sm">{seoAnalysis.good.length} Good</span>
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center text-slate-400 py-8">Scanning latest post...</div>
+                        <div className="text-slate-400 text-sm">Analyzing...</div>
                     )}
                 </div>
-
-            </div>
+            </motion.div>
 
             {/* SEO Detail Modal */}
             {showSeoModal && seoAnalysis && (
@@ -247,10 +163,14 @@ export default function DashboardOverview({ stats, user }) {
                 </div>
             )}
 
-            {/* ROW 3: Terminal Logs (Admin) */}
+            {/* System Activity Log (Admin) */}
             {isAdmin && (
-                <div className="bg-slate-900 rounded-2xl p-6 text-slate-400 font-mono text-xs shadow-xl overflow-hidden flex flex-col">
-
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                    className="bg-slate-900 rounded-2xl p-6 text-slate-400 font-mono text-xs shadow-xl overflow-hidden flex flex-col"
+                >
                     <div className="flex items-center gap-2 mb-4 text-slate-200 uppercase tracking-widest font-bold border-b border-slate-700 pb-2">
                         <Terminal size={14} /> System Activity Log
                     </div>
@@ -283,7 +203,7 @@ export default function DashboardOverview({ stats, user }) {
                             </tbody>
                         </table>
                     </div>
-                </div >
+                </motion.div>
             )}
         </div >
     );

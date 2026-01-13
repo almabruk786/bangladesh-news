@@ -3,8 +3,8 @@ import CategoryClient from "./CategoryClient";
 import { adminDb } from "../../lib/firebaseAdmin";
 import { getCategories } from "../../lib/firebaseServer";
 
-// ISR: Revalidate every 2 minutes (categories change less frequently)
-export const revalidate = 120;
+// ISR: Revalidate every 5 minutes (categories change less frequently)
+export const revalidate = 300;
 
 // Helper to fetch news on the server
 async function getCategoryNews(categoryName: string) {

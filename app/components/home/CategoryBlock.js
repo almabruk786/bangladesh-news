@@ -7,7 +7,7 @@ export default function CategoryBlock({ title, news, color = "border-slate-800" 
     if (!news || news.length === 0) return null;
 
     const mainStory = news[0];
-    const sideStories = news.slice(1, 5);
+    const sideStories = news.slice(1, 7);
 
     return (
         <div className="mb-12">

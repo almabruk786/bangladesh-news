@@ -1,6 +1,9 @@
 import { adminDb } from '../../lib/firebaseAdmin';
 import RedirectClient from './RedirectClient';
 
+// ISR: Revalidate every 1 hour (3600 seconds)
+export const revalidate = 3600;
+
 // Server Component for Metadata & Data Fetching
 export async function generateMetadata({ params }) {
     const { id } = await params;

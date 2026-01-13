@@ -12,7 +12,7 @@ import LatestSidebar from './components/home/LatestSidebar';
 import AdPopup from './components/AdPopup';
 
 // Force revalidation every 5 minutes (300 seconds)
-export const revalidate = 60;
+export const revalidate = 300;
 
 export const metadata = {
   alternates: {
@@ -44,7 +44,7 @@ export default async function Home() {
 
   const others = allDocs.filter(n => n.id !== heroNews?.id);
   const politicsNews = others.filter(n => n.category === "Politics" || n.category === "রাজনীতি").slice(0, 5);
-  const sportsNews = others.filter(n => n.category === "Sports" || n.category === "খেলাধুলা").slice(0, 5);
+  const sportsNews = others.filter(n => n.category === "Sports" || n.category === "খেলাধুলা").slice(0, 7);
   const allNews = others;
 
 

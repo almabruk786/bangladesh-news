@@ -8,6 +8,25 @@ import { extractIdFromUrl, generateSeoUrl } from '../../lib/urlUtils';
 // ISR: Revalidate every 5 minutes (reduces Firestore reads dramatically on Vercel)
 export const revalidate = 300;
 
+// Generate Static Params for Top 50 Articles (Build Time Optimization)
+export async function generateStaticParams() {
+  if (!adminDb) return [];
+  try {
+    const snap = await adminDb.collection("articles")
+      .orderBy("publishedAt", "desc")
+      .limit(50)
+      .get();
+
+    return snap.docs.map(doc => ({
+      id: generateSeoUrl(doc.data().title, doc.id),
+      // Also include just ID for fallback
+    }));
+  } catch (e) {
+    console.error("Static Params Generation Error:", e);
+    return [];
+  }
+}
+
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
   const { id: slugId } = await params;
