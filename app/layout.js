@@ -170,7 +170,7 @@ export default async function RootLayout({ children }) {
         {/* ✅ Google AdSense Script - Optimized for Speed */}
         <Script
           id="adsense-init"
-          strategy="lazyOnload"
+          strategy="afterInteractive"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2257905734584691"
           crossOrigin="anonymous"
         />
@@ -189,7 +189,7 @@ export default async function RootLayout({ children }) {
                 c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
                 t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
                 y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "YOUR_CLARITY_ID_HERE");
+            })(window, document, "clarity", "script", "v1bm8i4lmm");
           `}
         </Script>
       </body>

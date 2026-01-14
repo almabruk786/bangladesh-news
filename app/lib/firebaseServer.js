@@ -215,3 +215,31 @@ export const getCacheStats = () => ({
     articles: articleCache.getStats(),
     timeMultiplier: newsCache.getTimeMultiplier()
 });
+
+export const getSitemapNews = unstable_cache(
+    async () => {
+        console.log('[getSitemapNews] Cache MISS - fetching from DB');
+        if (!adminDb) return [];
+        try {
+            const snapshot = await adminDb
+                .collection('articles')
+                .where('status', '==', 'published')
+                .orderBy('publishedAt', 'desc')
+                .limit(1000) // Increased limit for sitemap
+                .select('title', 'publishedAt', 'updatedAt', 'category') // Fetch only necessary fields
+                .get();
+
+            return snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                publishedAt: doc.data().publishedAt?.toDate?.()?.toISOString() || doc.data().publishedAt,
+                updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || doc.data().updatedAt,
+            }));
+        } catch (error) {
+            console.error('[getSitemapNews] Error:', error);
+            return [];
+        }
+    },
+    ['sitemap_news'],
+    { revalidate: 3600, tags: ['news', 'sitemap'] }
+);

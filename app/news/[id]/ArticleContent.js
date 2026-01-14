@@ -143,9 +143,9 @@ export default function ArticleContent({ article, relatedNews }) {
                             <NewsSlider images={imageList} title={article.title} altText={article.imageAlt} />
 
                             {/* --- Manual Ad Unit --- */}
-                            {/* <div className="w-full">
+                            <div className="w-full">
                                 <GoogleAd slotId="3652013893" format="auto" responsive="true" />
-                            </div> */}
+                            </div>
                             {/* ------------------------------------------------------- */}
 
                             {/* Main Image Caption */}

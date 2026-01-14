@@ -1,13 +1,14 @@
-import { getNews, getCategories } from './lib/firebaseServer';
+import { getSitemapNews, getCategories } from './lib/firebaseServer';
+import { generateSeoUrl } from './lib/urlUtils';
 
 export default async function sitemap() {
     const baseUrl = 'https://bakalia.xyz';
 
-    // Fetch latest news for sitemap (optimized to 100 for better performance)
-    const news = await getNews();
+    // Fetch latest news for sitemap (Optimized > 1000 items)
+    const news = await getSitemapNews();
 
     const newsUrls = news.map((item) => ({
-        url: `${baseUrl}/news/${item.id}`,
+        url: `${baseUrl}/news/${generateSeoUrl(item.title, item.id)}`,
         lastModified: item.updatedAt || item.publishedAt || new Date().toISOString(),
         changeFrequency: 'weekly',
         priority: 0.7,
