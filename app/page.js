@@ -43,8 +43,8 @@ export default async function Home() {
   const realLatestNews = allDocs.filter(n => n.id !== heroNews?.id).slice(0, 10);
 
   const others = allDocs.filter(n => n.id !== heroNews?.id);
-  const politicsNews = others.filter(n => n.category === "Politics" || n.category === "রাজনীতি").slice(0, 5);
-  const sportsNews = others.filter(n => n.category === "Sports" || n.category === "খেলাধুলা").slice(0, 7);
+  const politicsNews = others.filter(n => ["Politics", "রাজনীতি"].includes(n.category)).slice(0, 5);
+  const sportsNews = others.filter(n => ["Sports", "খেলা", "খেলাধুলা"].includes(n.category)).slice(0, 7);
   const allNews = others;
 
 
