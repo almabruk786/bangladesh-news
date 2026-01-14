@@ -1,8 +1,6 @@
 "use client";
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { db } from '../lib/firebase';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import Link from 'next/link';
 import { Search, Filter, Clock } from 'lucide-react';
 import { parseNewsContent, stripHtml, getBanglaRelativeTime } from '../lib/utils';
@@ -23,28 +21,18 @@ function SearchResults() {
 
             setLoading(true);
             try {
-                // Firestore doesn't support full-text search natively.
-                // We will fetch recent articles and filter client-side for this MVP.
-                // For production with massive data, Algolia or Typesense is recommended.
+                // Use server-side search API (optimized with caching)
+                const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
 
-                const newsRef = collection(db, "articles");
-                const qRef = query(newsRef, orderBy("publishedAt", "desc"), limit(200)); // Fetch last 200 items to search within
-                const querySnapshot = await getDocs(qRef);
-
-                const lowerQ = q.toLowerCase().trim();
-
-                const results = querySnapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .filter(item => {
-                        const titleMatch = item.title?.toLowerCase().includes(lowerQ);
-                        const bodyMatch = item.content?.toLowerCase().includes(lowerQ);
-                        const catMatch = item.category?.toLowerCase().includes(lowerQ);
-                        return titleMatch || bodyMatch || catMatch;
-                    });
-
-                setNews(results);
+                if (data.success) {
+                    setNews(data.results);
+                } else {
+                    setNews([]);
+                }
             } catch (error) {
                 console.error("Search error:", error);
+                setNews([]);
             } finally {
                 setLoading(false);
             }
