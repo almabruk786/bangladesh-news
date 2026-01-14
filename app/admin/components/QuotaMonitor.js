@@ -169,6 +169,72 @@ export default function QuotaMonitor() {
                 </div>
             )}
 
+            {/* Total Quota Progress Bar */}
+            {quota && (
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border-2 border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Total Quota Usage Today</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Combined reads, writes, and deletes</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-3xl font-black text-slate-800 dark:text-white">
+                                {(() => {
+                                    const totalUsed = quota.reads.used + quota.writes.used + quota.deletes.used;
+                                    const totalLimit = quota.reads.limit + quota.writes.limit + quota.deletes.limit;
+                                    const totalPercentage = Math.min((totalUsed / totalLimit) * 100, 100);
+                                    return totalPercentage.toFixed(1);
+                                })()}%
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">of daily limit</p>
+                        </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="relative w-full h-8 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                            className={`absolute top-0 left-0 h-full transition-all duration-500 ${(() => {
+                                const totalUsed = quota.reads.used + quota.writes.used + quota.deletes.used;
+                                const totalLimit = quota.reads.limit + quota.writes.limit + quota.deletes.limit;
+                                const totalPercentage = (totalUsed / totalLimit) * 100;
+                                return getProgressColor(totalPercentage);
+                            })()}`}
+                            style={{
+                                width: `${(() => {
+                                    const totalUsed = quota.reads.used + quota.writes.used + quota.deletes.used;
+                                    const totalLimit = quota.reads.limit + quota.writes.limit + quota.deletes.limit;
+                                    return Math.min((totalUsed / totalLimit) * 100, 100);
+                                })()}%`
+                            }}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                        </div>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="mt-4 grid grid-cols-3 gap-4">
+                        <div className="text-center">
+                            <p className="text-2xl font-bold text-slate-800 dark:text-white">
+                                {(quota.reads.used + quota.writes.used + quota.deletes.used).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Used</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-2xl font-bold text-slate-800 dark:text-white">
+                                {(quota.reads.limit + quota.writes.limit + quota.deletes.limit).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Total Limit</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {(quota.reads.remaining + quota.writes.remaining + quota.deletes.remaining).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Remaining</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Reset Timer */}
             {resetInfo && (
                 <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
