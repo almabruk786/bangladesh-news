@@ -6,7 +6,7 @@ import { ArrowLeft, Clock, User, TrendingUp, Copy, Share2 } from 'lucide-react';
 import NewsSlider from '../../components/NewsSlider'; // Corrected path
 import CommentSection from '../../components/comments/CommentSection'; // Comment Component
 import GoogleAd from '../../components/GoogleAd'; // Manual Ad Unit
-import { parseNewsContent, stripHtml } from '../../lib/utils';
+import { parseNewsContent, stripHtml, getCategoryBanglaName } from '../../lib/utils';
 import FollowButtons from '../../components/FollowButtons';
 import ReadingProgressBar from '../../components/ReadingProgressBar';
 import FontAdjuster from '../../components/FontAdjuster';
@@ -115,7 +115,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                     };
 
                                     return article.categories && article.categories.length > 0 ? (
-                                        [...new Set(article.categories.map(cat => translateCategory(cat)))].map((translatedCat, i) => (
+                                        [...new Set(article.categories.map(cat => getCategoryBanglaName(cat)))].map((translatedCat, i) => (
                                             <Link key={i} href={`/category/${translatedCat}`}>
                                                 <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs hover:bg-red-200 transition-colors">
                                                     {translatedCat}
@@ -124,7 +124,7 @@ export default function ArticleContent({ article, relatedNews }) {
                                         ))
                                     ) : (
                                         <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider text-xs">
-                                            {translateCategory(article.category === "Auto-Imported" ? "General" : (article.category || "খবর"))}
+                                            {getCategoryBanglaName(article.category === "Auto-Imported" ? "General" : (article.category || "খবর"))}
                                         </span>
                                     );
                                 })()}

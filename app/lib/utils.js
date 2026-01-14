@@ -120,4 +120,32 @@ export function extractYoutubeVideoId(content) {
     return match ? match[1] : null;
 }
 
+// Translate category names to Bangla
+export function getCategoryBanglaName(categoryName) {
+    if (!categoryName) return "";
+
+    const categoryMap = {
+        "National": "জাতীয়",
+        "Politics": "রাজনীতি",
+        "International": "আন্তর্জাতিক",
+        "Sports": "খেলা",
+        "Business": "বাণিজ্য",
+        "Entertainment": "বিনোদন",
+        "Technology": "প্রযুক্তি",
+        "Health": "স্বাস্থ্য",
+        "Education": "শিক্ষা",
+        "Lifestyle": "জীবনযাপন",
+        "Opinion": "মতামত",
+        "Bangladesh": "বাংলাদেশ",
+        "Corruption": "দুর্নীতি"
+    };
+
+    // If already in Bangla, return as is
+    if (categoryMap[categoryName]) {
+        return categoryMap[categoryName];
+    }
+
+    // If it's already Bangla (not in map keys), return as is
+    return categoryName;
+}
 
