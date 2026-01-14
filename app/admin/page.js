@@ -35,6 +35,7 @@ export default function AdminDashboard() {
   const [passwordInput, setPasswordInput] = useState("");
   // Writer role defaults to "write", others to "manage"
   const [activeTabRaw, setActiveTabRaw] = useState("manage");
+  const activeTab = activeTabRaw; // Fix ReferenceError
 
   // Persist Tab Selection
   const setActiveTab = (tab) => {
