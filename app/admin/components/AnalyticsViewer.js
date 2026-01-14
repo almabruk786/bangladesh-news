@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { db } from '../../lib/firebase';
 import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
 import { MapPin, Monitor, Smartphone, Globe, Calendar, TrendingUp, BarChart2, Zap, Users, PieChart as PieIcon, ArrowUpRight, RefreshCw, AlertTriangle } from 'lucide-react';
+import CountUp from 'react-countup';
+import { motion } from 'framer-motion';
 
 // --- SVG Chart Helpers ---
 const SimplePieChart = ({ data, colors }) => {
@@ -438,45 +440,117 @@ export default function AnalyticsViewer() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-2">Today's Visits</h3>
-                    <div className="flex items-end justify-between">
-                        <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.today}</p>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.2 }}
+                    className="relative overflow-hidden bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl p-6 text-white shadow-xl shadow-emerald-500/30"
+                >
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                        <TrendingUp size={100} />
+                    </div>
+
+                    <div className="relative z-10 flex justify-between items-start">
+                        <div>
+                            <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Today's Visits</p>
+                            <h3 className="text-3xl font-black mt-2 flex items-center gap-2">
+                                <CountUp end={stats.today || 0} duration={2} separator="," />
+                            </h3>
+                        </div>
+                        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/10">
+                            <TrendingUp size={20} className="text-white" />
+                        </div>
+                    </div>
+
+                    {/* Footer with Trend */}
+                    <div className="mt-4 pt-4 border-t border-white/20 flex items-center gap-2 text-xs font-medium text-white/80">
                         {prevStats.today > 0 && (
-                            <div className={`flex items-center gap-1 text-xs font-bold ${getTrend(stats.today, prevStats.today) >= 0 ? 'text-green-600' : 'text-red-600'
-                                }`}>
-                                {getTrend(stats.today, prevStats.today) >= 0 ? '↑' : '↓'}
-                                {Math.abs(getTrend(stats.today, prevStats.today))}%
-                            </div>
+                            <>
+                                <ArrowUpRight size={14} className="text-white" />
+                                <span>{getTrend(stats.today, prevStats.today) >= 0 ? '+' : ''}{getTrend(stats.today, prevStats.today)}% vs yesterday</span>
+                            </>
                         )}
+                        {!prevStats.today && <span>Updated just now</span>}
+                        {/* Mini sparkline */}
+                        <div className="ml-auto w-12 h-4 opacity-50 flex items-end gap-[2px]">
+                            {[40, 60, 45, 70, 50, 80, 65].map((h, i) => (
+                                <div key={i} style={{ height: `${h}%` }} className="flex-1 bg-white rounded-t-[1px]"></div>
+                            ))}
+                        </div>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">vs yesterday</p>
-                </div>
+                </motion.div>
 
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-2">Monthly</h3>
-                    <div className="flex items-end justify-between">
-                        <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.month}</p>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15, duration: 0.2 }}
+                    className="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-500 rounded-2xl p-6 text-white shadow-xl shadow-violet-500/30"
+                >
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                        <Calendar size={100} />
+                    </div>
+
+                    <div className="relative z-10 flex justify-between items-start">
+                        <div>
+                            <p className="text-white/80 text-xs font-bold uppercase tracking-wider">This Month</p>
+                            <h3 className="text-3xl font-black mt-2 flex items-center gap-2">
+                                <CountUp end={stats.month || 0} duration={2} separator="," />
+                            </h3>
+                        </div>
+                        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/10">
+                            <Calendar size={20} className="text-white" />
+                        </div>
+                    </div>
+
+                    {/* Footer with Trend */}
+                    <div className="mt-4 pt-4 border-t border-white/20 flex items-center gap-2 text-xs font-medium text-white/80">
                         {prevStats.month > 0 && (
-                            <div className={`flex items-center gap-1 text-xs font-bold ${getTrend(stats.month, prevStats.month) >= 0 ? 'text-green-600' : 'text-red-600'
-                                }`}>
-                                {getTrend(stats.month, prevStats.month) >= 0 ? '↑' : '↓'}
-                                {Math.abs(getTrend(stats.month, prevStats.month))}%
-                            </div>
+                            <>
+                                <ArrowUpRight size={14} className="text-white" />
+                                <span>{getTrend(stats.month, prevStats.month) >= 0 ? '+' : ''}{getTrend(stats.month, prevStats.month)}% vs last month</span>
+                            </>
                         )}
+                        {!prevStats.month && <span>Updated just now</span>}
+                        {/* Mini sparkline */}
+                        <div className="ml-auto w-12 h-4 opacity-50 flex items-end gap-[2px]">
+                            {[50, 45, 60, 55, 70, 65, 80].map((h, i) => (
+                                <div key={i} style={{ height: `${h}%` }} className="flex-1 bg-white rounded-t-[1px]"></div>
+                            ))}
+                        </div>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">vs last month</p>
-                </div>
+                </motion.div>
 
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-2">Top Country</h3>
-                    <div className="flex items-center gap-2">
-                        <Globe size={24} className="text-indigo-500" />
-                        <p className="text-lg font-bold text-slate-800 dark:text-white truncate">
-                            {countryData[0]?.label || 'Unknown'}
-                        </p>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.2 }}
+                    className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl shadow-indigo-500/30"
+                >
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                        <Globe size={100} />
                     </div>
-                </div>
+
+                    <div className="relative z-10 flex justify-between items-start">
+                        <div>
+                            <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Top Country</p>
+                            <h3 className="text-2xl font-black mt-2 truncate">
+                                {countryData[0]?.label || 'Unknown'}
+                            </h3>
+                        </div>
+                        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/10">
+                            <Globe size={20} className="text-white" />
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="mt-4 pt-4 border-t border-white/20 flex items-center gap-2 text-xs font-medium text-white/80">
+                        <MapPin size={14} className="text-white" />
+                        <span>{countryData[0]?.value || 0} visits</span>
+                    </div>
+                </motion.div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
