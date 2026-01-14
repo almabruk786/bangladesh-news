@@ -120,6 +120,7 @@ async function fetchNewsFromDb() {
                 imageAlt: data.imageAlt,
                 publishedAt: data.publishedAt?.toDate?.()?.toISOString() || data.publishedAt,
                 views: data.views || 0,
+                isPinned: data.isPinned || false,
             };
         });
     } catch (error) {
