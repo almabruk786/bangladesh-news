@@ -202,7 +202,7 @@ export default function AdminDashboard() {
       if (activeTab === "manage" && user.role === "admin") {
         // Fix: Removed orderBy("isPinned", "desc") to avoid missing index error.
         // We will sort by pinned status in the client side below.
-        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(2000)); // Increased to 2000 to show more history
+        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(1000)); // Balanced limit to prevent quota exhaustion
       }
       // For Admin "Pending" -> Fetch pending & pending_delete
       else if (activeTab === "pending" && user.role === "admin") {

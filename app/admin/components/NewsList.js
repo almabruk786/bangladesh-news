@@ -14,8 +14,9 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
 
     // Category normalization map (English <-> Bangla)
     const categoryMap = {
-        'Bangladesh': 'বাংলाদেশ',
-        'বাংলाদেশ': 'Bangladesh',
+        'Bangladesh': 'জাতীয়',
+        'বাংলাদেশ': 'জাতীয়', // Map explicit Bangla spelling to National too
+        'বাংলाদেশ': 'জাতীয়', // Legacy/Typo Catch
         'National': 'জাতীয়',
         'জাতীয়': 'National',
         'Economy': 'অর্থনীতি',
