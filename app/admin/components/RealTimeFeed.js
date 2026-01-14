@@ -20,7 +20,7 @@ export default function RealTimeFeed() {
 
     useEffect(() => {
         fetchLiveActivity();
-        const interval = setInterval(fetchLiveActivity, 10000); // 10s poll
+        const interval = setInterval(fetchLiveActivity, 60000); // 60s poll (Save Quota)
         return () => clearInterval(interval);
     }, []);
 
@@ -52,8 +52,8 @@ export default function RealTimeFeed() {
                             className="flex items-center gap-3 border-b border-slate-50 last:border-0 pb-3 last:pb-0 hover:bg-slate-50 p-2 -mx-2 rounded-lg transition-colors group cursor-pointer"
                         >
                             <div className={`p-2 rounded-full flex-shrink-0 transition-colors group-hover:scale-110 ${item.action?.includes('Social') ? 'bg-indigo-100 text-indigo-600' :
-                                    item.action?.includes('Search') ? 'bg-orange-100 text-orange-600' :
-                                        'bg-blue-100 text-blue-600'
+                                item.action?.includes('Search') ? 'bg-orange-100 text-orange-600' :
+                                    'bg-blue-100 text-blue-600'
                                 }`}>
                                 {item.action?.includes('Social') ? <Globe size={14} /> :
                                     item.action?.includes('Search') ? <Search size={14} /> : <Eye size={14} />}

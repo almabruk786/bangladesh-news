@@ -159,7 +159,7 @@ export default function RamadanPopup() {
             </div>
 
             {/* Main Popup Container */}
-            <div className="relative max-w-4xl w-full bg-[#1e1b4b] rounded-3xl shadow-2xl overflow-hidden border border-white/10 flex flex-col md:flex-row animate-in zoom-in-95 duration-500">
+            <div className="relative max-w-4xl w-full max-h-[90vh] overflow-y-auto md:overflow-visible bg-[#1e1b4b] rounded-3xl shadow-2xl border border-white/10 flex flex-col md:flex-row animate-in zoom-in-95 duration-500 custom-scrollbar">
 
                 {/* Close Button */}
                 <button
@@ -171,7 +171,7 @@ export default function RamadanPopup() {
                 </button>
 
                 {/* Left Side: Visual/Illustration */}
-                <div className="relative w-full md:w-5/12 bg-gradient-to-b from-indigo-900 to-[#1e1b4b] overflow-hidden flex items-center justify-center p-8 min-h-[250px] md:min-h-full border-b md:border-b-0 md:border-r border-white/5">
+                <div className="relative w-full md:w-5/12 bg-gradient-to-b from-indigo-900 to-[#1e1b4b] overflow-hidden flex items-center justify-center p-6 md:p-8 min-h-[180px] md:min-h-full border-b md:border-b-0 md:border-r border-white/5">
                     {/* Mosque Silhouette Effect (CSS) */}
                     <div className="absolute bottom-0 w-full h-1/2 bg-[url('https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/512/1f54c.png')] bg-contain bg-bottom bg-no-repeat opacity-20 invert grayscale mix-blend-overlay"></div>
 
@@ -190,11 +190,11 @@ export default function RamadanPopup() {
                 </div>
 
                 {/* Right Side: Content */}
-                <div className="relative w-full md:w-7/12 p-8 md:p-10 flex flex-col justify-center text-center md:text-left text-white bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#4c1d95]">
+                <div className="relative w-full md:w-7/12 p-6 md:p-10 flex flex-col justify-center text-center md:text-left text-white bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#4c1d95]">
 
                     {/* Header */}
-                    <div className="mb-6">
-                        <h2 className="text-4xl md:text-5xl font-bold mb-2 font-serif text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 pb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                    <div className="mb-4 md:mb-6">
+                        <h2 className="text-3xl md:text-5xl font-bold mb-2 font-serif text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 pb-2" style={{ fontFamily: 'Georgia, serif' }}>
                             رَمَضَان كَرِيم
                         </h2>
                         <p className="text-indigo-200 text-sm tracking-[0.3em] uppercase opacity-80">Ramadan Kareem</p>

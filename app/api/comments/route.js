@@ -16,7 +16,8 @@ export async function GET(request) {
         const q = commentsRef
             .where("articleId", "==", articleId)
             .where("status", "==", "published") // Only published
-            .orderBy("createdAt", "desc");
+            .orderBy("createdAt", "desc")
+            .limit(20); // Limit to 20 to save Quota
 
         const snapshot = await q.get();
 

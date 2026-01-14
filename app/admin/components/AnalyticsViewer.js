@@ -156,13 +156,13 @@ export default function AnalyticsViewer() {
         fetchLogs();
     }, [timeRange]); // Re-fetch when time range changes
 
-    // Auto-refresh DISABLED to save quota
+    // Auto-refresh controlled by UI toggle
     useEffect(() => {
         if (!autoRefresh) return;
-        // const interval = setInterval(() => {
-        //     fetchLogs();
-        // }, 60000); // 60 seconds instead of 30
-        // return () => clearInterval(interval);
+        const interval = setInterval(() => {
+            fetchLogs();
+        }, 60000); // 60 seconds interval
+        return () => clearInterval(interval);
     }, [autoRefresh, timeRange]);
 
     // Fetch Top Articles - with caching
