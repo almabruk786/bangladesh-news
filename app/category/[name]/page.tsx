@@ -142,6 +142,11 @@ const SEO_DATA: Record<string, { title: string; description: string; keywords: s
     title: "Education News Bangladesh | শিক্ষা | HSC SSC Results, Admission & Jobs",
     description: "Breaking education news from Bangladesh. শিক্ষা updates, HSC SSC results, university admission, exam schedules, and job circulars.",
     keywords: ["Education News BD", "শিক্ষা", "HSC Result", "SSC Result", "University Admission", "Job Circular", "Exam Bangladesh", "শিক্ষা সংবাদ"]
+  },
+  "Corruption": {
+    title: "Corruption News Bangladesh | দুর্নীতি | ACC \u0026 Anti-Corruption Updates",
+    description: "Breaking news on corruption in Bangladesh. দুর্নীতি সংবাদ, ACC investigations, anti-corruption drives, transparency reports, and accountability news.",
+    keywords: ["Corruption Bangladesh", "দুর্নীতি", "ACC Bangladesh", "Anti-Corruption", "Transparency BD", "দুর্নীতি দমন", "Corruption News BD", "Accountability"]
   }
 };
 
