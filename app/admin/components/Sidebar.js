@@ -24,6 +24,9 @@ export default function Sidebar({ user, activeTab, setActiveTab, logout, isOpen,
         // Publisher Specific
         { id: "my_news", label: "My Stories", icon: FileText, role: "publisher" },
         { id: "messages", label: "Messages", icon: Mail, role: "publisher" },
+
+        // Writer Specific (Quota Safe Mode)
+        { id: "my_news", label: "My Stories", icon: FileText, role: "writer" },
     ];
 
     const filteredItems = menuItems.filter((item, index, self) =>

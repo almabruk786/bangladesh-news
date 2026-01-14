@@ -5,7 +5,7 @@ import { db } from "../../lib/firebase";
 
 export default function UserManager() {
     const [users, setUsers] = useState([]);
-    const [newUser, setNewUser] = useState({ name: "", username: "", password: "" });
+    const [newUser, setNewUser] = useState({ name: "", username: "", password: "", role: "publisher" });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -19,10 +19,10 @@ export default function UserManager() {
         e.preventDefault();
         if (!newUser.name || !newUser.username || !newUser.password) return;
 
-        const docRef = await addDoc(collection(db, "users"), { ...newUser, role: "publisher" });
-        setUsers([...users, { id: docRef.id, ...newUser, role: "publisher" }]);
-        setNewUser({ name: "", username: "", password: "" });
-        alert("Publisher added successfully!");
+        const docRef = await addDoc(collection(db, "users"), { ...newUser });
+        setUsers([...users, { id: docRef.id, ...newUser }]);
+        setNewUser({ name: "", username: "", password: "", role: "publisher" });
+        alert(`${newUser.role === 'writer' ? 'Writer' : 'Publisher'} added successfully!`);
     };
 
     const deleteUser = async (id) => {
@@ -38,7 +38,7 @@ export default function UserManager() {
             <div className="lg:col-span-1">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-slate-800">
-                        <UserPlus className="text-blue-500" /> Add Publisher
+                        <UserPlus className="text-blue-500" /> Add Team Member
                     </h3>
                     <form onSubmit={createUser} className="space-y-4">
                         <div>
@@ -58,6 +58,17 @@ export default function UserManager() {
                                 value={newUser.username}
                                 onChange={e => setNewUser({ ...newUser, username: e.target.value })}
                             />
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 uppercase">Role</label>
+                            <select
+                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1 font-bold"
+                                value={newUser.role}
+                                onChange={e => setNewUser({ ...newUser, role: e.target.value })}
+                            >
+                                <option value="publisher">Publisher (Can view own news)</option>
+                                <option value="writer">Writer (Write Only - Quota Safe)</option>
+                            </select>
                         </div>
                         <div>
                             <label className="text-xs font-bold text-slate-500 uppercase">Password</label>
@@ -92,7 +103,7 @@ export default function UserManager() {
                     ) : (
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                                <tr>
+                                <tr key="header-row">
                                     <th className="p-5">Name</th>
                                     <th className="p-5">Username</th>
                                     <th className="p-5">Role</th>
@@ -104,7 +115,11 @@ export default function UserManager() {
                                     <tr key={u.id} className="group hover:bg-slate-50/50">
                                         <td className="p-5 font-bold text-slate-700">{u.name}</td>
                                         <td className="p-5 text-slate-500">@{u.username}</td>
-                                        <td className="p-5"><span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold uppercase">{u.role}</span></td>
+                                        <td className="p-5">
+                                            <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${u.role === 'writer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                {u.role || 'publisher'}
+                                            </span>
+                                        </td>
                                         <td className="p-5 text-right">
                                             <button onClick={() => deleteUser(u.id)} className="text-slate-300 hover:text-red-500 transition-colors">
                                                 <Trash2 size={18} />

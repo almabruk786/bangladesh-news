@@ -33,7 +33,8 @@ export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
-  const [activeTab, setActiveTabRaw] = useState("dashboard");
+  // Writer role defaults to "write", others to "manage"
+  const [activeTabRaw, setActiveTabRaw] = useState("manage");
 
   // Persist Tab Selection
   const setActiveTab = (tab) => {
@@ -162,7 +163,10 @@ export default function AdminDashboard() {
       let total = 0, published = 0, pending = 0;
 
       // Stats should arguably always be fresh or have short cache, keeping fresh for accuracy on dashboard
-      if (user.role === "publisher") {
+      // Writers don't need stats to save quota
+      if (user.role === 'writer') {
+        // Skip stats for writer
+      } else if (user.role === "publisher") {
         const totalQ = query(coll, where("authorName", "==", user.name));
         const pubQ = query(coll, where("authorName", "==", user.name), where("status", "==", "published"));
         const penQ = query(coll, where("authorName", "==", user.name), where("status", "==", "pending"));
@@ -225,9 +229,14 @@ export default function AdminDashboard() {
       else if (activeTab === "pending" && user.role === "admin") {
         q = query(collection(db, "articles"), where("status", "in", ["pending", "pending_delete"]), orderBy("publishedAt", "desc"));
       }
-      // For Publisher "My News"
+      // For Publisher "My News" - CRITICAL QUOTA FIX: Added LIMIT
       else if (activeTab === "my_news" && user.role === "publisher") {
-        q = query(collection(db, "articles"), where("authorName", "==", user.name), orderBy("publishedAt", "desc"));
+        q = query(collection(db, "articles"), where("authorName", "==", user.name), orderBy("publishedAt", "desc"), limit(50));
+      }
+      // For Writer - Fetches NOTHING by default or very minimal
+      else if (activeTab === "my_news" && user.role === "writer") {
+        // Maybe just last 10 for quick edit access
+        q = query(collection(db, "articles"), where("authorName", "==", user.name), orderBy("publishedAt", "desc"), limit(10));
       }
       // For Admin "Messages"
       else if (activeTab === "messages" && user.role === "admin") {
