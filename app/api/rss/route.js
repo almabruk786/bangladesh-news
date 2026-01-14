@@ -1,6 +1,7 @@
 import { adminDb } from '../../lib/firebaseAdmin';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache for 1 hour
+// export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

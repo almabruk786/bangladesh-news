@@ -1,6 +1,8 @@
 import { adminDb } from './firebaseAdmin';
 
 // Smart Cache with LRU eviction and stale-while-revalidate
+import { unstable_cache } from 'next/cache';
+
 class SmartCache {
     constructor(maxSize = 100) {
         this.cache = new Map();
@@ -81,36 +83,14 @@ const BASE_TTL = {
     ARTICLE: 10 * 60 * 1000
 };
 
-export const getNews = async () => {
-    const cacheKey = 'all_news';
-    const cached = newsCache.get(cacheKey);
-
-    if (cached && !cached.stale) {
-        console.log('[getNews] Cache HIT (fresh)');
-        return cached.value;
-    }
-
-    if (cached && cached.stale) {
-        console.log('[getNews] Cache HIT (stale) - returning old data, refreshing...');
-
-        setImmediate(async () => {
-            try {
-                const fresh = await fetchNewsFromDb();
-                newsCache.set(cacheKey, fresh, BASE_TTL.NEWS);
-                console.log('[getNews] Background refresh complete');
-            } catch (err) {
-                console.error('[getNews] Background refresh failed:', err);
-            }
-        });
-
-        return cached.value;
-    }
-
-    console.log('[getNews] Cache MISS - fetching from DB');
-    const news = await fetchNewsFromDb();
-    newsCache.set(cacheKey, news, BASE_TTL.NEWS);
-    return news;
-};
+export const getNews = unstable_cache(
+    async () => {
+        console.log('[getNews] Cache MISS - fetching from DB');
+        return await fetchNewsFromDb();
+    },
+    ['all_news'],
+    { revalidate: 300, tags: ['news'] }
+);
 
 async function fetchNewsFromDb() {
     if (!adminDb) {
@@ -153,43 +133,14 @@ async function fetchNewsFromDb() {
     }
 }
 
-export const getCategories = async () => {
-    const cacheKey = 'all_categories_v2'; // Changed key to force refresh
-    const cached = categoryCache.get(cacheKey);
-
-    if (cached && !cached.stale) {
-        console.log('[getCategories] Cache HIT (fresh)');
-        return cached.value;
-    }
-
-    if (cached && cached.stale) {
-        console.log('[getCategories] Cache HIT (stale) - returning old, refreshing...');
-
-        setImmediate(async () => {
-            try {
-                const fresh = await fetchCategoriesFromDb();
-                // Only update cache if we got actual data
-                if (fresh && fresh.length > 0) {
-                    categoryCache.set(cacheKey, fresh, BASE_TTL.CATEGORIES);
-                }
-            } catch (err) {
-                console.error('[getCategories] Background refresh failed:', err);
-            }
-        });
-
-        return cached.value;
-    }
-
-    console.log('[getCategories] Cache MISS - fetching from DB');
-    const categories = await fetchCategoriesFromDb();
-
-    // Only cache if we got data to prevent caching errors/empty states
-    if (categories && categories.length > 0) {
-        categoryCache.set(cacheKey, categories, BASE_TTL.CATEGORIES);
-    }
-
-    return categories;
-};
+export const getCategories = unstable_cache(
+    async () => {
+        console.log('[getCategories] Cache MISS - fetching from DB');
+        return await fetchCategoriesFromDb();
+    },
+    ['all_categories'],
+    { revalidate: 3600, tags: ['categories'] }
+);
 
 async function fetchCategoriesFromDb() {
     if (!adminDb) return [];
