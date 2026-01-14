@@ -9,8 +9,9 @@ export const generateSeoUrl = (title, id) => {
         .replace(/^-+|-+$/g, ''); // Trim edges
 
     // Critical: Limit length to prevent ENAMETOOLONG errors (filesystem limits)
-    if (slug.length > 80) {
-        slug = slug.substring(0, 80).replace(/-+$/, '');
+    // Bengali chars = 3 bytes each, so keep slug very short
+    if (slug.length > 40) {
+        slug = slug.substring(0, 40).replace(/-+$/, '');
     }
 
     return `${slug}-${id}`;
