@@ -279,7 +279,7 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                 </div>
 
                 {/* Quick Stats Bar */}
-                <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl p-4 mb-4 border border-slate-100">
+                <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl p-4 mb-4 border border-slate-100 flex flex-wrap justify-between items-center">
                     <div className="flex flex-wrap gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <span className="font-bold text-slate-600">📊 Total:</span>
@@ -299,11 +299,22 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                         </div>
                         {categoryFilter !== "all" && (
                             <div className="flex items-center gap-2">
-                                <span className="font-bold text-purple-600">🎯 Filtered:</span>
-                                <span className="px-2 py-0.5 bg-white rounded-full font-bold text-purple-600">{categoryFilter} ({filteredData.length})</span>
+                                <span className="font-bold text-blue-600">🏷️ Filtered:</span>
+                                <span className="px-2 py-0.5 bg-white rounded-full font-bold text-blue-600">{filteredData.length}</span>
                             </div>
                         )}
                     </div>
+
+                    {refreshData && (
+                        <button
+                            onClick={refreshData}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors text-xs font-bold shadow-sm"
+                            title="Refresh data from server (Bypasses Cache)"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M3 21v-5h5" /></svg>
+                            Refresh Data
+                        </button>
+                    )}
                 </div>
 
                 {/* Filter Controls */}

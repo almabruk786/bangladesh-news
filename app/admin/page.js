@@ -153,7 +153,7 @@ export default function AdminDashboard() {
   }, [user]);
 
   // Fetch Data based on User & Tab
-  const fetchData = async () => {
+  const fetchData = async (forceRefresh = false) => {
     if (!user) return;
     try {
       let q;
@@ -161,6 +161,7 @@ export default function AdminDashboard() {
       const coll = collection(db, "articles");
       let total = 0, published = 0, pending = 0;
 
+      // Stats should arguably always be fresh or have short cache, keeping fresh for accuracy on dashboard
       if (user.role === "publisher") {
         const totalQ = query(coll, where("authorName", "==", user.name));
         const pubQ = query(coll, where("authorName", "==", user.name), where("status", "==", "published"));
@@ -198,8 +199,24 @@ export default function AdminDashboard() {
       }));
 
       // Fetch specific table data
-      // For Admin "Manage" -> Fetch all
+      // For Admin "Manage" -> Fetch all with Caching
       if (activeTab === "manage" && user.role === "admin") {
+        // Check Cache first
+        const cacheKey = 'admin_manage_articles';
+        const cachedData = sessionStorage.getItem(cacheKey);
+        const cacheTime = sessionStorage.getItem(cacheKey + '_time');
+        const isCacheValid = cacheTime && (Date.now() - parseInt(cacheTime) < 5 * 60 * 1000); // 5 minutes
+
+        if (!forceRefresh && isCacheValid && cachedData) {
+          console.log("Using cached admin data");
+          const docs = JSON.parse(cachedData);
+          // Re-apply client-side sort
+          docs.sort((a, b) => Number(!!b.isPinned) - Number(!!a.isPinned));
+          setArticles(docs);
+          return;
+        }
+
+        console.log("Fetching fresh admin data...");
         // Fix: Removed orderBy("isPinned", "desc") to avoid missing index error.
         // We will sort by pinned status in the client side below.
         q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(1000)); // Balanced limit to prevent quota exhaustion
@@ -222,7 +239,26 @@ export default function AdminDashboard() {
 
       if (q) {
         const snap = await getDocs(q);
-        let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Serialize timestamps for storage
+        let docs = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            ...data,
+            // Ensure timestamps are serializable/preserved if needed, though mostly strings in this app
+            publishedAt: (data.publishedAt && data.publishedAt.toMillis) ? data.publishedAt.toMillis() : data.publishedAt
+          };
+        });
+
+        // Cache if "manage" tab
+        if (activeTab === "manage" && user.role === "admin") {
+          try {
+            sessionStorage.setItem('admin_manage_articles', JSON.stringify(docs));
+            sessionStorage.setItem('admin_manage_articles_time', Date.now().toString());
+          } catch (e) {
+            console.error("Cache storage failed", e);
+          }
+        }
 
         // Client-side sort for "Manage" tab: Pinned first
         if (activeTab === "manage") {
