@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, User, TrendingUp, Copy, Share2 } from 'lucide-react';
 import NewsSlider from '../../components/NewsSlider'; // Corrected path
 import CommentSection from '../../components/comments/CommentSection'; // Comment Component
-import GoogleAd from '../../components/GoogleAd'; // Manual Ad Unit
+
 import { parseNewsContent, stripHtml, getCategoryBanglaName } from '../../lib/utils';
 import FollowButtons from '../../components/FollowButtons';
 import ReadingProgressBar from '../../components/ReadingProgressBar';
@@ -142,11 +142,7 @@ export default function ArticleContent({ article, relatedNews }) {
 
                             <NewsSlider images={imageList} title={article.title} altText={article.imageAlt} />
 
-                            {/* --- Manual Ad Unit --- */}
-                            <div className="w-full">
-                                <GoogleAd slotId="3652013893" format="auto" responsive="true" />
-                            </div>
-                            {/* ------------------------------------------------------- */}
+
 
                             {/* Main Image Caption */}
                             {article.imageCaption && (
