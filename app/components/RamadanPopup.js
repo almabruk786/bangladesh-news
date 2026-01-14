@@ -2,7 +2,10 @@
 import { useState, useEffect } from 'react';
 import { X, Moon, Star, Calendar } from 'lucide-react';
 
+import { usePathname } from 'next/navigation';
+
 export default function RamadanPopup() {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [ramadanInfo, setRamadanInfo] = useState(null);
@@ -109,6 +112,9 @@ export default function RamadanPopup() {
     const handleMaximize = () => {
         setIsMinimized(false);
     };
+
+    // Hide on Admin Panel
+    if (pathname && pathname.startsWith('/admin')) return null;
 
     if (isLoading || !isOpen || !ramadanInfo) return null;
 

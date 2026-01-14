@@ -2,11 +2,16 @@ export const generateSeoUrl = (title, id) => {
     if (!title) return `news/${id}`;
 
     // Convert title to slug
-    const slug = title
+    let slug = title
         .trim()
         .toLowerCase()
-        .replace(/[^a-z0-9\u0980-\u09FF]+/g, '-') // Allow Bengali chars + alphanumeric, replace others with hyphen
-        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+        .replace(/[^a-z0-9\u0980-\u09FF]+/g, '-') // Allow Bengali chars + alphanumeric
+        .replace(/^-+|-+$/g, ''); // Trim edges
+
+    // Critical: Limit length to prevent ENAMETOOLONG errors (filesystem limits)
+    if (slug.length > 80) {
+        slug = slug.substring(0, 80).replace(/-+$/, '');
+    }
 
     return `${slug}-${id}`;
 };
