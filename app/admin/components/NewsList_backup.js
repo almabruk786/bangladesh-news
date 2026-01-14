@@ -101,35 +101,16 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
     };
 
     const togglePin = async (item) => {
+        await updateDoc(doc(db, "articles", item.id), { isPinned: !item.isPinned });
+
+        // Force server cache revalidation
         try {
-            if (!item.isPinned) {
-                // Pinning: Auto-unpin all others first
-                const batch = [];
-                const currentlyPinned = data.filter(art => art.isPinned && art.id !== item.id);
-
-                for (const pinnedArticle of currentlyPinned) {
-                    batch.push(updateDoc(doc(db, "articles", pinnedArticle.id), { isPinned: false }));
-                }
-
-                batch.push(updateDoc(doc(db, "articles", item.id), { isPinned: true }));
-                await Promise.all(batch);
-            } else {
-                // Just unpinning
-                await updateDoc(doc(db, "articles", item.id), { isPinned: false });
-            }
-
-            // Force cache revalidation
-            try {
-                await fetch('/api/admin/clear-cache?tag=news', { method: 'POST' });
-            } catch (e) {
-                console.error("Failed to clear cache:", e);
-            }
-
-            refreshData();
-        } catch (error) {
-            console.error("Pin toggle error:", error);
-            alert("Failed to update pin status");
+            await fetch('/api/admin/clear-cache?tag=news', { method: 'POST' });
+        } catch (e) {
+            console.error("Failed to clear cache:", e);
         }
+
+        refreshData();
     };
 
     const handleSendNotification = async (item) => {
@@ -150,7 +131,7 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
 
             const data = await res.json();
             if (data.success) {
-                alert(`Notification Sent!\\nSuccess: ${data.successCount}\\nFailed: ${data.failureCount}`);
+                alert(`Notification Sent!\nSuccess: ${data.successCount}\nFailed: ${data.failureCount}`);
             } else {
                 alert(`Error: ${data.error || 'Unknown error'}`);
             }
@@ -281,7 +262,7 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                                         <button
                                             onClick={() => togglePin(item)}
                                             className={`p-2 rounded-lg transition-colors ${item.isPinned ? "bg-purple-100 text-purple-600" : "text-slate-300 hover:bg-slate-100 hover:text-slate-500"}`}
-                                            title={item.isPinned ? "Unpin" : "Pin to top (auto-unpins others)"}
+                                            title="Pin to top"
                                         >
                                             <Pin size={16} />
                                         </button>
