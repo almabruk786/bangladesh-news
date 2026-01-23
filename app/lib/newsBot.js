@@ -194,8 +194,8 @@ export async function fetchAndProcessNews(logger = () => { }) {
           ACT AS A SENIOR INVESTIGATIVE JOURNALIST (Bangla).
           Your Task: Write a PREMIUM QUALITY, IN-DEPTH news report based on the source.
           
-          SOURCE TITLE: "${item.title}"
-          SOURCE CONTENT: "${item.contentSnippet || item.content}"
+          SOURCE TITLE: "${String(item.title || '')}"
+          SOURCE CONTENT: "${String(item.contentSnippet || item.content || '')}"
 
           CRITICAL REQUIREMENTS:
           

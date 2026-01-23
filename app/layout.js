@@ -182,6 +182,9 @@ export default async function RootLayout({ children }) {
           </ConditionalAuthWrapper>
         </ThemeProvider>
 
+        {/* Popunder Ad */}
+        <Script src="https://pl28513963.effectivegatecpm.com/4d/8b/96/4d8b96849968beb6437a92634ce54a99.js" strategy="afterInteractive" />
+
         {/* Microsoft Clarity - Lazy Load */}
         <Script id="microsoft-clarity" strategy="lazyOnload">
           {`
