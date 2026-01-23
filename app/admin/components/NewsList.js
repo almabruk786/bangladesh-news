@@ -259,7 +259,13 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                 console.error("Failed to clear cache:", e);
             }
 
-            refreshData();
+            // Update local state instead of full refresh to preserve loaded article count
+            // This prevents auto-loading all news when pinning
+            if (refreshData && typeof refreshData === 'function') {
+                // Optional: call refreshData only if user explicitly wants it
+                // For now, we skip it to prevent auto-loading
+                console.log("Pin updated. Skipping full refresh to preserve loaded article count.");
+            }
         } catch (error) {
             console.error("Pin toggle error:", error);
             alert("Failed to update pin status");
