@@ -161,38 +161,37 @@ async function fetchCategoriesFromDb() {
 }
 
 export const getArticleById = async (id) => {
-    const cached = articleCache.get(id);
+    return await getCachedArticle(id);
+};
 
-    if (cached && !cached.stale) {
-        return cached.value;
-    }
+const getCachedArticle = unstable_cache(
+    async (id) => {
+        console.log(`[getArticleById] Cache MISS - fetching ${id} from DB`);
+        return await fetchArticleFromDb(id);
+    },
+    ['single_article'], // This key should ideally include ID, but unstable_cache handles args automatically if passed? No, keyParts + args are used.
+    // Actually unstable_cache(fn, keyParts, options). keyParts is global.
+    // To allow dynamic keys per ID, we wrapper it or rely on args distinction.
+    // "The cache key is generated from the combination of the keyParts ... and the arguments passed to the cached function."
+    { revalidate: 300, tags: ['articles'] }
+);
 
-    if (cached && cached.stale) {
-        setImmediate(async () => {
-            try {
-                const doc = await adminDb.collection('articles').doc(id).get();
-                if (doc.exists) {
-                    articleCache.set(id, { id: doc.id, ...doc.data() }, BASE_TTL.ARTICLE);
-                }
-            } catch (err) {
-                console.error('[getArticleById] Background refresh failed:', err);
-            }
-        });
-
-        return cached.value;
-    }
-
-    if (!adminDb) return null;
+async function fetchArticleFromDb(id) {
+    if (!adminDb || !id) return null;
 
     try {
         const doc = await adminDb.collection('articles').doc(id).get();
         if (!doc.exists) return null;
 
-        const article = { id: doc.id, ...doc.data() };
-        articleCache.set(id, article, BASE_TTL.ARTICLE);
-        return article;
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            // Pre-serialize dates for Next.js
+            publishedAt: data.publishedAt?.toDate?.()?.toISOString() || data.publishedAt,
+            updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
+        };
     } catch (error) {
-        // Handle quota exceeded
         if (error.code === 8 || error.message?.includes('Quota exceeded')) {
             console.warn('[getArticleById] Quota exceeded - returning null');
             return null;
@@ -200,7 +199,7 @@ export const getArticleById = async (id) => {
         console.error('[getArticleById] Error:', error);
         return null;
     }
-};
+}
 
 export const clearCache = (type = 'all') => {
     if (type === 'news' || type === 'all') newsCache.clear();

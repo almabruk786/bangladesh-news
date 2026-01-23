@@ -1,6 +1,7 @@
 import { adminDb } from '../../lib/firebaseAdmin';
 import Link from 'next/link';
 import ArticleContent from './ArticleContent';
+import { getArticleById } from '../../lib/firebaseServer';
 import { generateNewsArticleSchema, generateBreadcrumbSchema } from '../../lib/schemas';
 import { parseNewsContent, getSmartExcerpt } from '../../lib/utils';
 import { extractIdFromUrl, generateSeoUrl } from '../../lib/urlUtils';
@@ -35,11 +36,9 @@ export async function generateMetadata({ params }) {
   if (!adminDb) return { title: "News Not Found" };
 
   try {
-    const docSnap = await adminDb.collection("articles").doc(id).get();
+    const article = await getArticleById(id);
 
-    if (docSnap.exists) {
-      const article = { id: docSnap.id, ...docSnap.data() };
-
+    if (article) {
       // Robust Description Logic
       let description = article.metaDescription;
       if (!description) {
@@ -97,7 +96,7 @@ export async function generateMetadata({ params }) {
           description: description,
           images: ogImages,
           type: 'article',
-          publishedTime: article.publishedAt?.toDate?.().toISOString() || article.publishedAt,
+          publishedTime: article.publishedAt,
           authors: [article.authorName || 'Desk Report'],
           url: seoUrl,
           siteName: 'বাকলিয়া নিউজ',

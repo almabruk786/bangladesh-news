@@ -3,7 +3,47 @@ import { Edit, Trash2, Eye, EyeOff, Search, Filter, CheckCircle, XCircle, Pin, M
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
-export default function NewsList({ data, title, type, user, onEdit, onView, refreshData }) {
+import { Download } from "lucide-react";
+
+export default function NewsList({ data, title, type, user, onEdit, onView, refreshData, isLoaded = true, onLoad }) {
+    const [loadLimit, setLoadLimit] = useState(2); // Default to 2 as requested
+
+    if (!isLoaded) {
+        return (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-2">
+                    <Download size={32} />
+                </div>
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">{title}</h2>
+                    <p className="text-slate-500 max-w-sm mx-auto">
+                        News articles are not loaded automatically to conserve data quota.
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                    <span className="text-sm font-medium text-slate-600 pl-2">Load:</span>
+                    <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={loadLimit}
+                        onChange={(e) => setLoadLimit(parseInt(e.target.value) || 2)}
+                        className="w-16 p-1 text-center font-bold border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                    <span className="text-sm font-medium text-slate-600 pr-2">articles</span>
+                </div>
+
+                <button
+                    onClick={() => onLoad(loadLimit)}
+                    className="px-8 py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-500/30 flex items-center gap-2 hover:-translate-y-1"
+                >
+                    <Download size={20} />
+                    Load News Articles
+                </button>
+            </div>
+        );
+    }
     const [searchTerm, setSearchTerm] = useState("");
     const [filter, setFilter] = useState("all");
     const [categoryFilter, setCategoryFilter] = useState("all");

@@ -80,6 +80,7 @@ export default function AdminDashboard() {
 
   // Data States
   const [articles, setArticles] = useState([]);
+  const [isArticlesLoaded, setIsArticlesLoaded] = useState(false);
   const [messages, setMessages] = useState([]);
   const [stats, setStats] = useState({ total: 0, published: 0, pending: 0 });
 
@@ -155,7 +156,7 @@ export default function AdminDashboard() {
   }, [user]);
 
   // Fetch Data based on User & Tab
-  const fetchData = async (forceRefresh = false) => {
+  const fetchData = async ({ fetchArticles = false, forceRefresh = false, limitCount = 2 } = {}) => {
     if (!user) return;
     try {
       let q;
@@ -203,6 +204,9 @@ export default function AdminDashboard() {
         pending
       }));
 
+      // Only fetch articles if explicitly requested
+      if (!fetchArticles) return;
+
       // Fetch specific table data
       // For Admin "Manage" -> Fetch all with Caching
       if (activeTab === "manage" && user.role === "admin") {
@@ -218,13 +222,14 @@ export default function AdminDashboard() {
           // Re-apply client-side sort
           docs.sort((a, b) => Number(!!b.isPinned) - Number(!!a.isPinned));
           setArticles(docs);
+          setIsArticlesLoaded(true);
           return;
         }
 
         console.log("Fetching fresh admin data...");
         // Fix: Removed orderBy("isPinned", "desc") to avoid missing index error.
         // We will sort by pinned status in the client side below.
-        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(1000)); // Balanced limit to prevent quota exhaustion
+        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(limitCount));
       }
       // For Admin "Pending" -> Fetch pending & pending_delete
       else if (activeTab === "pending" && user.role === "admin") {
@@ -232,12 +237,12 @@ export default function AdminDashboard() {
       }
       // For Publisher "My News" - CRITICAL QUOTA FIX: Added LIMIT
       else if (activeTab === "my_news" && user.role === "publisher") {
-        q = query(collection(db, "articles"), where("authorName", "==", user.name), orderBy("publishedAt", "desc"), limit(50));
+        q = query(collection(db, "articles"), where("authorName", "==", user.name), orderBy("publishedAt", "desc"), limit(limitCount));
       }
       // For Writer - Fetches NOTHING by default or very minimal
       else if (activeTab === "my_news" && user.role === "writer") {
         // Maybe just last 10 for quick edit access
-        q = query(collection(db, "articles"), where("authorName", "==", user.name), orderBy("publishedAt", "desc"), limit(10));
+        q = query(collection(db, "articles"), where("authorName", "==", user.name), orderBy("publishedAt", "desc"), limit(limitCount));
       }
       // For Admin "Messages"
       else if (activeTab === "messages" && user.role === "admin") {
@@ -276,6 +281,7 @@ export default function AdminDashboard() {
         }
 
         setArticles(docs);
+        setIsArticlesLoaded(true);
       }
     } catch (error) {
       console.error("Data Fetch Error:", error);
@@ -283,7 +289,9 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
+    setArticles([]);
+    setIsArticlesLoaded(false);
+    fetchData({ fetchArticles: false });
   }, [user, activeTab]);
 
   const handleLogin = async (e) => {
@@ -338,11 +346,39 @@ export default function AdminDashboard() {
       case "manual":
         return <NewsEditor user={user} onSuccess={() => { setActiveTab(user.role === "publisher" ? "my_news" : "manage"); fetchData(); }} />;
       case "manage":
-        return <NewsList title="Manage All News" data={articles} user={user} type="admin" onEdit={setEditingArticle} onView={setEditingArticle} refreshData={fetchData} />;
+        return <NewsList
+          title="Manage All News"
+          data={articles}
+          user={user}
+          type="admin"
+          onEdit={setEditingArticle}
+          onView={setEditingArticle}
+          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true, limitCount: 50 })} // Refresh default to 50
+          isLoaded={isArticlesLoaded}
+          onLoad={(count) => fetchData({ fetchArticles: true, limitCount: count })}
+        />;
       case "pending":
-        return <NewsList title="Pending Approvals" data={articles} user={user} type="admin" onEdit={setEditingArticle} refreshData={fetchData} />;
+        return <NewsList
+          title="Pending Approvals"
+          data={articles}
+          user={user}
+          type="admin"
+          onEdit={setEditingArticle}
+          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true })}
+          isLoaded={isArticlesLoaded}
+          onLoad={(count) => fetchData({ fetchArticles: true, limitCount: count })}
+        />;
       case "my_news":
-        return <NewsList title="My Stories" data={articles} user={user} type="publisher" onEdit={setEditingArticle} refreshData={fetchData} />;
+        return <NewsList
+          title="My Stories"
+          data={articles}
+          user={user}
+          type="publisher"
+          onEdit={setEditingArticle}
+          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true, limitCount: 50 })}
+          isLoaded={isArticlesLoaded}
+          onLoad={(count) => fetchData({ fetchArticles: true, limitCount: count })}
+        />;
       case "category":
         return <CategoryManager />;
       case "ads":

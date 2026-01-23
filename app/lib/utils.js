@@ -137,7 +137,10 @@ export function getCategoryBanglaName(categoryName) {
         "Lifestyle": "জীবনযাপন",
         "Opinion": "মতামত",
         "Bangladesh": "বাংলাদেশ",
-        "Corruption": "দুর্নীতি"
+        "Corruption": "দুর্নীতি",
+        "Economy": "অর্থনীতি",
+        "Weather": "আবহাওয়া",
+        "Crime": "অপরাধ"
     };
 
     // If already in Bangla, return as is

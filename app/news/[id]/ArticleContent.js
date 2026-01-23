@@ -9,7 +9,7 @@ import CommentSection from '../../components/comments/CommentSection'; // Commen
 import { parseNewsContent, stripHtml, getCategoryBanglaName } from '../../lib/utils';
 import FollowButtons from '../../components/FollowButtons';
 import ReadingProgressBar from '../../components/ReadingProgressBar';
-import FontAdjuster from '../../components/FontAdjuster';
+
 import TableOfContents from '../../components/TableOfContents';
 
 export default function ArticleContent({ article, relatedNews }) {
@@ -76,7 +76,7 @@ export default function ArticleContent({ article, relatedNews }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300">
             <ReadingProgressBar />
-            <FontAdjuster />
+
 
             <main className="max-w-6xl mx-auto px-4 py-8">
 
@@ -109,7 +109,8 @@ export default function ArticleContent({ article, relatedNews }) {
                                             "Opinion": "মতামত", "opinion": "মতামত", "OPINION": "মতামত",
                                             "Bangladesh": "বাংলাদেশ", "bangladesh": "বাংলাদেশ", "BANGLADESH": "বাংলাদেশ",
                                             "Weather": "আবহাওয়া", "weather": "আবহাওয়া", "WEATHER": "আবহাওয়া",
-                                            "Crime": "অপরাধ", "crime": "অপরাধ", "CRIME": "অপরাধ"
+                                            "Crime": "অপরাধ", "crime": "অপরাধ", "CRIME": "অপরাধ",
+                                            "Economy": "অর্থনীতি", "economy": "অর্থনীতি", "ECONOMY": "অর্থনীতি"
                                         };
                                         return map[cat] || (cat && map[cat.trim()]) || cat;
                                     };
