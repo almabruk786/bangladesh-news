@@ -1,0 +1,139 @@
+// লাইন ১৯১-২৬৮ পর্যন্ত replace করুন এই কোড দিয়ে:
+
+        const prompt = `
+          ACT AS A SENIOR INVESTIGATIVE JOURNALIST (Bangla).
+          Your Task: Write a PREMIUM QUALITY, IN-DEPTH news report based on the source.
+          
+          SOURCE TITLE: "${item.title}"
+          SOURCE CONTENT: "${item.contentSnippet || item.content}"
+
+          CRITICAL REQUIREMENTS:
+          
+          1. **Headline (SEO Friendly)**: 
+             - MUST rewrite completely, DO NOT copy-paste the source title
+             - Make it engaging, click-worthy, and incorporate important keywords
+             - Length: 50-70 characters
+          
+          2. **Author Name (Bangla)**:
+             - Select appropriate based on category:
+             - নিজস্ব প্রতিবেদক, ঢাকা (for National/Politics/Crime)
+             - বাণিজ্য ডেস্ক (for Business/Economy)
+             - খেলা ডেস্ক (for Sports)
+             - বিনোদন ডেস্ক (for Entertainment)
+             - প্রযুক্তি ডেস্ক (for Technology)
+             - আন্তর্জাতিক ডেস্ক (for International)
+          
+          3. **Story Content**: 
+             - Length: 400-500 WORDS (বাংলায়)
+             - Structure in 5 clear sections:
+               a) **সূচনা (Intro)**: Catchy opening (80-100 words)
+               b) **পটভূমি (Background)**: Context and history (80-100 words)
+               c) **বিশ্লেষণ (Analysis)**: Deep dive with facts and perspectives (100-120 words)
+               d) **প্রভাব (Impact)**: Consequences and implications (80-100 words)
+               e) **উপসংহার (Conclusion)**: Summary and future outlook (60-80 words)
+             - Use proper paragraph breaks (\\n\\n)
+             - Include relevant examples, statistics (you can simulate realistic numbers)
+          
+          4. **Meta Description (SEO)**: 
+             - 150-160 characters
+             - Summarize the article enticingly
+             - Include primary keyword
+          
+          5. **Categories**: 
+             - Select 1-3 relevant categories from: জাতীয়, আন্তর্জাতিক, রাজনীতি, খেলা, ব্যবসা-বাণিজ্য, বিনোদন, প্রযুক্তি, স্বাস্থ্য, শিক্ষা, অপরাধ, আবহাওয়া, অর্থনীতি
+             - Return as array
+          
+          6. **Tags (SEO)**: 
+             - 5-8 relevant Bangla keywords/phrases
+             - Mix of broad and specific terms
+          
+          7. **Image Caption**: 
+             - Write a descriptive Bangla caption for the main image (20-30 words)
+             - Should relate to the story context
+          
+          8. **Image Alt Text (SEO)**: 
+             - Bangla description for accessibility (10-15 words)
+             - Describe what's visually in the image related to the news
+          
+          9. **Tone**: Neutral, Authoritative, Professional, Engaging
+
+          OUTPUT FORMAT: STRICT JSON ONLY (No markdown blocks, no extra text).
+          {
+            "headline": "...",
+            "authorName": "...",
+            "body": "...",
+            "categories": ["...", "..."],
+            "metaTitle": "...",
+            "metaDescription": "...",
+            "tags": ["...", "...", "..."],
+            "imageCaption": "...",
+            "imageAlt": "..."
+          }
+        `;
+
+        await sleep(2000);
+        logger(`Sending to AI Engine (Gemini 2.0)... Waiting for generation (400-500 words)...`, "info");
+
+        let aiText = await generateWithGemini(prompt, logger);
+        let finalData = {};
+
+        if (aiText) {
+          try {
+            logger(`AI Response Received. Parsing JSON structure...`, "info");
+            let cleanText = aiText.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+            const firstOpen = cleanText.indexOf('{');
+            const lastClose = cleanText.lastIndexOf('}');
+            if (firstOpen !== -1 && lastClose !== -1) {
+              cleanText = cleanText.substring(firstOpen, lastClose + 1);
+            }
+            finalData = JSON.parse(cleanText);
+            logger(`Content Validated: Headline "${finalData.headline}"`, "success");
+          } catch (e) {
+            logger(`JSON Parsing Failed. Applying fallback...`, "error");
+            console.error("JSON Parse Error:", e);
+            finalData = {
+              headline: item.title,
+              body: item.contentSnippet || item.content || "বিস্তারিত লিংকে...",
+              categories: ["জাতীয়"],
+              metaTitle: item.title,
+              metaDescription: "Latest news update.",
+              tags: ["news"],
+              authorName: "নিজস্ব প্রতিবেদক",
+              imageCaption: item.title,
+              imageAlt: "সংবাদ চিত্র"
+            };
+          }
+        } else {
+          logger(`AI Generation Failed. Skipping this article to avoid low-quality content.`, "error");
+          continue;
+        }
+
+        // Quality Control: Ensure article is long enough (1500 chars minimum = approx 300-400 words)
+        if (!finalData.body || finalData.body.length < 1500 || finalData.body.includes("বিস্তারিত লিংকে")) {
+          logger(`Quality Control Failed: Article too short (${finalData.body?.length || 0} chars). Required: 1500+. Skipping to maintain quality.`, "warning");
+          continue;
+        }
+
+        logger(`Saving to Database...`, "info");
+        const docRef = await addDoc(collection(db, "articles"), {
+          title: finalData.headline || item.title,
+          content: finalData.body || "বিস্তারিত জানা যায়নি।",
+          category: finalData.categories?.[0] || finalData.category || "জাতীয়",
+          categories: finalData.categories || [finalData.category || "জাতীয়"],
+          imageUrl: imageUrl,
+          imageUrls: [imageUrl],
+          imageCaption: finalData.imageCaption || finalData.headline,
+          imageAlt: finalData.imageAlt || finalData.headline,
+          originalLink: item.link,
+          source: feed.title || "Unknown Source",
+          publishedAt: new Date().toISOString(),
+          status: "published",
+          authorName: finalData.authorName || "নিজস্ব প্রতিবেদক",
+          authorRole: "ai",
+          isPinned: false,
+          // SEO Fields
+          metaTitle: finalData.metaTitle || finalData.headline,
+          metaDescription: finalData.metaDescription || finalData.body.substring(0, 150),
+          keywords: finalData.keywords || finalData.tags || [],
+          tags: finalData.tags || []
+        });
