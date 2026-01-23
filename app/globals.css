@@ -43,4 +43,20 @@
     scrollbar-width: thin;
     scrollbar-color: #ef4444 #f1f5f9;
   }
+
+  /* Allow colorful content in articles to override prose defaults */
+  .prose [style] {
+    color: inherit !important; /* Allow inline colors to work */
+  }
+  
+  /* Support for specific styled elements */
+  .prose table {
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+}
+
+/* Global Prose Overrides for HTML Content */
+.prose span[style], .prose p[style], .prose div[style], .prose td[style], .prose th[style] {
+    color: unset; /* Fallback */
 }
