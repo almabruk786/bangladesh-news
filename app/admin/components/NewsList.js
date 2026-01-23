@@ -151,7 +151,11 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
             return matchesSearch && item.status === filter;
         })
         .sort((a, b) => {
-            // Sorting Logic
+            // ALWAYS pin items to top first
+            if (a.isPinned && !b.isPinned) return -1;
+            if (!a.isPinned && b.isPinned) return 1;
+
+            // Then apply user-selected sorting
             switch (sortBy) {
                 case "oldest":
                     return new Date(a.publishedAt) - new Date(b.publishedAt);
