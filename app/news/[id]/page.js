@@ -153,11 +153,44 @@ export default async function NewsDetails({ params }) {
 
       // Fetch related news (Sidebar) using Admin SDK
       try {
-        const relatedSnap = await adminDb.collection("articles")
-          .where("category", "==", article.category)
-          .where("status", "==", "published")
-          .limit(6)
-          .get();
+        let relatedSnap = { empty: true, docs: [] };
+
+        if (article.category) {
+          // Normalize Category: Search by both English and Bangla names to ensure hits
+          const catMap = {
+            "National": "জাতীয়", "Politics": "রাজনীতি", "International": "আন্তর্জাতিক",
+            "Sports": "খেলা", "Business": "বাণিজ্য", "Entertainment": "বিনোদন",
+            "Technology": "প্রযুক্তি", "Health": "স্বাস্থ্য", "Education": "শিক্ষা",
+            "Lifestyle": "জীবনযাপন", "Opinion": "মতামত", "Bangladesh": "বাংলাদেশ",
+            "Corruption": "দুর্নীতি", "Economy": "অর্থনীতি", "Weather": "আবহাওয়া", "Crime": "অপরাধ",
+            "জাতীয়": "National", "রাজনীতি": "Politics", "আন্তর্জাতিক": "International",
+            "খেলা": "Sports", "বাণিজ্য": "Business", "বিনোদন": "Entertainment",
+            "প্রযুক্তি": "Technology", "স্বাস্থ্য": "Health", "শিক্ষা": "Education",
+            "জীবনযাপন": "Lifestyle", "মতামত": "Opinion", "বাংলাদেশ": "Bangladesh",
+            "দুর্নীতি": "Corruption", "অর্থনীতি": "Economy", "আবহাওয়া": "Weather", "অপরাধ": "Crime"
+          };
+
+          const searchCats = [article.category];
+          if (catMap[article.category]) {
+            searchCats.push(catMap[article.category]);
+          }
+
+          // Use 'in' query to find matches in either language
+          relatedSnap = await adminDb.collection("articles")
+            .where("category", "in", searchCats)
+            .where("status", "==", "published")
+            .limit(6)
+            .get();
+        }
+
+        // Fallback: If no related news found (or category missing), fetch latest news
+        if (relatedSnap.empty) {
+          console.log(`[RelatedNews] No related news found for category: ${article.category}, fetching latest.`);
+          relatedSnap = await adminDb.collection("articles")
+            .orderBy("publishedAt", "desc")
+            .limit(10) // Fetch more to filter later if needed
+            .get();
+        }
 
         relatedNews = relatedSnap.docs
           .map(d => {
@@ -165,7 +198,7 @@ export default async function NewsDetails({ params }) {
             return {
               id: d.id,
               ...dData,
-              publishedAt: serializeDate(dData.publishedAt)
+              publishedAt: dData.publishedAt?.toDate?.()?.toISOString() || dData.publishedAt
             };
           })
           .filter(n => n.id !== id && !n.hidden);
