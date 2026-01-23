@@ -158,6 +158,10 @@ export default function AdminDashboard() {
   // Fetch Data based on User & Tab
   const fetchData = async ({ fetchArticles = false, forceRefresh = false, limitCount = 2 } = {}) => {
     if (!user) return;
+
+    // Validate limitCount to prevent query errors
+    const validLimit = Math.max(1, Math.min(parseInt(limitCount) || 2, 100));
+
     try {
       let q;
       // Optimized Stats Fetching using Aggregation (Prevent full DB download)
@@ -229,7 +233,7 @@ export default function AdminDashboard() {
         console.log("Fetching fresh admin data...");
         // Fix: Removed orderBy("isPinned", "desc") to avoid missing index error.
         // We will sort by pinned status in the client side below.
-        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(limitCount));
+        q = query(collection(db, "articles"), orderBy("publishedAt", "desc"), limit(validLimit));
       }
       // For Admin "Pending" -> Fetch pending & pending_delete
       else if (activeTab === "pending" && user.role === "admin") {
