@@ -83,6 +83,7 @@ export default function AdminDashboard() {
   const [isArticlesLoaded, setIsArticlesLoaded] = useState(false);
   const [messages, setMessages] = useState([]);
   const [stats, setStats] = useState({ total: 0, published: 0, pending: 0 });
+  const [currentLimit, setCurrentLimit] = useState(2); // Track current load limit
 
   // Editor State
   const [editingArticle, setEditingArticle] = useState(null);
@@ -357,7 +358,7 @@ export default function AdminDashboard() {
           type="admin"
           onEdit={setEditingArticle}
           onView={setEditingArticle}
-          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true, limitCount: 50 })} // Refresh default to 50
+          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true, limitCount: currentLimit })}
           isLoaded={isArticlesLoaded}
           onLoad={(count) => fetchData({ fetchArticles: true, limitCount: count })}
         />;
