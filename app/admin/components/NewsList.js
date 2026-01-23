@@ -6,7 +6,15 @@ import { db } from "../../lib/firebase";
 import { Download } from "lucide-react";
 
 export default function NewsList({ data, title, type, user, onEdit, onView, refreshData, isLoaded = true, onLoad }) {
-    const [loadLimit, setLoadLimit] = useState(2); // Default to 2 as requested
+    // ALL useState hooks MUST come first, before any conditional returns
+    const [loadLimit, setLoadLimit] = useState(2);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filter, setFilter] = useState("all");
+    const [categoryFilter, setCategoryFilter] = useState("all");
+    const [sortBy, setSortBy] = useState("newest");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [selectedItems, setSelectedItems] = useState(new Set());
+    const itemsPerPage = 10;
 
     if (!isLoaded) {
         return (
@@ -44,13 +52,6 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
             </div>
         );
     }
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filter, setFilter] = useState("all");
-    const [categoryFilter, setCategoryFilter] = useState("all");
-    const [sortBy, setSortBy] = useState("newest");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [selectedItems, setSelectedItems] = useState(new Set());
-    const itemsPerPage = 10;
 
     // Category normalization map (English <-> Bangla)
     const categoryMap = {
