@@ -26,7 +26,147 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
         }
     }, [data]);
 
-    // ... (rest of code) ...
+    const categoryMap = {
+        "National": "জাতীয়",
+        "Politics": "রাজনীতি",
+        "International": "আন্তর্জাতিক",
+        "Sports": "খেলা",
+        "Business": "বাণিজ্য",
+        "Entertainment": "বিনোদন",
+        "Technology": "প্রযুক্তি",
+        "Health": "স্বাস্থ্য",
+        "Education": "শিক্ষা",
+        "Lifestyle": "জীবনযাপন",
+        "Opinion": "মতামত",
+        "Bangladesh": "বাংলাদেশ",
+        "Corruption": "দুর্নীতি",
+        "Economy": "অর্থনীতি",
+        "Weather": "আবহাওয়া",
+        "Crime": "অপরাধ"
+    };
+
+    const handleStatusUpdate = async (id, newStatus) => {
+        try {
+            const updates = {};
+            if (newStatus === "show") updates.hidden = false;
+            else if (newStatus === "hide") updates.hidden = true;
+            else updates.status = newStatus;
+
+            // Optimistic Update
+            setLocalData(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+
+            await updateDoc(doc(db, "articles", id), updates);
+
+            try {
+                await fetch('/api/admin/clear-cache?tag=news', { method: 'POST' });
+            } catch (e) {
+                console.error("Cache clear failed", e);
+            }
+        } catch (error) {
+            console.error("Status update error:", error);
+            alert("Failed to update status");
+            if (refreshData) refreshData();
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this article?")) return;
+        try {
+            // Optimistic
+            setLocalData(prev => prev.filter(item => item.id !== id));
+
+            await deleteDoc(doc(db, "articles", id));
+
+            try {
+                await fetch('/api/admin/clear-cache?tag=news', { method: 'POST' });
+            } catch (e) {
+                console.error("Cache clear failed", e);
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+            alert("Failed to delete");
+            if (refreshData) refreshData();
+        }
+    };
+
+    const handleRequestDelete = (id) => {
+        if (window.confirm("Request deletion?")) handleStatusUpdate(id, "pending_delete");
+    };
+
+    const toggleSelect = (id) => {
+        const newSet = new Set(selectedItems);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        setSelectedItems(newSet);
+    };
+
+    // Filter Data
+    const filteredData = localData.filter(item => {
+        // Search
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = !searchTerm ||
+            (item.title && item.title.toLowerCase().includes(searchLower)) ||
+            (item.authorName && item.authorName.toLowerCase().includes(searchLower));
+
+        // Category Filter
+        let matchesCategory = true;
+        if (categoryFilter !== "all") {
+            const cats = item.categories || (item.category ? item.category.split(',') : []);
+            matchesCategory = cats.some(c => {
+                const trimmed = c.trim();
+                return trimmed === categoryFilter || categoryMap[trimmed] === categoryFilter || (categoryMap[trimmed] && categoryMap[trimmed] === categoryFilter);
+            });
+        }
+
+        // Status Filter
+        let matchesFilter = true;
+        if (filter !== "all") {
+            if (filter === "published") matchesFilter = item.status === "published";
+            else if (filter === "pending") matchesFilter = item.status === "pending";
+            else if (filter === "pending_delete") matchesFilter = item.status === "pending_delete";
+        }
+
+        return matchesSearch && matchesCategory && matchesFilter;
+    }).sort((a, b) => {
+        // Pinned to top
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+
+        // Sort by
+        if (sortBy === "newest") return new Date(b.publishedAt) - new Date(a.publishedAt);
+        if (sortBy === "oldest") return new Date(a.publishedAt) - new Date(b.publishedAt);
+        if (sortBy === "views-high") return (b.views || 0) - (a.views || 0);
+        if (sortBy === "views-low") return (a.views || 0) - (b.views || 0);
+        if (sortBy === "title-az") return (a.title || "").localeCompare(b.title || "");
+        if (sortBy === "title-za") return (b.title || "").localeCompare(a.title || "");
+        return 0;
+    });
+
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+    const toggleSelectAll = () => {
+        if (selectedItems.size === paginatedData.length && paginatedData.length > 0) {
+            setSelectedItems(new Set());
+        } else {
+            setSelectedItems(new Set(paginatedData.map(i => i.id)));
+        }
+    };
+
+    const handleBulkAction = async (action) => {
+        if (!window.confirm(`Bulk ${action}?`)) return;
+        const promises = [];
+        selectedItems.forEach(id => {
+            if (action === 'approve') promises.push(updateDoc(doc(db, "articles", id), { status: 'published' }));
+            if (action === 'reject') promises.push(updateDoc(doc(db, "articles", id), { status: 'rejected' }));
+            if (action === 'delete') promises.push(deleteDoc(doc(db, "articles", id)));
+        });
+        await Promise.all(promises);
+        await fetch('/api/admin/clear-cache?tag=news', { method: 'POST' });
+        if (refreshData) refreshData();
+        setSelectedItems(new Set());
+    };
 
     const togglePin = async (item) => {
         const isPinning = !item.isPinned;
