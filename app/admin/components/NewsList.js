@@ -17,240 +17,25 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
     const [selectedItems, setSelectedItems] = useState(new Set());
     const itemsPerPage = 10;
 
-    // Sync localData when data prop changes (e.g. initial load or manual refresh)
+    // Sync localData when data prop changes
     useEffect(() => {
-        setLocalData(data || []);
+        // Only update if data exists
+        if (data) {
+            console.log('NewsList: Syncing localData with prop data. Count:', data.length);
+            setLocalData(data);
+        }
     }, [data]);
 
-    if (!isLoaded) {
-        return (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
-                <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-2">
-                    <Download size={32} />
-                </div>
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-800 mb-2">{title}</h2>
-                    <p className="text-slate-500 max-w-sm mx-auto">
-                        News articles are not loaded automatically to conserve data quota.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                    <span className="text-sm font-medium text-slate-600 pl-2">Load:</span>
-                    <input
-                        type="number"
-                        min="1"
-                        max="100"
-                        value={loadLimit}
-                        onChange={(e) => setLoadLimit(parseInt(e.target.value) || 2)}
-                        className="w-16 p-1 text-center font-bold border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <span className="text-sm font-medium text-slate-600 pr-2">articles</span>
-                </div>
-
-                <button
-                    onClick={() => onLoad(loadLimit)}
-                    className="px-8 py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-500/30 flex items-center gap-2 hover:-translate-y-1"
-                >
-                    <Download size={20} />
-                    Load News Articles
-                </button>
-            </div>
-        );
-    }
-
-    // Category normalization map (English <-> Bangla)
-    const categoryMap = {
-        'Bangladesh': 'জাতীয়',
-        'বাংলাদেশ': 'জাতীয়', // Map explicit Bangla spelling to National too
-        'বাংলाদেশ': 'জাতীয়', // Legacy/Typo Catch
-        'National': 'জাতীয়',
-        'জাতীয়': 'National',
-        'Economy': 'অর্থনীতি',
-        'অর্থনীতি': 'Economy',
-        'Politics': 'রাজনীতি',
-        'রাজনীতি': 'Politics',
-        'International': 'আন্তর্জাতিক',
-        'আন্তর্জাতিক': 'International',
-        'Corruption': 'দূর্নীতি',
-        'দূর্নীতি': 'Corruption',
-        'Weather': 'আবহাওয়া',
-        'আবহাওয়া': 'Weather',
-        'Sports': 'খেলা',
-        'খেলা': 'Sports',
-        'খেলাধুলা': 'Sports', // Alternative Bangla variant
-        'Entertainment': 'বিনোদন',
-        'বিনোদন': 'Entertainment',
-        'Education': 'শিক্ষা',
-        'শিক্ষা': 'Education',
-        'Technology': 'প্রযুক্তি',
-        'প্রযুক্তি': 'Technology',
-        'Health': 'স্বাস্থ্য',
-        'স্বাস্থ্য': 'Health',
-        'Lifestyle': 'জীবনযাপন',
-        'জীবনযাপন': 'Lifestyle',
-        'Opinion': 'মতামত',
-        'মতামত': 'Opinion',
-        'Accident': 'দুর্ঘটনা',
-        'দুর্ঘটনা': 'Accident',
-        'Business': 'বাণিজ্য',
-        'বাণিজ্য': 'Business',
-        'Commerce': 'বাণিজ্য', // Handle potential alias
-        'Crime': 'অপরাধ',
-        'অপরাধ': 'Crime',
-    };
-
-    // Normalize category to handle both English and Bangla
-    const isSameCategory = (cat1, cat2) => {
-        if (!cat1 || !cat2) return false;
-        const c1 = cat1.trim();
-        const c2 = cat2.trim();
-        if (c1 === c2) return true;
-        return categoryMap[c1] === c2 || categoryMap[c2] === c1;
-    };
-
-    const filteredData = localData
-        .filter(item => {
-            let term = searchTerm.toLowerCase().trim();
-
-            // Category Filter (with normalization & multi-category support)
-            if (categoryFilter !== "all") {
-                let match = false;
-
-                // Check 1: category string (comma-separated)
-                if (item.category) {
-                    const itemCategories = item.category.split(',').map(c => c.trim());
-                    match = itemCategories.some(cat => isSameCategory(cat, categoryFilter));
-                }
-
-                // Check 2: categories array (if exists)
-                if (!match && item.categories && Array.isArray(item.categories)) {
-                    match = item.categories.some(cat => isSameCategory(cat, categoryFilter));
-                }
-
-                if (!match) return false;
-            }
-
-            if (!term) {
-                // If no search term, only apply status filter
-                if (filter === "all") return true;
-                return item.status === filter;
-            }
-
-            // Extract ID if URL is pasted (e.g., https://site.com/news/12345)
-            if (term.includes('/')) {
-                const parts = term.split('/').filter(p => p.length > 5);
-                if (parts.length > 0) {
-                    const potentialId = parts[parts.length - 1];
-                    if (item.id.toLowerCase() === potentialId.toLowerCase()) return true;
-                }
-            }
-
-            const matchesSearch = item.title.toLowerCase().includes(term) ||
-                (item.authorName && item.authorName.toLowerCase().includes(term)) ||
-                (item.category && item.category.toLowerCase().includes(term)) || // NEW: Category search
-                item.id.toLowerCase().trim() === term ||
-                item.id.toLowerCase().includes(term) ||
-                term.includes(item.id);
-
-            if (filter === "all") return matchesSearch;
-            return matchesSearch && item.status === filter;
-        })
-        .sort((a, b) => {
-            // ALWAYS pin items to top first
-            if (a.isPinned && !b.isPinned) return -1;
-            if (!a.isPinned && b.isPinned) return 1;
-
-            // Then apply user-selected sorting
-            switch (sortBy) {
-                case "oldest":
-                    return new Date(a.publishedAt) - new Date(b.publishedAt);
-                case "views-high":
-                    return (b.views || 0) - (a.views || 0);
-                case "views-low":
-                    return (a.views || 0) - (b.views || 0);
-                case "title-az":
-                    return a.title.localeCompare(b.title);
-                case "title-za":
-                    return b.title.localeCompare(a.title);
-                case "newest":
-                default:
-                    return new Date(b.publishedAt) - new Date(a.publishedAt);
-            }
-        });
-
-    // Pagination
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-    const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-    // Selection Logic
-    const toggleSelect = (id) => {
-        const newSet = new Set(selectedItems);
-        if (newSet.has(id)) newSet.delete(id);
-        else newSet.add(id);
-        setSelectedItems(newSet);
-    };
-
-    const toggleSelectAll = () => {
-        if (selectedItems.size === paginatedData.length) {
-            setSelectedItems(new Set());
-        } else {
-            setSelectedItems(new Set(paginatedData.map(i => i.id)));
-        }
-    };
-
-    // Bulk Actions
-    const handleBulkAction = async (action) => {
-        if (!selectedItems.size) return;
-        if (!window.confirm(`Are you sure you want to ${action} ${selectedItems.size} items?`)) return;
-
-        const promises = Array.from(selectedItems).map(id => {
-            if (action === "delete") return deleteDoc(doc(db, "articles", id));
-            return updateDoc(doc(db, "articles", id), { status: action === "approve" ? "published" : "rejected" });
-        });
-
-        await Promise.all(promises);
-        setSelectedItems(new Set());
-        refreshData();
-    };
-
-
-    // Individual Actions
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to PERMANENTLY delete this article?")) {
-            await deleteDoc(doc(db, "articles", id));
-            refreshData();
-        }
-    };
-
-    const handleRequestDelete = async (id) => {
-        if (window.confirm("Request to delete this article?")) {
-            await updateDoc(doc(db, "articles", id), { status: "pending_delete" });
-            refreshData();
-        }
-    };
-
-    const handleStatusUpdate = async (id, action) => {
-        if (action === "hide" || action === "show") {
-            // Toggle Hidden Status
-            await updateDoc(doc(db, "articles", id), { hidden: action === "hide" });
-            refreshData();
-        } else {
-            // Normal Status Update
-            if (window.confirm(`Mark as ${action}?`)) {
-                await updateDoc(doc(db, "articles", id), { status: action });
-                refreshData();
-            }
-        }
-    };
+    // ... (rest of code) ...
 
     const togglePin = async (item) => {
-        try {
-            const isPinning = !item.isPinned;
+        const isPinning = !item.isPinned;
+        console.log(`NewsList: togglePin CLICKED. Item: ${item.title} (${item.id}). New State: ${isPinning ? 'Pinned' : 'Unpinned'}`);
 
+        try {
             // OPTIMISTIC UPDATE: Update UI immediately
             setLocalData(prevData => {
-                return prevData.map(art => {
+                const newData = prevData.map(art => {
                     if (art.id === item.id) {
                         return { ...art, isPinned: isPinning };
                     }
@@ -260,16 +45,17 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                     }
                     return art;
                 });
+                console.log('NewsList: Optimistic update complete. Pinned item count:', newData.filter(i => i.isPinned).length);
+                return newData;
             });
 
             // Persist to Backend
             if (isPinning) {
                 // Pinning: Auto-unpin all others first
                 const batch = [];
-                // Use original data or localData to find currently pinned? 
-                // Better to query backend or trust local state. 
-                // For safety, let's look at what we know were pinned.
                 const currentlyPinned = localData.filter(art => art.isPinned && art.id !== item.id);
+
+                console.log(`NewsList: Auto-unpinning ${currentlyPinned.length} other items in DB`);
 
                 for (const pinnedArticle of currentlyPinned) {
                     batch.push(updateDoc(doc(db, "articles", pinnedArticle.id), { isPinned: false }));
@@ -289,14 +75,12 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                 console.error("Failed to clear cache:", e);
             }
 
-            console.log("Pin updated successfully (Optimistic UI)");
-
-            // No refreshData() needed because we updated local state!
+            console.log("NewsList: DB Update & Cache Clear Successful");
 
         } catch (error) {
-            console.error("Pin toggle error:", error);
+            console.error("NewsList: Pin toggle error:", error);
             alert("Failed to update pin status. Reverting...");
-            // Revert would be complex, maybe just refresh data on error
+            // Revert would be complex, simply refresh
             if (refreshData) refreshData();
         }
     };
