@@ -25,13 +25,28 @@ export default function CategoryManager() {
         { name: "Bangladesh", bn: "বাংলাদেশ", order: 12 },
     ];
 
-    // Fetch Categories (Manual)
+    // Fetch Categories with Cache (Manual)
     const fetchCategories = async () => {
         try {
+            // Check cache first
+            const cacheKey = 'admin_categories_cache';
+            const cached = sessionStorage.getItem(cacheKey);
+            const cacheTime = sessionStorage.getItem(cacheKey + '_time');
+            const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+            const isCacheValid = cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_DURATION);
+
+            if (isCacheValid && cached) {
+                console.log('[CategoryManager] Using cached categories');
+                setCategories(JSON.parse(cached));
+                return;
+            }
+
+            console.log('[CategoryManager] Cache miss - fetching from Firestore');
             // Fetch by name, Sort Client-Side to handle missing 'order' field
             const q = query(collection(db, "categories"), orderBy("name"));
             const snapshot = await getDocs(q);
             const cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
             // Sort: Order first (asc), then Name (asc)
             // Treat missing order as 999 (end of list)
             cats.sort((a, b) => {
@@ -39,6 +54,11 @@ export default function CategoryManager() {
                 const orderB = b.order !== undefined ? b.order : 999;
                 return (orderA - orderB) || a.name.localeCompare(b.name);
             });
+
+            // Cache the results
+            sessionStorage.setItem(cacheKey, JSON.stringify(cats));
+            sessionStorage.setItem(cacheKey + '_time', Date.now().toString());
+
             setCategories(cats);
         } catch (error) {
             console.error("Error fetching categories:", error);
@@ -56,6 +76,13 @@ export default function CategoryManager() {
         } catch (err) {
             console.error("Failed to clear cache:", err);
         }
+    };
+
+    // Clear client-side cache
+    const clearClientCache = () => {
+        sessionStorage.removeItem('admin_categories_cache');
+        sessionStorage.removeItem('admin_categories_cache_time');
+        console.log('[CategoryManager] Client cache cleared');
     };
 
     const handleSubmit = async (e) => {
@@ -84,7 +111,8 @@ export default function CategoryManager() {
                     order: Number(form.order)
                 });
             }
-            await clearServerCache(); // Clear cache
+            clearClientCache(); // Clear client cache
+            await clearServerCache(); // Clear server cache
             fetchCategories(); // Refresh list
             setForm({ name: "", bn: "", order: 0 });
         } catch (error) {
@@ -122,7 +150,8 @@ export default function CategoryManager() {
             }
 
             await deleteDoc(doc(db, "categories", cat.id));
-            await clearServerCache(); // Clear cache
+            clearClientCache(); // Clear client cache
+            await clearServerCache(); // Clear server cache
             fetchCategories(); // Refresh list
         } catch (err) {
             console.error(err);
@@ -148,7 +177,8 @@ export default function CategoryManager() {
 
         if (count > 0) {
             await batch.commit();
-            await clearServerCache(); // Clear cache
+            clearClientCache(); // Clear client cache
+            await clearServerCache(); // Clear server cache
             alert(`Added ${count} missing categories!`);
             fetchCategories(); // Refresh list
         } else {

@@ -66,24 +66,37 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
 
     // 🛡️ Fetch Categories from DB
     useEffect(() => {
-        const fetchCategories = async () => {
+        // Fetch categories for dropdown with cache
+        const fetchCategoriesForEditor = async () => {
             try {
-                const q = query(collection(db, "categories"), orderBy("name"));
-                const snapshot = await getDocs(q);
-                if (!snapshot.empty) {
-                    setCategories(snapshot.docs.map(doc => doc.data()));
-                } else {
-                    // Fallback if DB empty
-                    setCategories([
-                        { name: "National", bn: "জাতীয়" },
-                        { name: "Politics", bn: "রাজনীতি" },
-                    ]);
+                // Check cache first (shared with CategoryManager)
+                const cacheKey = 'admin_categories_cache';
+                const cached = sessionStorage.getItem(cacheKey);
+                const cacheTime = sessionStorage.getItem(cacheKey + '_time');
+                const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+                const isCacheValid = cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_DURATION);
+
+                if (isCacheValid && cached) {
+                    console.log('[NewsEditor] Using cached categories');
+                    setCategories(JSON.parse(cached));
+                    return;
                 }
-            } catch (err) {
-                console.error("Failed to load categories", err);
+
+                console.log('[NewsEditor] Cache miss - fetching categories from Firestore');
+                const q = query(collection(db, "categories"), orderBy("order"));
+                const snapshot = await getDocs(q);
+                const cats = snapshot.docs.map(doc => doc.data().name);
+
+                // Cache the results
+                sessionStorage.setItem(cacheKey, JSON.stringify(cats));
+                sessionStorage.setItem(cacheKey + '_time', Date.now().toString());
+
+                setCategories(cats);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
             }
         };
-        fetchCategories();
+        fetchCategoriesForEditor();
     }, []);
 
     // 🛡️ Recovery Actions

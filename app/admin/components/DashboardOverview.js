@@ -29,10 +29,24 @@ export default function DashboardOverview({ stats, user }) {
         // Removed auto-refresh interval to save Firestore quota
     }, [isAdmin]);
 
-    // 2. Fetch SEO Data
+    // 2. Fetch SEO Data with Cache
     useEffect(() => {
         async function fetchInsights() {
             try {
+                // Check cache first
+                const cacheKey = 'admin_seo_analysis';
+                const cached = sessionStorage.getItem(cacheKey);
+                const cacheTime = sessionStorage.getItem(cacheKey + '_time');
+                const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+                const isCacheValid = cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_DURATION);
+
+                if (isCacheValid && cached) {
+                    console.log('[DashboardOverview] Using cached SEO analysis');
+                    setSeoAnalysis(JSON.parse(cached));
+                    return;
+                }
+
+                console.log('[DashboardOverview] Cache miss - fetching articles for SEO');
                 const baseRef = collection(db, "articles");
                 let constraints = [
                     where("status", "==", "published"),
@@ -48,7 +62,13 @@ export default function DashboardOverview({ stats, user }) {
                 if (docs.length > 0) {
                     const latest = docs[0];
                     const analysis = analyzeSeo(latest);
-                    setSeoAnalysis({ id: latest.id, title: latest.title, ...analysis });
+                    const seoData = { id: latest.id, title: latest.title, ...analysis };
+
+                    // Cache the results
+                    sessionStorage.setItem(cacheKey, JSON.stringify(seoData));
+                    sessionStorage.setItem(cacheKey + '_time', Date.now().toString());
+
+                    setSeoAnalysis(seoData);
                 }
             } catch (e) { console.error("Dashboard Fetch Error:", e); }
         }

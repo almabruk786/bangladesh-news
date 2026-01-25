@@ -9,10 +9,34 @@ export default function UserManager() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getDocs(collection(db, "users")).then(snap => {
-            setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        const fetchUsers = async () => {
+            // Check cache first
+            const cacheKey = 'admin_users_cache';
+            const cached = sessionStorage.getItem(cacheKey);
+            const cacheTime = sessionStorage.getItem(cacheKey + '_time');
+            const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+            const isCacheValid = cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_DURATION);
+
+            if (isCacheValid && cached) {
+                console.log('[UserManager] Using cached users');
+                setUsers(JSON.parse(cached));
+                setLoading(false);
+                return;
+            }
+
+            console.log('[UserManager] Cache miss - fetching users from Firestore');
+            const snap = await getDocs(collection(db, "users"));
+            const usersData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // Cache the results
+            sessionStorage.setItem(cacheKey, JSON.stringify(usersData));
+            sessionStorage.setItem(cacheKey + '_time', Date.now().toString());
+
+            setUsers(usersData);
             setLoading(false);
-        });
+        };
+
+        fetchUsers();
     }, []);
 
     const createUser = async (e) => {
@@ -20,6 +44,10 @@ export default function UserManager() {
         if (!newUser.name || !newUser.username || !newUser.password) return;
 
         const docRef = await addDoc(collection(db, "users"), { ...newUser });
+
+        // Clear cache and update state
+        sessionStorage.removeItem('admin_users_cache');
+        sessionStorage.removeItem('admin_users_cache_time');
         setUsers([...users, { id: docRef.id, ...newUser }]);
         setNewUser({ name: "", username: "", password: "", role: "publisher" });
         alert(`${newUser.role === 'writer' ? 'Writer' : 'Publisher'} added successfully!`);
@@ -28,6 +56,10 @@ export default function UserManager() {
     const deleteUser = async (id) => {
         if (confirm("Are you sure you want to remove this user?")) {
             await deleteDoc(doc(db, "users", id));
+
+            // Clear cache and update state
+            sessionStorage.removeItem('admin_users_cache');
+            sessionStorage.removeItem('admin_users_cache_time');
             setUsers(users.filter(u => u.id !== id));
         }
     };
