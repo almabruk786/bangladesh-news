@@ -53,13 +53,39 @@ export async function POST(req) {
         // 4. Cleanup invalid tokens
         if (response.failureCount > 0) {
             const failedTokens = [];
+            const deletePromises = [];
+
             response.responses.forEach((resp, idx) => {
                 if (!resp.success) {
-                    failedTokens.push(tokens[idx]);
-                    console.error(`Failure sending to ${tokens[idx]}:`, resp.error);
+                    const token = tokens[idx];
+                    failedTokens.push(token);
+
+                    // Log the specific error
+                    const errorCode = resp.error?.code;
+                    console.error(`Failure sending to ${token.substring(0, 20)}...:`, errorCode || resp.error);
+
+                    // Delete invalid tokens (unregistered, expired, or invalid)
+                    // Common FCM error codes that indicate token should be removed:
+                    // - messaging/invalid-registration-token
+                    // - messaging/registration-token-not-registered
+                    if (errorCode === 'messaging/invalid-registration-token' ||
+                        errorCode === 'messaging/registration-token-not-registered') {
+                        deletePromises.push(
+                            adminDb.collection('subscribers').doc(token).delete()
+                                .then(() => console.log(`✓ Cleaned up invalid token: ${token.substring(0, 20)}...`))
+                                .catch(err => console.error(`✗ Failed to delete token:`, err))
+                        );
+                    }
                 }
             });
-            console.log('Failed tokens count:', failedTokens.length);
+
+            // Wait for all deletions to complete
+            if (deletePromises.length > 0) {
+                await Promise.all(deletePromises);
+                console.log(`🧹 Cleaned up ${deletePromises.length} invalid tokens out of ${failedTokens.length} failures`);
+            }
+
+            console.log(`📊 Notification Stats: ${response.successCount} success, ${failedTokens.length} failed`);
         }
 
         return NextResponse.json({
