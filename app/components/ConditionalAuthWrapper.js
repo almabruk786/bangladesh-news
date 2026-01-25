@@ -6,6 +6,7 @@ import Footer from './Footer';
 import CookieConsent from './CookieConsent';
 import AnalyticsTracker from './AnalyticsTracker';
 import NotificationManager from './NotificationManager';
+import NotificationListener from './NotificationListener';
 
 export default function ConditionalAuthWrapper({ children, initialCategories }) {
     const pathname = usePathname();
@@ -27,6 +28,7 @@ export default function ConditionalAuthWrapper({ children, initialCategories }) 
             <CookieConsent />
             <AnalyticsTracker />
             <NotificationManager />
+            <NotificationListener />
         </AuthProvider>
     );
 }
