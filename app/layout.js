@@ -106,7 +106,9 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${frankRuhlLibre.variable} ${notoserifBengali.variable}`}>
       <body className={`${inter.className} font-sans flex flex-col min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300`}>
-        {/* Manual Service Worker Registration */}
+        {/* Manual Service Worker Registration - DISABLED: Conflicts with Firebase Messaging */}
+        {/* Firebase Messaging uses its own service worker at /firebase-messaging-sw.js */}
+        {/* 
         <Script id="sw-register" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
@@ -120,6 +122,7 @@ export default async function RootLayout({ children }) {
             }
           `}
         </Script>
+        */}
 
         <script
           dangerouslySetInnerHTML={{

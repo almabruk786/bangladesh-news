@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { getFcmToken, messaging } from '../../../lib/firebase';
+import { getFcmToken, messaging } from '../../lib/firebase';
 import { onMessage } from 'firebase/messaging';
 
 export default function PushDebugPage() {
@@ -78,6 +78,25 @@ export default function PushDebugPage() {
         }
     };
 
+    const unregisterOldSW = async () => {
+        addLog('Unregistering old service workers...');
+        try {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (let reg of regs) {
+                if (reg.active?.scriptURL.includes('/sw.js')) {
+                    await reg.unregister();
+                    addLog(`✓ Unregistered: ${reg.active.scriptURL}`);
+                } else {
+                    addLog(`Keeping: ${reg.active?.scriptURL}`);
+                }
+            }
+            addLog('✓ Old SW removed. Refresh the page to register firebase-messaging-sw.js');
+            alert('Old service worker removed! Please refresh the page (F5) now.');
+        } catch (e) {
+            addLog(`Error: ${e.message}`);
+        }
+    };
+
     useEffect(() => {
         checkStatus();
 
@@ -122,12 +141,15 @@ export default function PushDebugPage() {
                 {status.swRegistered}
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
                 <button onClick={checkStatus} className="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300 font-bold">
                     Refresh Status
                 </button>
+                <button onClick={unregisterOldSW} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-bold">
+                    Unregister Old SW
+                </button>
                 <button onClick={sendTestNotification} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold">
-                    Send Test (Broadcast)
+                    Send Test (Targeted)
                 </button>
             </div>
 
