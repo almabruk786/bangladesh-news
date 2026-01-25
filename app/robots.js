@@ -4,7 +4,7 @@ export default function robots() {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin/', '/api/', '/private/'],
+        disallow: ['/admin/', '/api/', '/private/', '/index', '/index/'],
       },
     ],
     sitemap: 'https://bakalia.xyz/sitemap-index.xml',
