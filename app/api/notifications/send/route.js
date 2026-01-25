@@ -4,32 +4,32 @@ import admin from 'firebase-admin';
 
 export async function POST(req) {
     try {
-        const { title, body, link, imageUrl } = await req.json();
+        const { title, body, link, imageUrl, targetToken } = await req.json();
 
         if (!title || !body) {
             return NextResponse.json({ error: 'Title and Body required' }, { status: 400 });
         }
 
-        // DEBUG: Check connection
-        if (adminDb.constructor.name === 'Object' && !adminDb.collection) {
-            // This detects if it is the Mock DB
-        }
-
-
+        // ... validation ...
 
         if (!admin.apps.length) {
             return NextResponse.json({ success: false, error: 'CRITICAL: Firebase Admin Service is NOT initialized. Check server logs/credentials.' });
         }
 
-        // 1. Fetch all subscriber tokens
-        const snapshot = await adminDb.collection('subscribers').get();
+        let tokens = [];
 
-        if (snapshot.docs.length === 0) {
-            // Differentiate Empty vs Error
-            return NextResponse.json({ success: false, error: 'Database Connected but No subscribers found. (Collection Empty)' });
+        // 1. Fetch tokens (Targeted vs Broadcast)
+        if (targetToken) {
+            tokens = [targetToken];
+            console.log(`[Notification] Sending targeted message to: ${targetToken.substring(0, 15)}...`);
+        } else {
+            // Fetch all subscriber tokens
+            const snapshot = await adminDb.collection('subscribers').get();
+            if (snapshot.docs.length === 0) {
+                return NextResponse.json({ success: false, error: 'Database Connected but No subscribers found. (Collection Empty)' });
+            }
+            tokens = snapshot.docs.map(doc => doc.data().token).filter(t => t);
         }
-
-        const tokens = snapshot.docs.map(doc => doc.data().token).filter(t => t);
 
         // 2. Prepare Payload for 'sendEach' (Data-Only Message)
         // We use Data-Only to prevent the browser from automatically showing a notification
