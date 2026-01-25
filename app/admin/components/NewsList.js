@@ -7,6 +7,7 @@ import { Download } from "lucide-react";
 
 export default function NewsList({ data, title, type, user, onEdit, onView, refreshData, isLoaded = true, onLoad }) {
     // ALL useState hooks MUST come first, before any conditional returns
+    const [localData, setLocalData] = useState(data || []);
     const [loadLimit, setLoadLimit] = useState(2);
     const [searchTerm, setSearchTerm] = useState("");
     const [filter, setFilter] = useState("all");
@@ -15,6 +16,11 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedItems, setSelectedItems] = useState(new Set());
     const itemsPerPage = 10;
+
+    // Sync localData when data prop changes (e.g. initial load or manual refresh)
+    useEffect(() => {
+        setLocalData(data || []);
+    }, [data]);
 
     if (!isLoaded) {
         return (
@@ -103,7 +109,7 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
         return categoryMap[c1] === c2 || categoryMap[c2] === c1;
     };
 
-    const filteredData = data
+    const filteredData = localData
         .filter(item => {
             let term = searchTerm.toLowerCase().trim();
 
@@ -240,10 +246,30 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
 
     const togglePin = async (item) => {
         try {
-            if (!item.isPinned) {
+            const isPinning = !item.isPinned;
+
+            // OPTIMISTIC UPDATE: Update UI immediately
+            setLocalData(prevData => {
+                return prevData.map(art => {
+                    if (art.id === item.id) {
+                        return { ...art, isPinned: isPinning };
+                    }
+                    // If pinning this one, unpin others (assuming single pin policy)
+                    if (isPinning && art.isPinned) {
+                        return { ...art, isPinned: false };
+                    }
+                    return art;
+                });
+            });
+
+            // Persist to Backend
+            if (isPinning) {
                 // Pinning: Auto-unpin all others first
                 const batch = [];
-                const currentlyPinned = data.filter(art => art.isPinned && art.id !== item.id);
+                // Use original data or localData to find currently pinned? 
+                // Better to query backend or trust local state. 
+                // For safety, let's look at what we know were pinned.
+                const currentlyPinned = localData.filter(art => art.isPinned && art.id !== item.id);
 
                 for (const pinnedArticle of currentlyPinned) {
                     batch.push(updateDoc(doc(db, "articles", pinnedArticle.id), { isPinned: false }));
@@ -263,16 +289,15 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                 console.error("Failed to clear cache:", e);
             }
 
-            // Update local state instead of full refresh to preserve loaded article count
-            // This prevents auto-loading all news when pinning
-            if (refreshData && typeof refreshData === 'function') {
-                // Optional: call refreshData only if user explicitly wants it
-                // For now, we skip it to prevent auto-loading
-                console.log("Pin updated. Skipping full refresh to preserve loaded article count.");
-            }
+            console.log("Pin updated successfully (Optimistic UI)");
+
+            // No refreshData() needed because we updated local state!
+
         } catch (error) {
             console.error("Pin toggle error:", error);
-            alert("Failed to update pin status");
+            alert("Failed to update pin status. Reverting...");
+            // Revert would be complex, maybe just refresh data on error
+            if (refreshData) refreshData();
         }
     };
 
