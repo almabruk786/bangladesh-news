@@ -59,20 +59,11 @@ export default function PushDebugPage() {
                     title: "Debug Test",
                     body: "If you see this, notifications are working!",
                     link: window.location.href,
-                    // We can't easily target just THIS user without their token,
-                    // but the broadcast endpoint sends to ALL.
-                    // Ideally we'd have a single-target endpoint, but for now we broadcast.
-                    // WAIT: Sending to all subscribers might be annoying.
-                    // Let's use the token we just got to target ONLY this device.
+                    targetToken: fullToken // Target ONLY this device
                 })
             });
-            // The current API broadcasts to all 'subscribers' collection.
-            // We should modify the API to accept a specific token for testing, 
-            // OR just simulate it here.
 
-            // Actually, let's just listen for the broadcast. 
-            // Broadasting to 30 people for a debug test is bad practice though.
-            // Let's call the `subscribe` endpoint to ensure we are in the list first.
+            // Ensure we are subscribed so we don't get deleted by cleanup if we were missing
             await fetch('/api/notifications/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
