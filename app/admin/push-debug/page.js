@@ -109,7 +109,7 @@ export default function PushDebugPage() {
                         console.log('Message received!', payload);
                         setStatus(prev => ({ ...prev, lastMessage: payload.notification?.title || payload.data?.title || 'Unknown' }));
                         addLog(`FOREGROUND MESSAGE RECEIVED: ${JSON.stringify(payload)}`);
-                        alert(`Message Received! ${payload.data?.title}`);
+                        // Removed alert - will show as browser notification instead
                     });
                 }
             } catch (e) { console.error(e); }
