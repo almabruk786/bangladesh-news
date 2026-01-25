@@ -305,16 +305,39 @@ export default function NewsList({ data, title, type, user, onEdit, onView, refr
                         )}
                     </div>
 
-                    {refreshData && (
-                        <button
-                            onClick={refreshData}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors text-xs font-bold shadow-sm"
-                            title="Refresh data from server (Bypasses Cache)"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M3 21v-5h5" /></svg>
-                            Refresh Data
-                        </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {!isLoaded && onLoad && (
+                            <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 rounded-lg border border-blue-200">
+                                <label className="text-xs font-bold text-slate-600">Load:</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    value={loadLimit}
+                                    onChange={(e) => setLoadLimit(Math.max(1, Math.min(100, parseInt(e.target.value) || 2)))}
+                                    className="w-16 px-2 py-1 border border-slate-300 rounded text-xs font-bold text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                />
+                                <button
+                                    onClick={() => onLoad(loadLimit)}
+                                    className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-bold shadow-sm"
+                                    title={`Load ${loadLimit} articles from server`}
+                                >
+                                    <Download size={14} />
+                                    Load News
+                                </button>
+                            </div>
+                        )}
+                        {refreshData && (
+                            <button
+                                onClick={refreshData}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors text-xs font-bold shadow-sm"
+                                title="Refresh data from server (Bypasses Cache)"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M3 21v-5h5" /></svg>
+                                Refresh Data
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Filter Controls */}

@@ -360,7 +360,10 @@ export default function AdminDashboard() {
           onView={setEditingArticle}
           refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true, limitCount: currentLimit })}
           isLoaded={isArticlesLoaded}
-          onLoad={(count) => fetchData({ fetchArticles: true, limitCount: count })}
+          onLoad={(count) => {
+            setCurrentLimit(count);
+            fetchData({ fetchArticles: true, limitCount: count });
+          }}
         />;
       case "pending":
         return <NewsList
@@ -369,9 +372,12 @@ export default function AdminDashboard() {
           user={user}
           type="admin"
           onEdit={setEditingArticle}
-          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true })}
+          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true, limitCount: currentLimit })}
           isLoaded={isArticlesLoaded}
-          onLoad={(count) => fetchData({ fetchArticles: true, limitCount: count })}
+          onLoad={(count) => {
+            setCurrentLimit(count);
+            fetchData({ fetchArticles: true, limitCount: count });
+          }}
         />;
       case "my_news":
         return <NewsList
@@ -380,9 +386,12 @@ export default function AdminDashboard() {
           user={user}
           type="publisher"
           onEdit={setEditingArticle}
-          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true, limitCount: 50 })}
+          refreshData={() => fetchData({ fetchArticles: true, forceRefresh: true, limitCount: currentLimit })}
           isLoaded={isArticlesLoaded}
-          onLoad={(count) => fetchData({ fetchArticles: true, limitCount: count })}
+          onLoad={(count) => {
+            setCurrentLimit(count);
+            fetchData({ fetchArticles: true, limitCount: count });
+          }}
         />;
       case "category":
         return <CategoryManager />;
