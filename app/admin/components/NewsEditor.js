@@ -78,14 +78,34 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
 
                 if (isCacheValid && cached) {
                     console.log('[NewsEditor] Using cached categories');
-                    setCategories(JSON.parse(cached));
-                    return;
+                    const parsedCache = JSON.parse(cached);
+                    console.log('[NewsEditor] Cached categories:', parsedCache);
+
+                    // Validate cache format - if it's old string format, invalidate it
+                    if (parsedCache.length > 0 && typeof parsedCache[0] === 'string') {
+                        console.warn('[NewsEditor] Old cache format detected, clearing...');
+                        sessionStorage.removeItem(cacheKey);
+                        sessionStorage.removeItem(cacheKey + '_time');
+                        // Continue to fetch fresh data
+                    } else {
+                        setCategories(parsedCache);
+                        return;
+                    }
                 }
 
                 console.log('[NewsEditor] Cache miss - fetching categories from Firestore');
-                const q = query(collection(db, "categories"), orderBy("order"));
+                const q = query(collection(db, "categories"), orderBy("name"));
                 const snapshot = await getDocs(q);
-                const cats = snapshot.docs.map(doc => doc.data().name);
+                const cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                console.log('[NewsEditor] Fetched categories:', cats);
+
+                // Sort: Order first (asc), then Name (asc)
+                cats.sort((a, b) => {
+                    const orderA = a.order !== undefined ? a.order : 999;
+                    const orderB = b.order !== undefined ? b.order : 999;
+                    return (orderA - orderB) || a.name.localeCompare(b.name);
+                });
 
                 // Cache the results
                 sessionStorage.setItem(cacheKey, JSON.stringify(cats));
@@ -93,7 +113,8 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
 
                 setCategories(cats);
             } catch (error) {
-                console.error("Error fetching categories:", error);
+                console.error("[NewsEditor] Error fetching categories:", error);
+                setCategories([]); // Set empty array on error
             }
         };
         fetchCategoriesForEditor();
@@ -531,69 +552,76 @@ export default function NewsEditor({ user, existingData, onCancel, onSuccess }) 
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-700">Categories (Select Multiple)</label>
                         <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-48 overflow-y-auto">
-                            {categories.map((cat, i) => (
-                                <div key={i} className={`flex items-center justify-between p-2 rounded transition-colors ${form.categories.includes(cat.name) ? 'bg-blue-50 border-blue-100' : 'hover:bg-slate-100'}`}>
-                                    <label className="flex items-center gap-2 cursor-pointer flex-1">
-                                        <input
-                                            type="checkbox"
-                                            checked={form.categories.includes(cat.name)}
-                                            onChange={(e) => {
-                                                const checked = e.target.checked;
-                                                setForm(prev => {
-                                                    let newCats = checked
-                                                        ? [...new Set([...prev.categories, cat.name])]
-                                                        : prev.categories.filter(c => c !== cat.name);
+                            {categories.map((cat, i) => {
+                                // Check if this category is selected (check both name and bn)
+                                const isChecked = form.categories.includes(cat.name) || form.categories.includes(cat.bn);
+                                const isPrimary = form.category === cat.name || form.category === cat.bn;
 
-                                                    // Prevent deselecting all if possible, or allow it but warn? 
-                                                    // Let's allow empty but maybe show validation later.
-                                                    // If we are unchecking the PRIMARY category, we must pick a new one.
-                                                    let newPrimary = prev.category;
+                                return (
+                                    <div key={i} className={`flex items-center justify-between p-2 rounded transition-colors ${isChecked ? 'bg-blue-50 border-blue-100' : 'hover:bg-slate-100'}`}>
+                                        <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                            <input
+                                                type="checkbox"
+                                                checked={isChecked}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    setForm(prev => {
+                                                        let newCats = checked
+                                                            ? [...new Set([...prev.categories.filter(c => c !== cat.bn), cat.name])] // Use English name
+                                                            : prev.categories.filter(c => c !== cat.name && c !== cat.bn); // Remove both
 
-                                                    if (checked) {
-                                                        // Adding a new one: Don't change primary unless it was empty
-                                                        if (!newPrimary) newPrimary = cat.name;
-                                                    } else {
-                                                        // Removing one
-                                                        if (prev.category === cat.name) {
-                                                            // If we removed the primary, default to the first one available
-                                                            newPrimary = newCats.length > 0 ? newCats[0] : "";
+                                                        // If we are unchecking the PRIMARY category, we must pick a new one.
+                                                        let newPrimary = prev.category;
+
+                                                        if (checked) {
+                                                            // Adding a new one: Don't change primary unless it was empty
+                                                            if (!newPrimary) newPrimary = cat.name;
+                                                        } else {
+                                                            // Removing one
+                                                            if (prev.category === cat.name || prev.category === cat.bn) {
+                                                                // If we removed the primary, default to the first one available
+                                                                newPrimary = newCats.length > 0 ? newCats[0] : "";
+                                                            }
                                                         }
-                                                    }
 
-                                                    return { ...prev, categories: newCats, category: newPrimary };
-                                                });
-                                            }}
-                                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className={`text-sm ${form.category === cat.name ? 'font-bold text-blue-700' : 'text-slate-700'}`}>
-                                                {cat.bn || cat.name}
-                                            </span>
-                                            {form.category === cat.name && <span className="text-[10px] text-blue-600 font-bold">Primary</span>}
-                                        </div>
-                                    </label>
-
-                                    {/* Star Button to Set Primary */}
-                                    {form.categories.includes(cat.name) && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setForm(p => ({ ...p, category: cat.name }))}
-                                            className="p-1 hover:bg-white rounded-full transition-colors"
-                                            title="Set as Primary Category"
-                                        >
-                                            <Star
-                                                size={16}
-                                                className={form.category === cat.name ? "fill-orange-400 text-orange-400" : "text-slate-300 hover:text-orange-300"}
+                                                        return { ...prev, categories: newCats, category: newPrimary };
+                                                    });
+                                                }}
+                                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                                             />
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
+                                            <div className="flex flex-col">
+                                                <span className={`text-sm ${isPrimary ? 'font-bold text-blue-700' : 'text-slate-700'}`}>
+                                                    {cat.bn || cat.name}
+                                                </span>
+                                                {isPrimary && <span className="text-[10px] text-blue-600 font-bold">Primary</span>}
+                                            </div>
+                                        </label>
+
+                                        {/* Star Button to Set Primary */}
+                                        {isChecked && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setForm(p => ({ ...p, category: cat.name }))}
+                                                className="p-1 hover:bg-white rounded-full transition-colors"
+                                                title="Set as Primary Category"
+                                            >
+                                                <Star
+                                                    size={16}
+                                                    className={isPrimary ? "fill-orange-400 text-orange-400" : "text-slate-300 hover:text-orange-300"}
+                                                />
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         {/* Ghost/Legacy Categories */}
                         {(() => {
-                            const ghostCategories = form.categories.filter(c => !categories.some(cat => cat.name === c));
+                            // Check both English name and Bengali name
+                            const ghostCategories = form.categories.filter(c =>
+                                !categories.some(cat => cat.name === c || cat.bn === c)
+                            );
                             if (ghostCategories.length === 0) return null;
                             return (
                                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
