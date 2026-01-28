@@ -6,17 +6,21 @@ import Image from 'next/image';
 export default function NewsSlider({ images, title, altText }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Filter out empty strings first
+  const validImages = images && Array.isArray(images) ? images.filter(img => img && img.trim() !== '') : [];
+
   // অটোমেটিক স্লাইডার (৩ সেকেন্ড পর পর)
   useEffect(() => {
-    if (images && images.length > 1) {
+    if (validImages && validImages.length > 1) {
       const timer = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % images.length);
+        setCurrentIndex((prev) => (prev + 1) % validImages.length);
       }, 3000);
       return () => clearInterval(timer);
     }
-  }, [images]);
+  }, [validImages]);
 
-  if (!images || images.length === 0) {
+  if (!validImages || validImages.length === 0) {
+    console.log('[NewsSlider] No valid images found. Original images:', images, 'Valid images:', validImages);
     return (
       <div className="w-full h-[300px] md:h-[500px] bg-slate-200 rounded-xl mb-8 flex items-center justify-center text-slate-400">
         ছবি লোড হচ্ছে না
@@ -24,12 +28,13 @@ export default function NewsSlider({ images, title, altText }) {
     );
   }
 
+
   // যদি মাত্র ১টি ছবি থাকে, তবে স্লাইডার হবে না
-  if (images.length === 1) {
+  if (validImages.length === 1) {
     return (
       <div className="relative w-full h-0 pb-[56.25%] rounded-xl overflow-hidden shadow-lg border border-slate-100">
         <Image
-          src={images[0]}
+          src={validImages[0]}
           alt={altText || title}
           fill
           className="object-cover"
@@ -46,7 +51,7 @@ export default function NewsSlider({ images, title, altText }) {
       {/* ছবি (Only render active image for performance) */}
       <div className="absolute inset-0 z-10">
         <Image
-          src={images[currentIndex]}
+          src={validImages[currentIndex]}
           alt={currentIndex === 0 && altText ? altText : `${title} - image ${currentIndex + 1}`}
           fill
           className="object-cover transition-opacity duration-300"
@@ -57,13 +62,13 @@ export default function NewsSlider({ images, title, altText }) {
 
       {/* নেভিগেশন বাটন (অপশনাল) */}
       <button
-        onClick={() => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)}
+        onClick={() => setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length)}
         className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/30 p-2 rounded-full text-white hover:bg-black/50 opacity-0 group-hover:opacity-100 transition"
       >
         <ChevronLeft />
       </button>
       <button
-        onClick={() => setCurrentIndex((prev) => (prev + 1) % images.length)}
+        onClick={() => setCurrentIndex((prev) => (prev + 1) % validImages.length)}
         className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/30 p-2 rounded-full text-white hover:bg-black/50 opacity-0 group-hover:opacity-100 transition"
       >
         <ChevronRight />
@@ -71,7 +76,7 @@ export default function NewsSlider({ images, title, altText }) {
 
       {/* ডট ইন্ডিকেটর */}
       <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2">
-        {images.map((_, idx) => (
+        {validImages.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
@@ -83,7 +88,7 @@ export default function NewsSlider({ images, title, altText }) {
 
       {/* কাউন্টার */}
       <div className="absolute top-4 right-4 z-20 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm">
-        {currentIndex + 1} / {images.length}
+        {currentIndex + 1} / {validImages.length}
       </div>
     </div>
   );
